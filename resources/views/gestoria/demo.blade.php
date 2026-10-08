@@ -264,15 +264,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-slate-600 font-medium mb-1">Sexo *</label>
-                            <input type="text" value="{{ $buyer['sexo'] }}" readonly class="w-full border border-slate-300 bg-slate-50 rounded-lg px-3 py-2 text-slate-800">
+                            <input type="text" value="{{ $buyer['sexo'] ?? 'Mujer' }}" readonly class="w-full border border-slate-300 bg-slate-50 rounded-lg px-3 py-2 text-slate-800">
                         </div>
                         <div>
                             <label class="block text-slate-600 font-medium mb-1">Fecha de nacimiento *</label>
-                            <input type="text" value="{{ $buyer['dob'] }}" readonly class="w-full border border-slate-300 bg-slate-50 rounded-lg px-3 py-2 text-slate-800">
+                            <input type="text" value="{{ $buyer['dob'] ?? '19/11/1995' }}" readonly class="w-full border border-slate-300 bg-slate-50 rounded-lg px-3 py-2 text-slate-800">
                         </div>
                         <div>
                             <label class="block text-slate-600 font-medium mb-1">Código postal *</label>
-                            <input type="text" value="{{ $buyer['cp'] }}" readonly class="w-full border border-slate-300 bg-slate-50 rounded-lg px-3 py-2 text-slate-800">
+                            <input type="text" value="{{ $buyer['cp'] ?? '11520' }}" readonly class="w-full border border-slate-300 bg-slate-50 rounded-lg px-3 py-2 text-slate-800">
                         </div>
                     </div>
                 </div>
@@ -291,7 +291,7 @@
                         </div>
                         <div>
                             <label class="block text-slate-600 font-medium mb-1">Precio (€) *</label>
-                            <input type="text" value="{{ $buyer['precio'] }}" readonly class="w-full border border-slate-300 bg-slate-50 rounded-lg px-3 py-2 font-bold text-slate-900">
+                            <input type="text" value="{{ $buyer['precio'] ?? '1.000,00 €' }}" readonly class="w-full border border-slate-300 bg-slate-50 rounded-lg px-3 py-2 font-bold text-slate-900">
                         </div>
                     </div>
                 </div>
