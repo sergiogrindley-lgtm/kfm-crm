@@ -231,11 +231,12 @@ class ClientController extends Controller
     public function cesionPoliza(Client $client, Policy $policy, Request $request)
     {
         $buyer = [
-            'nombre' => $request->query('buyer_nombre', 'EMILY SARAH'),
-            'apellido' => $request->query('buyer_apellido', 'JOHNSON'),
-            'doc_identidad' => $request->query('buyer_doc', 'Z4192048E'),
-            'dob' => $request->query('buyer_dob', '19/11/1995'),
-            'direccion' => $request->query('buyer_direccion', 'LU BASE NAVAL DE ROTA 999, 11520 ROTA'),
+            'nombre' => strtoupper(trim($request->input('buyer_nombre') ?: 'EMILY SARAH')),
+            'apellido' => strtoupper(trim($request->input('buyer_apellido') ?: 'JOHNSON')),
+            'doc_identidad' => strtoupper(trim($request->input('buyer_doc') ?: 'Z4192048E')),
+            'dob' => $request->input('buyer_dob') ?: '19/11/1995',
+            'direccion' => $request->input('buyer_direccion') ?: 'LU BASE NAVAL DE ROTA 999, 11520 ROTA',
+            'telefono' => $request->input('buyer_telefono') ?: '671-998877',
         ];
 
         return view('clients.cesion', compact('client', 'policy', 'buyer'));
@@ -246,30 +247,31 @@ class ClientController extends Controller
      */
     public function gestoriaDemo(Request $request)
     {
-        $clientId = $request->query('client_id');
-        $policyId = $request->query('policy_id');
+        $clientId = $request->input('client_id');
+        $policyId = $request->input('policy_id');
 
         $client = $clientId ? Client::with('policies')->find($clientId) : null;
         $policy = $policyId ? Policy::find($policyId) : ($client?->policies?->first());
 
         if (!$client) {
-            $client = Client::where('doc_identidad', 'Y8492015B')->first() ?? Client::first();
+            $client = Client::where('apellido', 'MILLER')->first() ?? Client::first();
             $policy = $client?->policies?->first();
         }
 
         $buyer = [
-            'nombre' => 'EMILY SARAH',
-            'apellido' => 'JOHNSON',
-            'doc_identidad' => 'Z4192048E',
-            'sexo' => 'Mujer',
-            'dob' => '19/11/1995',
+            'nombre' => strtoupper(trim($request->input('buyer_nombre') ?: 'EMILY SARAH')),
+            'apellido' => strtoupper(trim($request->input('buyer_apellido') ?: 'JOHNSON')),
+            'doc_identidad' => strtoupper(trim($request->input('buyer_doc') ?: 'Z4192048E')),
+            'sexo' => $request->input('buyer_sexo') ?: 'Mujer',
+            'dob' => $request->input('buyer_dob') ?: '19/11/1995',
             'tipo_via' => 'LU - LUGAR',
-            'nombre_via' => 'BASE NAVAL DE ROTA',
+            'nombre_via' => $request->input('buyer_direccion') ?: 'BASE NAVAL DE ROTA',
             'numero' => '999',
             'provincia' => 'Cádiz (CA)',
             'municipio' => 'ROTA',
             'cp' => '11520',
-            'precio' => '1.000,00 €',
+            'precio' => $request->input('buyer_precio') ?: '1.000,00 €',
+            'telefono' => $request->input('buyer_telefono') ?: '671-998877',
         ];
 
         return view('gestoria.demo', compact('client', 'policy', 'buyer'));

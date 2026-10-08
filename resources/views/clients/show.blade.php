@@ -303,29 +303,16 @@
                             @endif
 
                             <!-- Acciones de Tramitación & Gestoría -->
-                            <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <a href="{{ route('clients.cesion', ['client' => $client->id, 'policy' => $policy->id]) }}" 
-                                       target="_blank"
-                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-50 hover:bg-cyan-100 text-[#0c3547] border border-cyan-200 shadow-sm transition">
-                                        <svg class="w-3.5 h-3.5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                                        <span>🖨️ Cesión Oficial (Imprimir)</span>
-                                    </a>
-
-                                    <a href="{{ route('gestoria.demo', ['client_id' => $client->id, 'policy_id' => $policy->id]) }}" 
-                                       target="_blank"
-                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 shadow-sm transition">
-                                        <span class="w-2 h-2 rounded-full bg-[#9b1c31]"></span>
-                                        <span>⚡ Traspasar a Gestoría Bahía & Naval</span>
-                                    </a>
-
-                                    <button type="button" 
-                                            onclick="openWhatsAppModal('{{ $client->full_name }}', '{{ $policy->matricula }}', '{{ $policy->marca }} {{ $policy->modelo }}', '{{ substr($policy->vin ?: '8491', -4) }}', '{{ $policy->numero_poliza }}')"
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-sm transition cursor-pointer">
-                                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.044.101-.116.433-.506.549-.679.116-.174.232-.145.39-.087s1.011.477 1.184.564.289.13.332.203c.044.072.044.419-.1.824z"/></svg>
-                                        <span>📲 WhatsApp Gestoría</span>
-                                    </button>
-                                </div>
+                            <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
+                                <button type="button" 
+                                        onclick="openTraspasoModal('{{ $client->id }}', '{{ $policy->id }}', '{{ addslashes($client->full_name) }}', '{{ addslashes($policy->matricula) }}', '{{ addslashes($policy->marca . ' ' . $policy->modelo) }}', '{{ substr($policy->vin ?: '8491', -4) }}', '{{ $policy->numero_poliza }}')"
+                                        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#9b1c31] hover:bg-[#7f1627] text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
+                                    <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                                    <span>⚡ Traspasar Vehículo a Gestoría</span>
+                                </button>
+                                <span class="text-[11px] text-slate-500 font-medium hidden sm:inline">
+                                    Abre el formulario, rellena al comprador y envía los datos a Gestoría Bahía & Naval
+                                </span>
                             </div>
                         </div>
                     @empty
@@ -624,11 +611,70 @@
         document.getElementById('deleteClientModal').classList.add('hidden');
     }
 
-    // Modal de WhatsApp para Gestoría
-    function openWhatsAppModal(clientName, matricula, vehiculo, bastidor, poliza) {
-        const text = `🚗 *Nuevo Expediente KFM (Oficina NEX · Chari)*\n━━━━━━━━━━━━━━━━━━━\n👤 *Cliente:* ${clientName}\n📄 *Póliza:* ${poliza || '1842910'}\n🚘 *Vehículo:* ${vehiculo}\n🔢 *Matrícula:* ${matricula}\n⚙️ *Bastidor:* ...${bastidor}\n📋 *Trámite:* Cesión de uso y derechos a favor de Emily Sarah Johnson\n━━━━━━━━━━━━━━━━━━━\n*Expediente cargado en panel y hoja de cesión oficial firmada.*`;
+    // Modal Unificado de Traspaso a Gestoría
+    let currentTraspaso = {};
+
+    function openTraspasoModal(clientId, policyId, clientName, matricula, vehiculo, bastidor, poliza) {
+        currentTraspaso = { clientId, policyId, clientName, matricula, vehiculo, bastidor, poliza };
+
+        document.getElementById('traspaso_client_id').value = clientId;
+        document.getElementById('traspaso_policy_id').value = policyId;
+        document.getElementById('traspaso_client_name').innerText = clientName;
+        document.getElementById('traspaso_vehiculo').innerText = vehiculo;
+        document.getElementById('traspaso_matricula').innerText = matricula;
+        document.getElementById('traspaso_bastidor').innerText = '...' + bastidor;
+        document.getElementById('traspaso_poliza').innerText = poliza || '1842910';
+
+        // Se abre limpio para rellenar en el momento con el comprador que está en la mesa
+        document.getElementById('input_buyer_nombre').value = '';
+        document.getElementById('input_buyer_apellido').value = '';
+        document.getElementById('input_buyer_doc').value = '';
+        document.getElementById('input_buyer_telefono').value = '';
+        document.getElementById('input_buyer_dob').value = '';
+        document.getElementById('input_buyer_direccion').value = '';
+        document.getElementById('input_buyer_precio').value = '1.000,00 €';
+
+        document.getElementById('traspasoModal').classList.remove('hidden');
+    }
+
+    function closeTraspasoModal() {
+        document.getElementById('traspasoModal').classList.add('hidden');
+    }
+
+    function cargarCompradorDemo() {
+        document.getElementById('input_buyer_nombre').value = 'EMILY SARAH';
+        document.getElementById('input_buyer_apellido').value = 'JOHNSON';
+        document.getElementById('input_buyer_doc').value = 'Z4192048E';
+        document.getElementById('input_buyer_telefono').value = '671-998877';
+        document.getElementById('input_buyer_dob').value = '19/11/1995';
+        document.getElementById('input_buyer_direccion').value = 'LG PSC 819 BOX 999 - NAVSTA ROTA';
+        document.getElementById('input_buyer_precio').value = '1.000,00 €';
+    }
+
+    function imprimirCesionConComprador() {
+        const nombre = encodeURIComponent(document.getElementById('input_buyer_nombre').value || 'EMILY SARAH');
+        const apellido = encodeURIComponent(document.getElementById('input_buyer_apellido').value || 'JOHNSON');
+        const doc = encodeURIComponent(document.getElementById('input_buyer_doc').value || 'Z4192048E');
+        const dob = encodeURIComponent(document.getElementById('input_buyer_dob').value || '19/11/1995');
+        const dir = encodeURIComponent(document.getElementById('input_buyer_direccion').value || 'LG PSC 819 BOX 999 - NAVSTA ROTA');
+
+        const url = `/clients/${currentTraspaso.clientId}/cesion/${currentTraspaso.policyId}?buyer_nombre=${nombre}&buyer_apellido=${apellido}&buyer_doc=${doc}&buyer_dob=${dob}&buyer_direccion=${dir}`;
+        window.open(url, '_blank');
+    }
+
+    function enviarWhatsAppConComprador() {
+        const buyerName = (document.getElementById('input_buyer_nombre').value + ' ' + document.getElementById('input_buyer_apellido').value).trim() || 'Emily Sarah Johnson';
+        const doc = document.getElementById('input_buyer_doc').value || 'Z4192048E';
+        const text = `🚗 *Nuevo Expediente KFM (Oficina NEX · Chari)*\n━━━━━━━━━━━━━━━━━━━\n👤 *Titular Saliente:* ${currentTraspaso.clientName}\n📄 *Póliza:* ${currentTraspaso.poliza || '1842910'}\n🚘 *Vehículo:* ${currentTraspaso.vehiculo}\n🔢 *Matrícula:* ${currentTraspaso.matricula}\n⚙️ *Bastidor:* ${currentTraspaso.bastidor}\n🤝 *Nuevo Comprador:* ${buyerName} (Doc: ${doc})\n━━━━━━━━━━━━━━━━━━━\n*Expediente enviado a Gestoría Bahía & Naval y hoja oficial de cesión generada.*`;
+        
         document.getElementById('waMessageText').value = text;
         document.getElementById('whatsappGestoriaModal').classList.remove('hidden');
+    }
+
+    // Modal de WhatsApp para Gestoría
+    function openWhatsAppModal(clientName, matricula, vehiculo, bastidor, poliza) {
+        currentTraspaso = { clientName, matricula, vehiculo, bastidor, poliza };
+        enviarWhatsAppConComprador();
     }
 
     function closeWhatsAppModal() {
@@ -651,6 +697,7 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeDeleteClientModal();
+            closeTraspasoModal();
             closeWhatsAppModal();
         }
     });
@@ -760,4 +807,142 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Unificado de Traspaso a Gestoría y Cesión -->
+<div id="traspasoModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeTraspasoModal()"></div>
+
+    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200">
+            
+            <!-- Header Modal -->
+            <div class="bg-gradient-to-r from-[#9b1c31] to-[#0c3547] text-white p-5 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-xl">
+                        🚗
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base font-display">Traspaso de Vehículo & Envío a Gestoría</h3>
+                        <p class="text-xs text-rose-100">Introduce los datos del comprador que está en tu mesa para sincronizar con Gestoría Bahía & Naval</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeTraspasoModal()" class="text-white/80 hover:text-white cursor-pointer text-xl leading-none">✕</button>
+            </div>
+
+            <!-- Body Form -->
+            <form id="traspasoForm" action="{{ route('gestoria.demo') }}" method="POST" target="_blank">
+                @csrf
+                <input type="hidden" name="client_id" id="traspaso_client_id">
+                <input type="hidden" name="policy_id" id="traspaso_policy_id">
+
+                <div class="p-6 space-y-5 text-xs">
+                    
+                    <!-- Fila 1: Datos del Vehículo y Vendedor (KFM CRM) -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                        <div>
+                            <span class="block text-slate-400 font-semibold text-[10px] uppercase">Titular Saliente:</span>
+                            <strong id="traspaso_client_name" class="text-slate-900 block truncate"></strong>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 font-semibold text-[10px] uppercase">Vehículo:</span>
+                            <strong id="traspaso_vehiculo" class="text-slate-900 block truncate"></strong>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 font-semibold text-[10px] uppercase">Matrícula:</span>
+                            <span id="traspaso_matricula" class="font-mono bg-white px-2 py-0.5 rounded border border-slate-300 font-bold text-slate-900"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 font-semibold text-[10px] uppercase">Bastidor / Póliza:</span>
+                            <span class="font-mono text-slate-700 text-[11px]"><span id="traspaso_bastidor"></span> (<span id="traspaso_poliza"></span>)</span>
+                        </div>
+                    </div>
+
+                    <!-- Fila 2: Cabecera Comprador + Botón Cargar Demo -->
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                        <span class="font-bold text-sm text-slate-900 font-display flex items-center gap-1.5">
+                            <span>👤</span> Datos del Nuevo Comprador (Cesionario)
+                        </span>
+                        <button type="button" onclick="cargarCompradorDemo()" 
+                                class="text-xs text-cyan-700 hover:text-cyan-900 bg-cyan-50 hover:bg-cyan-100 px-3 py-1 rounded-lg border border-cyan-200 font-bold transition cursor-pointer">
+                            ⚡ Rellenar con Comprador Demo
+                        </button>
+                    </div>
+
+                    <!-- Formulario Nuevo Comprador (Vacío para rellenar en el acto) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Nombre del Comprador *</label>
+                            <input type="text" name="buyer_nombre" id="input_buyer_nombre" placeholder="ej: EMILY SARAH" required
+                                   class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9b1c31]">
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Apellidos *</label>
+                            <input type="text" name="buyer_apellido" id="input_buyer_apellido" placeholder="ej: JOHNSON" required
+                                   class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9b1c31]">
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">DNI / NIE / Pasaporte / DOD ID *</label>
+                            <input type="text" name="buyer_doc" id="input_buyer_doc" placeholder="ej: Z4192048E" required
+                                   class="w-full text-xs font-mono font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9b1c31]">
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Teléfono Móvil</label>
+                            <input type="text" name="buyer_telefono" id="input_buyer_telefono" placeholder="ej: 671-998877"
+                                   class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9b1c31]">
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Fecha Nacimiento (DOB)</label>
+                            <input type="text" name="buyer_dob" id="input_buyer_dob" placeholder="ej: 19/11/1995"
+                                   class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9b1c31]">
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 font-semibold mb-1">Precio Acordado (€)</label>
+                            <input type="text" name="buyer_precio" id="input_buyer_precio" value="1.000,00 €"
+                                   class="w-full text-xs font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9b1c31]">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-slate-600 font-semibold mb-1">Domicilio / Unidad Base Naval</label>
+                            <input type="text" name="buyer_direccion" id="input_buyer_direccion" placeholder="ej: LG PSC 819 BOX 999 - NAVSTA ROTA"
+                                   class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9b1c31]">
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-900 text-[11px] flex items-center gap-2">
+                        <span>⚡</span>
+                        <span>Al enviar a la gestoría se abre el portal con todos estos campos volcados. También puedes imprimir la cesión oficial o enviar por WhatsApp.</span>
+                    </div>
+
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="bg-slate-50 px-6 py-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 text-xs font-bold">
+                    <button type="button" onclick="closeTraspasoModal()"
+                            class="text-slate-500 hover:text-slate-700 px-3 py-2.5 transition cursor-pointer">
+                        Cancelar
+                    </button>
+                    
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="imprimirCesionConComprador()"
+                                class="px-4 py-2.5 rounded-xl bg-[#0c3547] hover:bg-[#145a78] text-white shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+                            <svg class="w-4 h-4 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                            <span>🖨️ Imprimir Cesión Oficial</span>
+                        </button>
+                        
+                        <button type="button" onclick="enviarWhatsAppConComprador()"
+                                class="px-3.5 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 transition flex items-center gap-1.5 cursor-pointer">
+                            <span>📲 WhatsApp</span>
+                        </button>
+
+                        <button type="submit"
+                                class="px-5 py-2.5 rounded-xl bg-[#9b1c31] hover:bg-[#7f1627] text-white shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                            <span>🚀 Enviar a Gestoría Bahía & Naval</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
 @endsection
+

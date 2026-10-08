@@ -44,7 +44,7 @@
             <a href="{{ route('clients.show', $client) }}" class="bg-white text-slate-800 hover:bg-slate-100 font-bold px-3 py-1 rounded-lg text-xs transition shadow-sm">
                 ← Volver al CRM KFM
             </a>
-            <a href="{{ route('clients.cesion', ['client' => $client->id, 'policy' => $policy->id]) }}" target="_blank" class="bg-emerald-950/60 hover:bg-emerald-900 text-white font-bold px-3 py-1 rounded-lg text-xs transition border border-emerald-400/40">
+            <a href="{{ route('clients.cesion', ['client' => $client->id, 'policy' => $policy->id, 'buyer_nombre' => $buyer['nombre'] ?? '', 'buyer_apellido' => $buyer['apellido'] ?? '', 'buyer_doc' => $buyer['doc_identidad'] ?? '', 'buyer_dob' => $buyer['dob'] ?? '', 'buyer_direccion' => ($buyer['tipo_via'] ?? '') . ' ' . ($buyer['nombre_via'] ?? '') . ' ' . ($buyer['numero'] ?? '') . ', ' . ($buyer['cp'] ?? '') . ' ' . ($buyer['municipio'] ?? '')]) }}" target="_blank" class="bg-emerald-950/60 hover:bg-emerald-900 text-white font-bold px-3 py-1 rounded-lg text-xs transition border border-emerald-400/40">
                 🖨️ Ver Hoja de Cesión para Firmar
             </a>
         </div>
