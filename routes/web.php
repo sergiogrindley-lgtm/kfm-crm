@@ -8,6 +8,8 @@ Route::get('/', [ClientController::class, 'index'])->name('home');
 
 Route::resource('clients', ClientController::class);
 Route::post('clients/{client}/policies', [ClientController::class, 'storePolicy'])->name('clients.policies.store');
+Route::get('clients/{client}/cesion/{policy}', [ClientController::class, 'cesionPoliza'])->name('clients.cesion');
+Route::get('gestoria-demo', [ClientController::class, 'gestoriaDemo'])->name('gestoria.demo');
 
 // Endpoint de diagnóstico rápido de IP pública y cabeceras
 Route::get('ip-check', function (\Illuminate\Http\Request $request) {

@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
-    protected array $agentesDisponibles = ['Kerry', 'Coral', 'Conchi'];
+    protected array $agentesDisponibles = ['Kerry', 'Coral', 'Conchi', 'Chari'];
 
     public function index(Request $request)
     {
@@ -221,6 +221,56 @@ class ClientController extends Controller
 
         return redirect()->route('home')
             ->with('success', "El cliente {$fullName} (y sus {$totalPolicies} pólizas asociadas) ha sido eliminado permanentemente.");
+    }
+
+    /**
+     * Vista de Impresión Oficial y Elegante para Cesión de Póliza KFM
+     */
+    public function cesionPoliza(Client $client, Policy $policy, Request $request)
+    {
+        $buyer = [
+            'nombre' => $request->query('buyer_nombre', 'EMILY SARAH'),
+            'apellido' => $request->query('buyer_apellido', 'JOHNSON'),
+            'doc_identidad' => $request->query('buyer_doc', 'Z4192048E'),
+            'dob' => $request->query('buyer_dob', '19/11/1995'),
+            'direccion' => $request->query('buyer_direccion', 'LU BASE NAVAL DE ROTA 999, 11520 ROTA'),
+        ];
+
+        return view('clients.cesion', compact('client', 'policy', 'buyer'));
+    }
+
+    /**
+     * Simulador / Clon Interactivo de la Gestoría Sánchez Nieva
+     */
+    public function gestoriaDemo(Request $request)
+    {
+        $clientId = $request->query('client_id');
+        $policyId = $request->query('policy_id');
+
+        $client = $clientId ? Client::with('policies')->find($clientId) : null;
+        $policy = $policyId ? Policy::find($policyId) : ($client?->policies?->first());
+
+        if (!$client) {
+            $client = Client::where('doc_identidad', 'Y8492015B')->first() ?? Client::first();
+            $policy = $client?->policies?->first();
+        }
+
+        $buyer = [
+            'nombre' => 'EMILY SARAH',
+            'apellido' => 'JOHNSON',
+            'doc_identidad' => 'Z4192048E',
+            'sexo' => 'Mujer',
+            'dob' => '19/11/1995',
+            'tipo_via' => 'LU - LUGAR',
+            'nombre_via' => 'BASE NAVAL DE ROTA',
+            'numero' => '999',
+            'provincia' => 'Cádiz (CA)',
+            'municipio' => 'ROTA',
+            'cp' => '11520',
+            'precio' => '1.000,00 €',
+        ];
+
+        return view('gestoria.demo', compact('client', 'policy', 'buyer'));
     }
 }
 

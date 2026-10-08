@@ -301,6 +301,32 @@
                                     <strong class="text-amber-800">Nota:</strong> {{ $policy->observaciones }}
                                 </div>
                             @endif
+
+                            <!-- Acciones de Tramitación & Gestoría -->
+                            <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <a href="{{ route('clients.cesion', ['client' => $client->id, 'policy' => $policy->id]) }}" 
+                                       target="_blank"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-50 hover:bg-cyan-100 text-[#0c3547] border border-cyan-200 shadow-sm transition">
+                                        <svg class="w-3.5 h-3.5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                        <span>🖨️ Cesión Oficial (Imprimir)</span>
+                                    </a>
+
+                                    <a href="{{ route('gestoria.demo', ['client_id' => $client->id, 'policy_id' => $policy->id]) }}" 
+                                       target="_blank"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 shadow-sm transition">
+                                        <span class="w-2 h-2 rounded-full bg-[#9b1c31]"></span>
+                                        <span>⚡ Traspasar a Gestoría Sánchez Nieva</span>
+                                    </a>
+
+                                    <button type="button" 
+                                            onclick="openWhatsAppModal('{{ $client->full_name }}', '{{ $policy->matricula }}', '{{ $policy->marca }} {{ $policy->modelo }}', '{{ substr($policy->vin ?: '8491', -4) }}', '{{ $policy->numero_poliza }}')"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-sm transition cursor-pointer">
+                                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.044.101-.116.433-.506.549-.679.116-.174.232-.145.39-.087s1.011.477 1.184.564.289.13.332.203c.044.072.044.419-.1.824z"/></svg>
+                                        <span>📲 WhatsApp Gestoría</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     @empty
                         <div class="py-8 text-center text-slate-400 text-xs">
@@ -597,8 +623,36 @@
     function closeDeleteClientModal() {
         document.getElementById('deleteClientModal').classList.add('hidden');
     }
+
+    // Modal de WhatsApp para Gestoría
+    function openWhatsAppModal(clientName, matricula, vehiculo, bastidor, poliza) {
+        const text = `🚗 *Nuevo Expediente KFM (Oficina NEX · Chari)*\n━━━━━━━━━━━━━━━━━━━\n👤 *Cliente:* ${clientName}\n📄 *Póliza:* ${poliza || '1842910'}\n🚘 *Vehículo:* ${vehiculo}\n🔢 *Matrícula:* ${matricula}\n⚙️ *Bastidor:* ...${bastidor}\n📋 *Trámite:* Cesión de uso y derechos a favor de Emily Sarah Johnson\n━━━━━━━━━━━━━━━━━━━\n*Expediente cargado en panel y hoja de cesión oficial firmada.*`;
+        document.getElementById('waMessageText').value = text;
+        document.getElementById('whatsappGestoriaModal').classList.remove('hidden');
+    }
+
+    function closeWhatsAppModal() {
+        document.getElementById('whatsappGestoriaModal').classList.add('hidden');
+    }
+
+    function copyWaText() {
+        const el = document.getElementById('waMessageText');
+        navigator.clipboard.writeText(el.value).then(() => {
+            document.getElementById('copyWaBtnLabel').innerText = '✓ Copiado';
+            setTimeout(() => document.getElementById('copyWaBtnLabel').innerText = '📋 Copiar Texto', 2000);
+        });
+    }
+
+    function openInWhatsAppWeb() {
+        const text = encodeURIComponent(document.getElementById('waMessageText').value);
+        window.open(`https://web.whatsapp.com/send?text=${text}`, '_blank');
+    }
+
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeDeleteClientModal();
+        if (e.key === 'Escape') {
+            closeDeleteClientModal();
+            closeWhatsAppModal();
+        }
     });
 </script>
 
@@ -653,6 +707,54 @@
                         onclick="closeDeleteClientModal()"
                         class="mt-2 sm:mt-0 inline-flex w-full justify-center rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-100 sm:w-auto transition-colors cursor-pointer">
                     Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de WhatsApp para Gestoría Sánchez Nieva -->
+<div id="whatsappGestoriaModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeWhatsAppModal()"></div>
+
+    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200">
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-5 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.044.101-.116.433-.506.549-.679.116-.174.232-.145.39-.087s1.011.477 1.184.564.289.13.332.203c.044.072.044.419-.1.824z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm font-display">Aviso WhatsApp para Gestoría Sánchez Nieva</h3>
+                        <p class="text-[11px] text-emerald-100">Envío instantáneo de datos sin capturas de pantalla</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeWhatsAppModal()" class="text-white/80 hover:text-white cursor-pointer text-lg leading-none">✕</button>
+            </div>
+
+            <div class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block text-slate-500 font-semibold mb-1">Mensaje estructurado generado por el CRM:</label>
+                    <textarea id="waMessageText" rows="7" readonly
+                        class="w-full font-mono text-[11px] bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-800 leading-relaxed select-all focus:outline-none"></textarea>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-900 text-[11px]">
+                    💡 <strong>Ahorro para Chari:</strong> Ya no hace falta hacer capturas de pantalla ni recortar fotos borrosas. El gestor recibe la matrícula y el bastidor en texto digital para copiar y pegar.
+                </div>
+            </div>
+
+            <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-2 border-t border-slate-100 text-xs font-bold">
+                <button type="button" onclick="openInWhatsAppWeb()"
+                    class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+                    <span>📲 Abrir y Enviar en WhatsApp Web</span>
+                </button>
+                <button type="button" onclick="copyWaText()"
+                    class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-xl transition cursor-pointer">
+                    <span id="copyWaBtnLabel">📋 Copiar Texto</span>
+                </button>
+                <button type="button" onclick="closeWhatsAppModal()"
+                    class="text-slate-500 hover:text-slate-700 px-3 py-2.5 transition cursor-pointer">
+                    Cerrar
                 </button>
             </div>
         </div>

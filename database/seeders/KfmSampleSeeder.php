@@ -32,8 +32,8 @@ class KfmSampleSeeder extends Seeder
             ]
         );
 
-        // Agentes activas (Kerry, Coral, Conchi)
-        $agentes = ['Kerry', 'Coral', 'Conchi'];
+        // Agentes activas (Kerry, Coral, Conchi, Chari)
+        $agentes = ['Kerry', 'Coral', 'Conchi', 'Chari'];
 
         // 2. Extraer exactamente los 20 primeros clientes reales del Excel con sus datos ampliados
         $sampleData = [
@@ -870,6 +870,41 @@ class KfmSampleSeeder extends Seeder
                         'fecha_vencimiento' => '25/05/2027',
                         'estado' => 'Activo',
                         'agente' => 'Coral',
+                    ]
+                ]
+            ],
+            [
+                'doc_identidad' => '549218471',
+                'nombre' => 'DAVID ALEXANDER',
+                'apellido' => 'MILLER',
+                'nombre_familiar' => 'Emily Sarah Johnson (Cesionaria)',
+                'agente' => 'Chari',
+                'dob' => '14/06/1988',
+                'telefono_movil' => '671-234567',
+                'telefono_fijo' => '',
+                'email_trabajo' => 'david.miller@eu.navy.mil',
+                'email_personal' => 'david.miller.usn@gmail.com',
+                'direccion_local' => 'C/ SAN JUAN DE PUERTO RICO 12 – 11520 ROTA',
+                'direccion_base' => 'LG PSC 819 BOX 4120 - 11530 ROTA NAVAL',
+                'sede_id' => $oficinaNEX->id,
+                'observaciones' => 'Caso demostración: Transferencia POV / Cesión de póliza en Gestoría Sánchez Nieva (Oficina NEX - Chari).',
+                'policies' => [
+                    [
+                        'numero_poliza' => '1842910',
+                        'ramo' => 'Vehiculo',
+                        'codigo_aseguradora' => '04',
+                        'aseguradora' => 'Patria Hispana',
+                        'marca' => 'FORD',
+                        'modelo' => 'FOCUS TITANIUM 1.5 ECOBOOST 5P',
+                        'matricula' => '5931LKP',
+                        'vin' => '1FADP5CU3DL298491',
+                        'prima' => '642,50 €',
+                        'tipo_facturacion' => 'Annual',
+                        'balance' => 'Paid Full',
+                        'liquidacion' => 'Liquidado',
+                        'fecha_vencimiento' => '15/11/2026',
+                        'estado' => 'Activo',
+                        'agente' => 'Chari',
                     ]
                 ]
             ],
