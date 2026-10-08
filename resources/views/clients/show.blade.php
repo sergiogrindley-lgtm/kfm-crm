@@ -12,8 +12,15 @@
             <span>Volver al Buscador de Clientes</span>
         </a>
 
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-3">
             <span class="text-xs text-slate-400">ID Cliente: #{{ $client->id }}</span>
+            <button type="button" 
+                    onclick="openDeleteClientModal()"
+                    class="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-rose-600 rounded-lg transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                    title="Eliminar este cliente">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <span>Borrar Cliente</span>
+            </button>
         </div>
     </div>
 
@@ -164,6 +171,23 @@
                     <p class="text-slate-700 leading-relaxed">{{ $client->observaciones }}</p>
                 </div>
             @endif
+
+            <!-- Zona de Gestión / Baja del Cliente -->
+            <div class="bg-rose-50/60 rounded-2xl border border-rose-200/80 p-5 space-y-3">
+                <span class="font-bold uppercase tracking-wider text-[11px] text-rose-800 flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    <span>Gestión de Ficha</span>
+                </span>
+                <p class="text-[11px] text-slate-600 leading-normal">
+                    Si el cliente se dio de alta por error o ha solicitado la baja total de su expediente en la correduría:
+                </p>
+                <button type="button" 
+                        onclick="openDeleteClientModal()"
+                        class="w-full py-2.5 px-3 bg-white hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 hover:border-rose-600 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    <span>Eliminar Ficha de Cliente</span>
+                </button>
+            </div>
 
         </div>
 
@@ -565,5 +589,73 @@
             }
         });
     }
+
+    // Modal de Borrado de Cliente
+    function openDeleteClientModal() {
+        document.getElementById('deleteClientModal').classList.remove('hidden');
+    }
+    function closeDeleteClientModal() {
+        document.getElementById('deleteClientModal').classList.add('hidden');
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeDeleteClientModal();
+    });
 </script>
+
+<!-- Modal de Confirmación de Borrado con Advertencia -->
+<div id="deleteClientModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop oscuro con desenfoque -->
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeDeleteClientModal()"></div>
+
+    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200">
+            <div class="bg-white px-6 pb-6 pt-6 sm:p-7">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 sm:mx-0 sm:h-12 sm:w-12">
+                        <svg class="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left flex-1">
+                        <h3 class="text-lg font-bold leading-6 text-slate-900 font-display" id="modal-title">
+                            ¿Eliminar permanentemente este cliente?
+                        </h3>
+                        <div class="mt-2 text-sm text-slate-600 space-y-3">
+                            <p>
+                                Vas a eliminar la ficha completa de:
+                                <strong class="text-slate-900 block mt-1 font-display text-base font-bold text-kfm-navy">
+                                    {{ $client->full_name }}
+                                </strong>
+                            </p>
+                            <div class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 text-xs text-rose-900 space-y-1">
+                                <p class="font-bold flex items-center gap-1.5 text-rose-800">
+                                    <span>⚠️</span> Advertencia de borrado irreversible:
+                                </p>
+                                <p class="text-rose-700 leading-relaxed">
+                                    Se borrará todo el historial del cliente, incluyendo sus <strong>{{ $client->policies->count() }} póliza(s) vinculada(s)</strong>, datos de vehículos, coberturas y registros de cobro. Esta acción no se puede deshacer.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 sm:flex sm:flex-row-reverse sm:px-6 gap-2 border-t border-slate-100">
+                <form action="{{ route('clients.destroy', $client) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" 
+                            class="inline-flex w-full justify-center items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-rose-700 sm:w-auto transition-colors cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        <span>Sí, Eliminar Definitivamente</span>
+                    </button>
+                </form>
+                <button type="button" 
+                        onclick="closeDeleteClientModal()"
+                        class="mt-2 sm:mt-0 inline-flex w-full justify-center rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-100 sm:w-auto transition-colors cursor-pointer">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

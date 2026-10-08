@@ -209,4 +209,18 @@ class ClientController extends Controller
         return redirect()->route('clients.show', $client)
             ->with('success', 'Nueva póliza añadida al cliente.');
     }
+
+    public function destroy(Client $client)
+    {
+        $fullName = $client->full_name;
+        $totalPolicies = $client->policies()->count();
+
+        // Eliminar pólizas vinculadas y cliente
+        $client->policies()->delete();
+        $client->delete();
+
+        return redirect()->route('home')
+            ->with('success', "El cliente {$fullName} (y sus {$totalPolicies} pólizas asociadas) ha sido eliminado permanentemente.");
+    }
 }
+
