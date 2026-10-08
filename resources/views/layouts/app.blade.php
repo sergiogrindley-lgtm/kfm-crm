@@ -72,8 +72,17 @@
                     </a>
                 </nav>
 
-                <!-- Team Badge -->
-                <div class="flex items-center space-x-2">
+                <!-- Header Actions: Fullscreen & Team -->
+                <div class="flex items-center space-x-2.5">
+                    <button type="button" 
+                            id="btn-fullscreen-toggle" 
+                            onclick="toggleFullscreen()" 
+                            class="bg-slate-900/85 hover:bg-slate-800 text-white border border-white/20 hover:border-cyan-300 font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                            title="Pantalla Completa">
+                        <span class="fs-icon text-sm leading-none">⛶</span>
+                        <span class="fs-text">Pantalla Completa</span>
+                    </button>
+
                     <div class="hidden lg:flex items-center bg-white/10 rounded-full px-3 py-1.5 border border-white/10 text-xs">
                         <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
                         <span class="text-slate-200">Equipo:</span>
@@ -147,5 +156,79 @@
         </div>
     </footer>
 
+    <!-- Fullscreen Controller (Estilo Clemente / Auto-persistencia) -->
+    <script>
+        window.toggleFullscreen = function() {
+            const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+            if (!isFs) {
+                sessionStorage.setItem('kfm_fullscreen', 'true');
+                const el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen().catch(err => console.log(err));
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                } else if (el.mozRequestFullScreen) {
+                    el.mozRequestFullScreen();
+                } else if (el.msRequestFullscreen) {
+                    el.msRequestFullscreen();
+                }
+            } else {
+                sessionStorage.setItem('kfm_fullscreen', 'false');
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(err => console.log(err));
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        };
+
+        window.updateFullscreenBtn = function() {
+            const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+            document.querySelectorAll('.fs-icon').forEach(el => el.textContent = isFs ? '🗗' : '⛶');
+            document.querySelectorAll('.fs-text').forEach(el => el.textContent = isFs ? 'Salir Completa' : 'Pantalla Completa');
+            
+            const btn = document.getElementById('btn-fullscreen-toggle');
+            if (btn) {
+                if (isFs) {
+                    btn.classList.add('bg-amber-500/20', 'border-amber-400/50', 'text-amber-300');
+                    btn.classList.remove('bg-slate-900/85', 'text-white');
+                    btn.title = "Salir de Pantalla Completa (ESC)";
+                } else {
+                    btn.classList.remove('bg-amber-500/20', 'border-amber-400/50', 'text-amber-300');
+                    btn.classList.add('bg-slate-900/85', 'text-white');
+                    btn.title = "Pantalla Completa";
+                }
+            }
+        };
+
+        document.addEventListener('fullscreenchange', window.updateFullscreenBtn);
+        document.addEventListener('webkitfullscreenchange', window.updateFullscreenBtn);
+        document.addEventListener('mozfullscreenchange', window.updateFullscreenBtn);
+        document.addEventListener('MSFullscreenChange', window.updateFullscreenBtn);
+
+        // Auto-reanudar fullscreen si estaba activo al navegar entre páginas
+        if (sessionStorage.getItem('kfm_fullscreen') === 'true') {
+            const resumeOnTap = () => {
+                if (sessionStorage.getItem('kfm_fullscreen') === 'true' && !document.fullscreenElement) {
+                    const el = document.documentElement;
+                    const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+                    if (req) req.call(el).catch(() => {});
+                }
+                document.removeEventListener('click', resumeOnTap);
+                document.removeEventListener('touchstart', resumeOnTap);
+                document.removeEventListener('pointerdown', resumeOnTap);
+            };
+            document.addEventListener('click', resumeOnTap, { once: true });
+            document.addEventListener('touchstart', resumeOnTap, { once: true });
+            document.addEventListener('pointerdown', resumeOnTap, { once: true });
+        }
+        
+        // Ejecutar estado inicial
+        window.updateFullscreenBtn();
+    </script>
 </body>
 </html>
