@@ -13,6 +13,8 @@ class ClientController extends Controller
 
     public function index(Request $request)
     {
+        $this->ensureDemoMillerExists();
+
         $query = Client::with(['sede', 'policies']);
 
         // Filtro por búsqueda global
@@ -272,5 +274,60 @@ class ClientController extends Controller
 
         return view('gestoria.demo', compact('client', 'policy', 'buyer'));
     }
+
+    /**
+     * Asegura de manera autónoma que el caso demo David Alexander Miller exista siempre
+     */
+    private function ensureDemoMillerExists(): void
+    {
+        try {
+            if (!Client::where('apellido', 'MILLER')->exists()) {
+                $nex = Sede::where('slug', 'nex')->first() ?? Sede::first();
+                $sedeId = $nex ? $nex->id : null;
+
+                $client = Client::create([
+                    'doc_identidad' => '549218471',
+                    'nombre' => 'DAVID ALEXANDER',
+                    'apellido' => 'MILLER',
+                    'nombre_familiar' => 'Emily Sarah Johnson (Cesionaria)',
+                    'agente' => 'Chari',
+                    'dob' => '14/06/1988',
+                    'telefono_movil' => '671-234567',
+                    'telefono_fijo' => '',
+                    'email_trabajo' => 'david.miller@eu.navy.mil',
+                    'email_personal' => 'david.miller.usn@gmail.com',
+                    'direccion_local' => 'C/ SAN JUAN DE PUERTO RICO 12 – 11520 ROTA',
+                    'direccion_base' => 'LG PSC 819 BOX 4120 - 11530 ROTA NAVAL',
+                    'sede_id' => $sedeId,
+                    'observaciones' => 'Caso demostración: Transferencia POV / Cesión de póliza en Gestoría Sánchez Nieva (Oficina NEX - Chari).',
+                ]);
+
+                Policy::create([
+                    'client_id' => $client->id,
+                    'sede_id' => $sedeId,
+                    'agente' => 'Chari',
+                    'numero_poliza' => '1842910',
+                    'codigo_aseguradora' => '04',
+                    'aseguradora' => 'Patria Hispana',
+                    'ramo' => 'Vehiculo',
+                    'marca' => 'FORD',
+                    'modelo' => 'FOCUS TITANIUM 1.5 ECOBOOST 5P',
+                    'matricula' => '5931LKP',
+                    'vin' => '1FADP5CU3DL298491',
+                    'prima' => '642,50 €',
+                    'tipo_facturacion' => 'Annual',
+                    'balance' => 'Paid Full',
+                    'liquidacion' => 'Liquidado',
+                    'fecha_pago' => '15/11/2025',
+                    'fecha_vencimiento' => '15/11/2026',
+                    'estado' => 'Activo',
+                    'observaciones' => 'Vehículo transferido a Emily Sarah Johnson.',
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // Ignorar para evitar bloqueo si las tablas aún no existen
+        }
+    }
 }
+
 

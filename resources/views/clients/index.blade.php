@@ -116,6 +116,9 @@
             <!-- Sugerencias rápidas de búsqueda -->
             <div class="flex items-center space-x-2 text-xs text-slate-500 overflow-x-auto pt-1">
                 <span class="font-medium text-slate-600">Pruebas rápidas:</span>
+                <a href="{{ route('home', ['q' => '5931LKP']) }}" class="px-2.5 py-0.5 bg-cyan-100 hover:bg-cyan-200 text-[#0c3547] font-bold rounded-md flex items-center gap-1 border border-cyan-200 shadow-xs">
+                    <span>⚡ Miller (5931LKP · NEX)</span>
+                </a>
                 <a href="{{ route('home', ['q' => 'BOLTON']) }}" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md">Bolton (3 pólizas)</a>
                 <a href="{{ route('home', ['q' => '0680 JCL']) }}" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md">Matrícula 0680 JCL</a>
                 <a href="{{ route('home', ['q' => 'Kerry']) }}" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md">Tramitadas por Kerry</a>

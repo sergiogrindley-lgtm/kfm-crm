@@ -77,7 +77,7 @@
                     <div class="hidden lg:flex items-center bg-white/10 rounded-full px-3 py-1.5 border border-white/10 text-xs">
                         <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
                         <span class="text-slate-200">Equipo:</span>
-                        <span class="font-bold text-white ml-1">Kerry • Coral • Conchi</span>
+                        <span class="font-bold text-white ml-1">Kerry • Coral • Conchi • Chari</span>
                     </div>
                 </div>
             </div>
@@ -106,9 +106,9 @@
                     <span class="text-slate-500 mx-2">|</span>
 
                     <span class="text-slate-400 uppercase tracking-wider font-semibold mr-1">Agente:</span>
-                    @foreach(['Kerry', 'Coral', 'Conchi'] as $ag)
+                    @foreach(['Kerry', 'Coral', 'Conchi', 'Chari'] as $ag)
                         <a href="{{ route('home', array_merge(request()->only('sede_id'), ['agente' => $ag])) }}" 
-                           class="px-2 py-0.5 rounded font-medium transition {{ request('agente') === $ag ? 'bg-white/20 text-white font-bold' : 'text-slate-400 hover:text-slate-200' }}">
+                            class="px-2 py-0.5 rounded font-medium transition {{ request('agente') === $ag ? 'bg-white/20 text-white font-bold' : 'text-slate-400 hover:text-slate-200' }}">
                             {{ $ag }}
                         </a>
                     @endforeach
