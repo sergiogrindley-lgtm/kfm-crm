@@ -70,6 +70,64 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         <span>+ Nuevo Cliente</span>
                     </a>
+
+                    <!-- Dropdown Herramientas NEX (Accesos Rápidos Chari) -->
+                    <div class="relative">
+                        <button type="button" 
+                                onclick="toggleHerramientasDropdown(event)" 
+                                class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:bg-white/10 hover:text-white transition-colors flex items-center space-x-1.5 cursor-pointer">
+                            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                            <span>Herramientas NEX</span>
+                            <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        
+                        <div id="herramientasDropdown" class="hidden absolute left-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 text-xs">
+                            <div class="px-4 py-2 border-b border-slate-100 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                <span>Utilidades de Oficina NEX</span>
+                                <span class="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-[9px]">Oficial</span>
+                            </div>
+                            
+                            <a href="https://seisenlinea.com/informe-numero-de-bastidor-coche/" target="_blank" class="flex items-start space-x-3 px-4 py-2.5 hover:bg-slate-50 transition text-slate-800">
+                                <span class="text-base p-1.5 rounded-lg bg-cyan-50 text-cyan-700">🔍</span>
+                                <div>
+                                    <strong class="block text-slate-900 text-xs">Detective Bastidor (SeisEnLínea)</strong>
+                                    <span class="text-[11px] text-slate-500">Informe y verificación de bastidor / VIN</span>
+                                </div>
+                            </a>
+
+                            <a href="https://www.pcsmypov.com/" target="_blank" class="flex items-start space-x-3 px-4 py-2.5 hover:bg-slate-50 transition text-slate-800">
+                                <span class="text-base p-1.5 rounded-lg bg-sky-50 text-sky-700">🚢</span>
+                                <div>
+                                    <strong class="block text-slate-900 text-xs">Find My POV (PCS My POV)</strong>
+                                    <span class="text-[11px] text-slate-500">Rastreo oficial de coches enviados a Rota</span>
+                                </div>
+                            </a>
+
+                            <a href="https://www.juntadeandalucia.es/economiayhacienda/apl/surweb/modelos/modelo620/620.jsp" target="_blank" class="flex items-start space-x-3 px-4 py-2.5 hover:bg-slate-50 transition text-slate-800">
+                                <span class="text-base p-1.5 rounded-lg bg-amber-50 text-amber-700">🏛️</span>
+                                <div>
+                                    <strong class="block text-slate-900 text-xs">Valoración Junta Andalucía (ITP)</strong>
+                                    <span class="text-[11px] text-slate-500">Modelo 620 impuestos vehículos usados</span>
+                                </div>
+                            </a>
+
+                            <a href="https://www.itv.com.es/" target="_blank" class="flex items-start space-x-3 px-4 py-2.5 hover:bg-slate-50 transition text-slate-800">
+                                <span class="text-base p-1.5 rounded-lg bg-emerald-50 text-emerald-700">🔧</span>
+                                <div>
+                                    <strong class="block text-slate-900 text-xs">Cita Previa ITV (VEIASA)</strong>
+                                    <span class="text-[11px] text-slate-500">Inspección técnica estaciones Cádiz / Rota</span>
+                                </div>
+                            </a>
+
+                            <a href="https://www.deepl.com/translator" target="_blank" class="flex items-start space-x-3 px-4 py-2.5 hover:bg-slate-50 transition text-slate-800">
+                                <span class="text-base p-1.5 rounded-lg bg-indigo-50 text-indigo-700">🌐</span>
+                                <div>
+                                    <strong class="block text-slate-900 text-xs">DeepL Traductor Militar</strong>
+                                    <span class="text-[11px] text-slate-500">Traducción directa de términos US/ES</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
                 </nav>
 
                 <!-- Team Badge -->
@@ -145,7 +203,21 @@
                 Oficina Central: Plaza Triunfo, 7 | Oficina NEX: Navy Exchange NAVSTA Rota | Tel: 956 84 00 50
             </div>
         </div>
-    </footer>
+    <script>
+        function toggleHerramientasDropdown(event) {
+            event.stopPropagation();
+            const drop = document.getElementById('herramientasDropdown');
+            if (drop) {
+                drop.classList.toggle('hidden');
+            }
+        }
 
+        document.addEventListener('click', function(e) {
+            const drop = document.getElementById('herramientasDropdown');
+            if (drop && !drop.contains(e.target)) {
+                drop.classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
