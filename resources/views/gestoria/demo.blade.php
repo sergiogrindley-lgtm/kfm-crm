@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuevo expediente — Gestoría Sánchez Nieva (Simulador KFM)</title>
+    <title>Nuevo expediente — Gestoría Bahía & Naval (Simulador KFM)</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
             background-color: #f8fafc;
         }
         .gestoria-header {
-            background-color: #9b1c31; /* Burgundy of Gestoría Sánchez Nieva */
+            background-color: #9b1c31; /* Burgundy header */
         }
         .gestoria-active-menu {
             background-color: #f1f5f9;
@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <!-- Gestoría Header (Calcado al de Sánchez Nieva) -->
+    <!-- Gestoría Header -->
     <header class="gestoria-header text-white h-14 flex items-center justify-between px-4 sm:px-6 shadow-md sticky top-0 z-40">
         <div class="flex items-center space-x-4">
             <button class="text-white hover:text-slate-200">
@@ -60,7 +60,7 @@
                 <div class="w-8 h-8 rounded-lg bg-white/20 border border-white/30 flex items-center justify-center font-bold text-sm tracking-wider">
                     GA
                 </div>
-                <span class="font-bold text-base tracking-tight hidden sm:inline">Gestoría Sánchez Nieva</span>
+                <span class="font-bold text-base tracking-tight hidden sm:inline">Gestoría Bahía & Naval</span>
             </div>
         </div>
 
@@ -299,13 +299,13 @@
                 <!-- Form Bottom Actions -->
                 <div class="pt-6 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
                     <div class="text-xs text-slate-500 italic">
-                        Demostración de sincronización instantánea para KFM Insurance & Gestoría Sánchez Nieva
+                        Demostración de sincronización instantánea para KFM Insurance & Gestoría Bahía & Naval
                     </div>
                     <div class="flex items-center space-x-3">
                         <a href="{{ route('clients.show', $client) }}" class="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition">
                             Cancelar
                         </a>
-                        <button type="button" onclick="alert('✓ Expediente simulado guardado con éxito en la plataforma de Sánchez Nieva.')"
+                        <button type="button" onclick="alert('✓ Expediente simulado guardado con éxito en la plataforma de la gestoría.')"
                             class="gestoria-btn-guardar text-white font-bold px-6 py-2 rounded-lg shadow-sm transition">
                             Guardar Expediente
                         </button>

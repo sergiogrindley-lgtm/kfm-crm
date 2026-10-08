@@ -242,7 +242,7 @@ class ClientController extends Controller
     }
 
     /**
-     * Simulador / Clon Interactivo de la Gestoría Sánchez Nieva
+     * Simulador Interactivo de Gestoría Bahía & Naval
      */
     public function gestoriaDemo(Request $request)
     {
@@ -299,7 +299,7 @@ class ClientController extends Controller
                     'direccion_local' => 'C/ SAN JUAN DE PUERTO RICO 12 – 11520 ROTA',
                     'direccion_base' => 'LG PSC 819 BOX 4120 - 11530 ROTA NAVAL',
                     'sede_id' => $sedeId,
-                    'observaciones' => 'Caso demostración: Transferencia POV / Cesión de póliza en Gestoría Sánchez Nieva (Oficina NEX - Chari).',
+                    'observaciones' => 'Caso demostración: Transferencia POV / Cesión de póliza en Gestoría Bahía & Naval (Oficina NEX - Chari).',
                 ]);
 
                 Policy::create([

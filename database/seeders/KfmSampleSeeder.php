@@ -887,7 +887,7 @@ class KfmSampleSeeder extends Seeder
                 'direccion_local' => 'C/ SAN JUAN DE PUERTO RICO 12 – 11520 ROTA',
                 'direccion_base' => 'LG PSC 819 BOX 4120 - 11530 ROTA NAVAL',
                 'sede_id' => $oficinaNEX->id,
-                'observaciones' => 'Caso demostración: Transferencia POV / Cesión de póliza en Gestoría Sánchez Nieva (Oficina NEX - Chari).',
+                'observaciones' => 'Caso demostración: Transferencia POV / Cesión de póliza en Gestoría Bahía & Naval (Oficina NEX - Chari).',
                 'policies' => [
                     [
                         'numero_poliza' => '1842910',
