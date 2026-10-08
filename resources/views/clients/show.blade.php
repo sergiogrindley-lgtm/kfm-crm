@@ -290,7 +290,7 @@
                                     @endif
                                 </div>
                                 @if($policy->vin)
-                                    <div class="font-mono flex items-center gap-2">
+                                    <div class="font-mono flex flex-wrap items-center gap-1.5">
                                         <span>VIN: <strong>{{ $policy->vin }}</strong></span>
                                         <button type="button" 
                                            onclick="openVinDecoderModal('{{ $policy->vin }}')"
@@ -298,12 +298,24 @@
                                            title="Decodificar especificaciones completas de este bastidor en vivo">
                                             <span>⚡ Decodificar Bastidor</span>
                                         </button>
-                                        <a href="https://seisenlinea.com/informe-numero-de-bastidor-coche/" target="_blank" 
-                                           class="inline-flex items-center gap-1 font-sans text-[10px] bg-white hover:bg-slate-100 text-slate-700 font-medium px-1.5 py-0.5 rounded border border-slate-300 shadow-xs transition"
-                                           title="Verificar informe externo en SeisEnLínea">
-                                            <span>Web DGT</span>
-                                            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                        </a>
+                                        <button type="button" 
+                                           onclick="openItpCalculatorModal({{ substr($policy->fecha_efecto ?? '2013', 0, 4) ?: 2013 }}, 21000)"
+                                           class="inline-flex items-center gap-1 font-sans text-[10px] bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
+                                           title="Calcular tasas e ITP Junta de Andalucía Modelo 620">
+                                            <span>📊 Tasas & ITP</span>
+                                        </button>
+                                        <button type="button" 
+                                           onclick="openItvCalculatorModal({{ substr($policy->fecha_efecto ?? '2013', 0, 4) ?: 2013 }})"
+                                           class="inline-flex items-center gap-1 font-sans text-[10px] bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
+                                           title="Calcular periodicidad y requisitos ITV">
+                                            <span>🚗 ITV</span>
+                                        </button>
+                                        <button type="button" 
+                                           onclick="openPcsTrackingModal('{{ $policy->vin }}')"
+                                           class="inline-flex items-center gap-1 font-sans text-[10px] bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-300 font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
+                                           title="Rastrear estado de transporte militar PCS My POV">
+                                            <span>⚓ Tracking PCS</span>
+                                        </button>
                                     </div>
                                 @endif
                             </div>

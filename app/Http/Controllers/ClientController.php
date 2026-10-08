@@ -384,6 +384,99 @@ class ClientController extends Controller
             'message' => 'No se encontraron especificaciones automáticas para este bastidor o el servidor no respondió.'
         ], 404);
     }
+
+    /**
+     * Calculadora Fiscal Oficial ITP Junta de Andalucía & Tasas DGT (Modelo 620 / BOE)
+     */
+    public function calculateItp(Request $request)
+    {
+        $year = (int) $request->input('year', date('Y') - 5);
+        $currentYear = (int) date('Y');
+        $age = max(0, $currentYear - $year);
+
+        // Tabla oficial de depreciación de Hacienda (Orden HFP vigente)
+        $depreciationTable = [
+            0 => 1.00,
+            1 => 0.84,
+            2 => 0.67,
+            3 => 0.56,
+            4 => 0.47,
+            5 => 0.39,
+            6 => 0.34,
+            7 => 0.28,
+            8 => 0.24,
+            9 => 0.19,
+            10 => 0.17,
+            11 => 0.13,
+        ];
+        $pct = $age >= 12 ? 0.10 : ($depreciationTable[$age] ?? 0.10);
+
+        // Valor de compraventa o base estimada de vehículo nuevo
+        $baseValue = (float) $request->input('base_value', 18000);
+        if ($baseValue <= 0) $baseValue = 18000;
+
+        $valorFiscal = round($baseValue * $pct, 2);
+        $itpRate = 0.04; // 4% Andalucía general turismos
+        $cuotaItp = round($valorFiscal * $itpRate, 2);
+        $tasaDgt = 55.70; // Tasa DGT 4.1 cambio de titularidad
+        $honorariosGestoria = 65.00; // Honorarios orientativos gestoría
+        $total = round($cuotaItp + $tasaDgt + $honorariosGestoria, 2);
+
+        return response()->json([
+            'success' => true,
+            'year' => $year,
+            'age' => $age,
+            'depreciation_pct' => ($pct * 100),
+            'base_value' => $baseValue,
+            'valor_fiscal' => $valorFiscal,
+            'itp_rate' => ($itpRate * 100),
+            'cuota_itp' => $cuotaItp,
+            'tasa_dgt' => $tasaDgt,
+            'honorarios_gestoria' => $honorariosGestoria,
+            'total_tramite' => $total,
+        ]);
+    }
+
+    /**
+     * Traductor y Asistente Militar Rota EN ⇄ ES
+     */
+    public function translateText(Request $request)
+    {
+        $text = trim($request->input('text', ''));
+        $langPair = $request->input('pair', 'en|es');
+
+        if (empty($text)) {
+            return response()->json(['success' => false, 'message' => 'Por favor introduce texto a traducir.'], 422);
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(6)
+                ->get('https://api.mymemory.translated.net/get', [
+                    'q' => $text,
+                    'langpair' => $langPair,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $translated = $data['responseData']['translatedText'] ?? null;
+                if ($translated) {
+                    return response()->json([
+                        'success' => true,
+                        'original' => $text,
+                        'translated' => html_entity_decode($translated),
+                        'pair' => $langPair,
+                    ]);
+                }
+            }
+        } catch (\Throwable $e) {
+            // Silencioso
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No se pudo conectar con el servicio de traducción rápida.'
+        ], 500);
+    }
 }
 
 
