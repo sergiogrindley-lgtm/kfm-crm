@@ -12,7 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Trust all proxies so Laravel resolves client IP correctly behind Dokploy Traefik
+        $middleware->trustProxies(at: '*');
+
+        // Apply Office IP Whitelist restriction
+        $middleware->web(append: [
+            \App\Http\Middleware\RestrictOfficeIp::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
