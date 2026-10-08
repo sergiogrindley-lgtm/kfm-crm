@@ -10,6 +10,7 @@ Route::resource('clients', ClientController::class);
 Route::post('clients/{client}/policies', [ClientController::class, 'storePolicy'])->name('clients.policies.store');
 Route::get('clients/{client}/cesion/{policy}', [ClientController::class, 'cesionPoliza'])->name('clients.cesion');
 Route::match(['get', 'post'], 'gestoria-demo', [ClientController::class, 'gestoriaDemo'])->name('gestoria.demo');
+Route::get('api/decode-vin', [ClientController::class, 'decodeVin'])->name('api.decode-vin');
 
 // Endpoint de diagnóstico rápido de IP pública y cabeceras
 Route::get('ip-check', function (\Illuminate\Http\Request $request) {

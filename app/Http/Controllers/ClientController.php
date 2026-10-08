@@ -327,8 +327,62 @@ class ClientController extends Controller
                 ]);
             }
         } catch (\Throwable $e) {
-            // Ignorar para evitar bloqueo si las tablas aún no existen
+            // Silencioso
         }
+    }
+
+    /**
+     * Decodificador Oficial de Bastidores (NHTSA VPIC API)
+     */
+    public function decodeVin(Request $request)
+    {
+        $vin = strtoupper(trim($request->query('vin', '')));
+        if (strlen($vin) < 5) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Por favor introduce un número de bastidor (VIN) válido (mínimo 5 caracteres).'
+            ], 422);
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(6)
+                ->get("https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/{$vin}?format=json");
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $result = $data['Results'][0] ?? null;
+
+                if ($result && !empty($result['Make'])) {
+                    $fuel = $result['FuelTypePrimary'] ?? '';
+                    if (!empty($result['FuelTypeSecondary'])) {
+                        $fuel .= ' / ' . $result['FuelTypeSecondary'];
+                    }
+
+                    return response()->json([
+                        'success' => true,
+                        'vin' => $vin,
+                        'make' => $result['Make'] ?: 'DESCONOCIDO',
+                        'model' => $result['Model'] ?: '',
+                        'year' => $result['ModelYear'] ?: '',
+                        'trim' => $result['Trim'] ?: ($result['Series'] ?: ''),
+                        'body' => $result['BodyClass'] ?: 'Turismo',
+                        'doors' => $result['Doors'] ?: '',
+                        'engine' => ($result['DisplacementL'] ? $result['DisplacementL'] . 'L' : '') . ($result['EngineCylinders'] ? ' (' . $result['EngineCylinders'] . ' cil)' : ''),
+                        'hp' => $result['EngineHP'] ? $result['EngineHP'] . ' HP' : '',
+                        'fuel' => $fuel ?: 'Gasolina',
+                        'origin' => trim(($result['PlantCity'] ?? '') . ', ' . ($result['PlantCountry'] ?? '')),
+                        'vehicle_type' => $result['VehicleType'] ?: 'Turismo',
+                    ]);
+                }
+            }
+        } catch (\Throwable $e) {
+            // Error en conexión externa
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No se encontraron especificaciones automáticas para este bastidor o el servidor no respondió.'
+        ], 404);
     }
 }
 

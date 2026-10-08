@@ -292,11 +292,17 @@
                                 @if($policy->vin)
                                     <div class="font-mono flex items-center gap-2">
                                         <span>VIN: <strong>{{ $policy->vin }}</strong></span>
+                                        <button type="button" 
+                                           onclick="openVinDecoderModal('{{ $policy->vin }}')"
+                                           class="inline-flex items-center gap-1 font-sans text-[10px] bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-700 hover:to-emerald-700 text-white font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
+                                           title="Decodificar especificaciones completas de este bastidor en vivo">
+                                            <span>⚡ Decodificar Bastidor</span>
+                                        </button>
                                         <a href="https://seisenlinea.com/informe-numero-de-bastidor-coche/" target="_blank" 
-                                           class="inline-flex items-center gap-1 font-sans text-[10px] bg-white hover:bg-cyan-50 text-cyan-800 font-bold px-2 py-0.5 rounded border border-slate-300 shadow-xs transition"
-                                           title="Verificar informe de bastidor en SeisEnLínea">
-                                            <span>🔍 Verificar Bastidor</span>
-                                            <svg class="w-3 h-3 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                           class="inline-flex items-center gap-1 font-sans text-[10px] bg-white hover:bg-slate-100 text-slate-700 font-medium px-1.5 py-0.5 rounded border border-slate-300 shadow-xs transition"
+                                           title="Verificar informe externo en SeisEnLínea">
+                                            <span>Web DGT</span>
+                                            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                                         </a>
                                     </div>
                                 @endif
