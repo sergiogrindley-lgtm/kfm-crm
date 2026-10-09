@@ -811,7 +811,11 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
     function enviarWhatsAppConComprador() {
         const buyerName = (document.getElementById('input_buyer_nombre').value + ' ' + document.getElementById('input_buyer_apellido').value).trim() || 'Emily Sarah Johnson';
         const doc = document.getElementById('input_buyer_doc').value || 'Z4192048E';
-        const text = `🚗 *Nuevo Expediente KFM (Oficina NEX · Chari)*\n━━━━━━━━━━━━━━━━━━━\n👤 *Titular Saliente:* ${currentTraspaso.clientName}\n📄 *Póliza:* ${currentTraspaso.poliza || '1842910'}\n🚘 *Vehículo:* ${currentTraspaso.vehiculo}\n🔢 *Matrícula:* ${currentTraspaso.matricula}\n⚙️ *Bastidor:* ${currentTraspaso.bastidor}\n🤝 *Nuevo Comprador:* ${buyerName} (Doc: ${doc})\n━━━━━━━━━━━━━━━━━━━\n*Expediente enviado a Gestoría Bahía & Naval y hoja oficial de cesión generada.*`;
+        const tel = document.getElementById('input_buyer_telefono').value || '671-998877';
+        const precio = document.getElementById('input_buyer_precio').value || '1.000,00 €';
+        const dir = document.getElementById('input_buyer_direccion').value || 'LG PSC 819 BOX 999 - NAVSTA ROTA';
+
+        const text = `🚗 *NUEVO EXPEDIENTE DE TRASPASO · KFM INSURANCE*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📍 *Oficina Emisora:* NAVSTA Rota (NEX) · Chari\n\n👤 *TITULAR SALIENTE (VENDEDOR)*\n• Nombre: ${currentTraspaso.clientName}\n• Póliza KFM: #${currentTraspaso.poliza || '1842910'}\n\n🚘 *DATOS DEL VEHÍCULO*\n• Modelo: ${currentTraspaso.vehiculo}\n• Matrícula: ${currentTraspaso.matricula}\n• Bastidor VIN: ${currentTraspaso.bastidor}\n\n🤝 *DATOS DEL COMPRADOR (CESIONARIO)*\n• Nombre: ${buyerName}\n• DNI / NIE / DOD ID: ${doc}\n• Teléfono: ${tel}\n• Domicilio: ${dir}\n• Precio Declarado: ${precio}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✅ *Expediente sincronizado con Gestoría Bahía & Naval*\n📄 *Mandato Colegiado DGT y Hoja de Cesión Oficial emitidos en el CRM.*`;
         
         document.getElementById('waMessageText').value = text;
         document.getElementById('whatsappGestoriaModal').classList.remove('hidden');
