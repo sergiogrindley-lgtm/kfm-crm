@@ -326,17 +326,55 @@
                                 </div>
                             @endif
 
-                            <!-- Acciones de Tramitación & Gestoría -->
-                            <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
-                                <button type="button" 
-                                        onclick="openTraspasoModal('{{ $client->id }}', '{{ $policy->id }}', '{{ addslashes($client->full_name) }}', '{{ addslashes($policy->matricula) }}', '{{ addslashes($policy->marca . ' ' . $policy->modelo) }}', '{{ substr($policy->vin ?: '8491', -4) }}', '{{ $policy->numero_poliza }}')"
-                                        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#9b1c31] hover:bg-[#7f1627] text-white shadow-md hover:shadow-lg transition-all cursor-pointer">
-                                    <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                                    <span>⚡ Traspasar Vehículo a Gestoría</span>
-                                </button>
-                                <span class="text-[11px] text-slate-500 font-medium hidden sm:inline">
-                                    Abre el formulario, rellena al comprador y envía los datos a Gestoría Bahía & Naval
-                                </span>
+                            <!-- Acciones Operativas KFM & Tramitación Militar -->
+                            <div class="pt-3 border-t border-slate-100 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                                        <span>🛠️</span> Operaciones de Póliza (Oficina NAVSTA Rota & NEX)
+                                    </span>
+                                    <span class="text-[10px] text-slate-400 font-medium">Automatizado • Sin rellenado manual</span>
+                                </div>
+
+                                <div class="flex flex-wrap items-center gap-2">
+                                    @if($policy->matricula || strtolower($policy->ramo) === 'vehiculo')
+                                        <!-- 1. Traspaso Gestoría -->
+                                        <button type="button" 
+                                                onclick="openTraspasoModal('{{ $client->id }}', '{{ $policy->id }}', '{{ addslashes($client->full_name) }}', '{{ addslashes($policy->matricula) }}', '{{ addslashes($policy->marca . ' ' . $policy->modelo) }}', '{{ substr($policy->vin ?: '8491', -4) }}', '{{ $policy->numero_poliza }}')"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#9b1c31] hover:bg-[#7f1627] text-white shadow-sm transition cursor-pointer">
+                                            <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                                            <span>⚡ Traspaso Gestoría</span>
+                                        </button>
+
+                                        <!-- 2. Formulario GEICO Military -->
+                                        <a href="{{ route('clients.geico', [$client, $policy]) }}" target="_blank"
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#002868] hover:bg-[#001b44] text-white shadow-sm transition">
+                                            <span>🇺🇸</span>
+                                            <span>Formulario GEICO</span>
+                                        </a>
+
+                                        <!-- 3. Mandato DGT Colegiado -->
+                                        <a href="{{ route('clients.mandato', [$client, $policy]) }}" target="_blank"
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white shadow-sm transition">
+                                            <span>⚖️</span>
+                                            <span>Mandato DGT</span>
+                                        </a>
+
+                                        <!-- 4. Carta Verde (CIS) -->
+                                        <a href="{{ route('clients.carta-verde', [$client, $policy]) }}" target="_blank"
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm transition">
+                                            <span>🟢</span>
+                                            <span>Carta Verde (CIS)</span>
+                                        </a>
+                                    @endif
+
+                                    <!-- 5. Baja PCS / Reembolso Prorrateado -->
+                                    <button type="button" 
+                                            onclick="openPcsRefundModal('{{ addslashes($client->full_name) }}', '{{ $policy->numero_poliza }}', '{{ addslashes($policy->matricula ?: ($policy->marca . ' ' . $policy->modelo)) }}', '{{ $policy->prima ?: '642,50 €' }}', '{{ $policy->fecha_pago ?: '15/11/2025' }}', '{{ $policy->fecha_vencimiento ?: '15/11/2026' }}')"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition cursor-pointer">
+                                        <span>🛫</span>
+                                        <span>Baja PCS / Devolución</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     @empty
@@ -686,6 +724,90 @@
         window.open(url, '_blank');
     }
 
+    function imprimirMandatoConComprador() {
+        const nombre = encodeURIComponent(document.getElementById('input_buyer_nombre').value || 'EMILY SARAH');
+        const apellido = encodeURIComponent(document.getElementById('input_buyer_apellido').value || 'JOHNSON');
+        const doc = encodeURIComponent(document.getElementById('input_buyer_doc').value || 'Z4192048E');
+        const dob = encodeURIComponent(document.getElementById('input_buyer_dob').value || '19/11/1995');
+        const dir = encodeURIComponent(document.getElementById('input_buyer_direccion').value || 'LG PSC 819 BOX 999 - NAVSTA ROTA');
+
+        const url = `/clients/${currentTraspaso.clientId}/mandato/${currentTraspaso.policyId}?buyer_nombre=${nombre}&buyer_apellido=${apellido}&buyer_doc=${doc}&buyer_dob=${dob}&buyer_direccion=${dir}`;
+        window.open(url, '_blank');
+    }
+
+    // Modal & Calculadora de Devolución PCS (Permanent Change of Station)
+    let currentPcsData = {};
+
+    function openPcsRefundModal(clientName, poliza, vehiculo, primaStr, fechaEfecto, fechaVencimiento) {
+        currentPcsData = { clientName, poliza, vehiculo, primaStr, fechaEfecto, fechaVencimiento };
+        
+        document.getElementById('pcs_client_name').innerText = clientName;
+        document.getElementById('pcs_poliza').innerText = poliza || '1842910';
+        document.getElementById('pcs_vehiculo').innerText = vehiculo;
+        
+        // Extraer número de prima limpia
+        let rawNum = String(primaStr).replace(/[^\d.,]/g, '').replace(',', '.');
+        let numPrima = parseFloat(rawNum) || 642.50;
+        document.getElementById('pcs_prima_input').value = numPrima.toFixed(2);
+        document.getElementById('pcs_dias_consumidos').value = 142; // preset típico ~4.5 meses
+        
+        recalcularPcsRefund();
+        document.getElementById('pcsRefundModal').classList.remove('hidden');
+    }
+
+    function closePcsRefundModal() {
+        document.getElementById('pcsRefundModal').classList.add('hidden');
+    }
+
+    function setPcsDias(dias) {
+        document.getElementById('pcs_dias_consumidos').value = dias;
+        recalcularPcsRefund();
+    }
+
+    function recalcularPcsRefund() {
+        const primaTotal = parseFloat(document.getElementById('pcs_prima_input').value) || 0;
+        const diasConsumidos = parseInt(document.getElementById('pcs_dias_consumidos').value) || 0;
+        const diasTotales = 365;
+        const diasRestantes = Math.max(0, diasTotales - diasConsumidos);
+        
+        const pctDevolucion = diasTotales > 0 ? ((diasRestantes / diasTotales) * 100).toFixed(1) : 0;
+        const importeReembolso = diasTotales > 0 ? ((primaTotal / diasTotales) * diasRestantes).toFixed(2) : 0;
+        const importeConsumido = (primaTotal - importeReembolso).toFixed(2);
+
+        document.getElementById('pcs_dias_restantes').innerText = diasRestantes + ' días';
+        document.getElementById('pcs_pct_devolucion').innerText = pctDevolucion + '%';
+        document.getElementById('pcs_reembolso_resultado').innerText = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(importeReembolso);
+        document.getElementById('pcs_consumido_resultado').innerText = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(importeConsumido);
+    }
+
+    function copiarLiquidacionPcs() {
+        const motivo = document.getElementById('pcs_motivo').value;
+        const primaTotal = document.getElementById('pcs_prima_input').value;
+        const diasConsumidos = document.getElementById('pcs_dias_consumidos').value;
+        const diasRestantes = document.getElementById('pcs_dias_restantes').innerText;
+        const reembolso = document.getElementById('pcs_reembolso_resultado').innerText;
+        
+        const texto = `🛫 LIQUIDACIÓN DEVOLUCIÓN DE PRIMA NO CONSUMIDA (PCS MOVE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 Titular: ${currentPcsData.clientName}
+📄 Póliza: ${currentPcsData.poliza} (${currentPcsData.vehiculo})
+📋 Motivo: ${motivo}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💵 Prima Anual Pagada: ${primaTotal} €
+⏱️ Período Consumido: ${diasConsumidos} días
+⏳ Días No Consumidos: ${diasRestantes}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💰 IMPORTE A REEMBOLSAR AL MILITAR: ${reembolso}
+Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+        navigator.clipboard.writeText(texto).then(() => {
+            const btnLabel = document.getElementById('copyPcsBtnLabel');
+            btnLabel.innerText = '✓ ¡Copiado!';
+            setTimeout(() => { btnLabel.innerText = '📋 Copiar Liquidación'; }, 2000);
+        });
+    }
+
     function enviarWhatsAppConComprador() {
         const buyerName = (document.getElementById('input_buyer_nombre').value + ' ' + document.getElementById('input_buyer_apellido').value).trim() || 'Emily Sarah Johnson';
         const doc = document.getElementById('input_buyer_doc').value || 'Z4192048E';
@@ -723,6 +845,7 @@
             closeDeleteClientModal();
             closeTraspasoModal();
             closeWhatsAppModal();
+            closePcsRefundModal();
         }
     });
 </script>
@@ -951,6 +1074,11 @@
                             <svg class="w-4 h-4 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                             <span>🖨️ Imprimir Cesión Oficial</span>
                         </button>
+
+                        <button type="button" onclick="imprimirMandatoConComprador()"
+                                class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+                            <span>⚖️ Mandato DGT</span>
+                        </button>
                         
                         <button type="button" onclick="enviarWhatsAppConComprador()"
                                 class="px-3.5 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 transition flex items-center gap-1.5 cursor-pointer">
@@ -964,6 +1092,149 @@
                     </div>
                 </div>
             </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Liquidación y Reembolso por Traslado Militar PCS (Permanent Change of Station) -->
+<div id="pcsRefundModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closePcsRefundModal()"></div>
+
+    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200">
+            
+            <!-- Header Modal -->
+            <div class="bg-gradient-to-r from-amber-600 via-amber-700 to-[#0c3547] text-white p-5 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-xl">
+                        🛫
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-bold text-base font-display">Liquidación y Reembolso por Traslado PCS</h3>
+                            <span class="bg-amber-400 text-amber-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">DoD Move</span>
+                        </div>
+                        <p class="text-xs text-amber-100">Cálculo en vivo de prima no consumida por cambio de destino o entrega en VPC</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closePcsRefundModal()" class="text-white/80 hover:text-white cursor-pointer text-xl leading-none">✕</button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 space-y-5 text-xs">
+                
+                <!-- Datos del Militar y Póliza -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div>
+                        <span class="block text-slate-400 font-semibold text-[10px] uppercase">Militar / Titular:</span>
+                        <strong id="pcs_client_name" class="text-slate-900 block truncate"></strong>
+                    </div>
+                    <div>
+                        <span class="block text-slate-400 font-semibold text-[10px] uppercase">Póliza / Ramo:</span>
+                        <span class="font-mono text-slate-800 font-bold">#<span id="pcs_poliza"></span></span>
+                    </div>
+                    <div>
+                        <span class="block text-slate-400 font-semibold text-[10px] uppercase">Vehículo / Riesgo:</span>
+                        <strong id="pcs_vehiculo" class="text-slate-900 block truncate"></strong>
+                    </div>
+                </div>
+
+                <!-- Parámetros de la Liquidación -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Prima Anual Pagada (€)</label>
+                        <div class="relative">
+                            <input type="number" step="0.01" id="pcs_prima_input" oninput="recalcularPcsRefund()"
+                                   class="w-full text-sm font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 pr-8">
+                            <span class="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">€</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 mt-0.5 block">Importe íntegro anual abonado por el militar</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Días de Cobertura Consumidos (1 a 365)</label>
+                        <input type="number" id="pcs_dias_consumidos" min="1" max="365" oninput="recalcularPcsRefund()"
+                               class="w-full text-sm font-mono font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <!-- Presets de días rápidos -->
+                        <div class="flex items-center gap-1.5 mt-1.5">
+                            <button type="button" onclick="setPcsDias(90)" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded cursor-pointer">3 meses (90d)</button>
+                            <button type="button" onclick="setPcsDias(120)" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded cursor-pointer">4 meses (120d)</button>
+                            <button type="button" onclick="setPcsDias(142)" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded cursor-pointer">142d (Media)</button>
+                            <button type="button" onclick="setPcsDias(180)" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded cursor-pointer">6 meses (180d)</button>
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="block text-slate-700 font-bold mb-1">Motivo de Baja / Justificante DoD</label>
+                        <select id="pcs_motivo" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <option value="Órdenes de Traslado PCS (Permanent Change of Station - US Navy)">🛫 Órdenes de Traslado PCS (Permanent Change of Station - US Navy)</option>
+                            <option value="Embarque de Vehículo en VPC (Vehicle Processing Center - Rota Port)">🚢 Embarque de Vehículo en VPC (Vehicle Processing Center - Rota Port)</option>
+                            <option value="Venta / Cesión a otro Militar en Base Naval">🤝 Venta / Cesión a otro Militar en Base Naval</option>
+                            <option value="Baja Definitiva y Repatriación a EE.UU.">🇺🇸 Baja Definitiva y Repatriación a EE.UU.</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Panel de Resultado Dinámico -->
+                <div class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 border-2 border-emerald-300 rounded-2xl p-5 shadow-inner">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <span class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 block">IMPORTE CALCULADO A REEMBOLSAR AL MILITAR:</span>
+                            <div class="text-3xl font-black text-emerald-950 font-display mt-0.5" id="pcs_reembolso_resultado">
+                                0,00 €
+                            </div>
+                            <div class="text-[11px] text-emerald-800 mt-1 flex items-center gap-2">
+                                <span>⏳ Días no consumidos: <strong id="pcs_dias_restantes">0 días</strong></span>
+                                <span>•</span>
+                                <span>Porcentaje restante: <strong id="pcs_pct_devolucion">0%</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/80 backdrop-blur-sm border border-emerald-200 rounded-xl p-3 text-[11px] space-y-1 text-slate-700 w-full sm:w-auto">
+                            <div class="flex justify-between sm:justify-start sm:gap-4">
+                                <span class="text-slate-400">Prima Devengada:</span>
+                                <strong id="pcs_consumido_resultado" class="text-slate-900 font-mono">0,00 €</strong>
+                            </div>
+                            <div class="flex justify-between sm:justify-start sm:gap-4">
+                                <span class="text-slate-400">Retención de Emisión:</span>
+                                <strong class="text-emerald-700 font-mono">0,00 € (Exenta DoD)</strong>
+                            </div>
+                            <div class="flex justify-between sm:justify-start sm:gap-4">
+                                <span class="text-slate-400">Canal de Devolución:</span>
+                                <strong class="text-slate-900">Transferencia / Tarjeta</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-900 text-[11px] flex items-center gap-2">
+                    <span>💡</span>
+                    <span><strong>Ahorro Operativo para KFM:</strong> Evita cálculos a mano y disputas con el asegurado. El importe se calcula de forma fehaciente por días naturales para tramitar con Patria Hispana / Allianz.</span>
+                </div>
+
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="bg-slate-50 px-6 py-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 text-xs font-bold">
+                <button type="button" onclick="closePcsRefundModal()"
+                        class="text-slate-500 hover:text-slate-700 px-3 py-2.5 transition cursor-pointer">
+                    Cerrar
+                </button>
+                
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="copiarLiquidacionPcs()"
+                            class="px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+                        <span id="copyPcsBtnLabel">📋 Copiar Liquidación</span>
+                    </button>
+
+                    <button type="button" onclick="window.print()"
+                            class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                        <svg class="w-4 h-4 text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        <span>🖨️ Imprimir Liquidación</span>
+                    </button>
+                </div>
+            </div>
 
         </div>
     </div>

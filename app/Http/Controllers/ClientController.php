@@ -278,6 +278,94 @@ class ClientController extends Controller
     }
 
     /**
+     * Formulario Oficial de Declaración y Emisión GEICO Military Overseas
+     */
+    public function geicoForm(Client $client, Policy $policy, Request $request)
+    {
+        $militaryInfo = [
+            'rank' => 'PO1 / E-6 (Petty Officer First Class)',
+            'branch' => 'US Navy (Naval Station Rota)',
+            'duty_station' => 'NAVSTA ROTA - COMMANDER NAVY INSTALLATIONS (PSC 819)',
+            'dod_id' => $client->doc_identidad ?: 'Z1928374P',
+            'us_license' => 'VA-D8491209 (Virginia)',
+            'coverages' => [
+                'bodily_injury' => '50.000.000 € / Unlimited Coverage (Spanish Law compliant)',
+                'property_damage' => '15.000.000 € Comprehensive Property Protection',
+                'comprehensive' => 'Full Comprehensive (Fire, Theft, Windshield & Natural Events)',
+                'collision' => 'Collision Coverage with 150 € Deductible',
+                'roadside' => '24/7 Base & European Roadside Assistance (Allianz Partner)',
+                'legal_defense' => 'Full Military & Civilian Legal Defense in Spain',
+            ],
+            'premium' => $policy->prima ?: '642,50 €',
+            'billing' => $policy->tipo_facturacion ?: 'Annual (Paid Full)',
+            'policy_period' => ($policy->fecha_pago ?: '15/11/2025') . ' to ' . ($policy->fecha_vencimiento ?: '15/11/2026'),
+        ];
+
+        return view('clients.geico', compact('client', 'policy', 'militaryInfo'));
+    }
+
+    /**
+     * Mandato Oficial de Representación de Gestoría Colegiada (DGT)
+     */
+    public function mandatoGestoria(Client $client, Policy $policy, Request $request)
+    {
+        $gestor = [
+            'nombre' => 'FERNANDO SÁNCHEZ NAVAL',
+            'colegiado' => '1271',
+            'colegio' => 'Colegio Oficial de Gestores Administrativos de Cádiz / Sevilla',
+            'despacho' => 'GESTORÍA BAHÍA & NAVAL',
+            'cif' => 'B-11928374',
+            'direccion' => 'Calle Aurora, 11 – 11500 El Puerto de Santa María (Cádiz)',
+        ];
+
+        $buyer = [
+            'nombre' => strtoupper(trim($request->input('buyer_nombre') ?: 'EMILY SARAH')),
+            'apellido' => strtoupper(trim($request->input('buyer_apellido') ?: 'JOHNSON')),
+            'doc_identidad' => strtoupper(trim($request->input('buyer_doc') ?: 'Z4192048E')),
+            'dob' => $request->input('buyer_dob') ?: '19/11/1995',
+            'direccion' => $request->input('buyer_direccion') ?: 'LU BASE NAVAL DE ROTA 999, 11520 ROTA',
+            'telefono' => $request->input('buyer_telefono') ?: '671-998877',
+        ];
+
+        return view('clients.mandato', compact('client', 'policy', 'gestor', 'buyer'));
+    }
+
+    /**
+     * Certificado Internacional de Seguro / Carta Verde (Green Card)
+     */
+    public function cartaVerde(Client $client, Policy $policy)
+    {
+        return view('clients.carta-verde', compact('client', 'policy'));
+    }
+
+    /**
+     * Calculadora de Devolución de Prima por Orden de Traslado Militar (PCS Move)
+     */
+    public function calculatePcsRefund(Request $request)
+    {
+        $primaTotal = (float) str_replace(['€', ' ', '.', ','], ['', '', '', '.'], $request->input('prima', '642.50'));
+        if ($primaTotal <= 0) $primaTotal = 642.50;
+
+        $diasTotales = 365;
+        $diasConsumidos = max(1, min(364, (int) $request->input('dias_consumidos', 142)));
+        $diasRestantes = $diasTotales - $diasConsumidos;
+
+        $porcentajeDevolucion = round(($diasRestantes / $diasTotales) * 100, 1);
+        $importeDevolucion = round(($primaTotal / $diasTotales) * $diasRestantes, 2);
+
+        return response()->json([
+            'success' => true,
+            'prima_total' => $primaTotal,
+            'dias_totales' => $diasTotales,
+            'dias_consumidos' => $diasConsumidos,
+            'dias_restantes' => $diasRestantes,
+            'porcentaje_devolucion' => $porcentajeDevolucion,
+            'importe_reembolso' => $importeDevolucion,
+            'formato_moneda' => number_format($importeDevolucion, 2, ',', '.') . ' €',
+        ]);
+    }
+
+    /**
      * Asegura de manera autónoma que el caso demo David Alexander Miller exista siempre
      */
     private function ensureDemoMillerExists(): void
