@@ -60,6 +60,61 @@
         </div>
     </div>
 
+    <!-- Barra de Control Operativo Rápido (DATABASE25) -->
+    @if(isset($operacionesStats))
+    <div class="bg-gradient-to-r from-slate-900 via-[#0c3547] to-[#145a78] text-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-cyan-200">Panel Operativo Diario · Flujo KFM Agency</span>
+            </div>
+            <h2 class="text-base font-bold text-white mt-0.5">Operaciones Activas (Gestoría, Extornos, Siniestros y Placas)</h2>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+            <!-- Gestoría -->
+            <a href="{{ route('operations.gestoria.index') }}" 
+               class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center space-x-2">
+                <span>📋</span>
+                <span class="font-medium text-slate-200">Gestoría DGT:</span>
+                <span class="font-bold text-amber-300">{{ $operacionesStats['gestoria'] }} en curso</span>
+            </a>
+
+            <!-- Extornos PCS -->
+            <a href="{{ route('operations.extornos.index') }}" 
+               class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center space-x-2">
+                <span>🛫</span>
+                <span class="font-medium text-slate-200">Extornos PCS:</span>
+                <span class="font-bold text-rose-300">{{ $operacionesStats['extornos'] }} pend.</span>
+            </a>
+
+            <!-- Sin Matrícula -->
+            <a href="{{ route('operations.sin-matricula.index') }}" 
+               class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center space-x-2">
+                <span>🚗</span>
+                <span class="font-medium text-slate-200">Provisionales:</span>
+                <span class="font-bold text-yellow-300">{{ $operacionesStats['sin_matricula'] }}</span>
+            </a>
+
+            <!-- Siniestros -->
+            <a href="{{ route('operations.siniestros.index') }}" 
+               class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center space-x-2">
+                <span>💥</span>
+                <span class="font-medium text-slate-200">Siniestros:</span>
+                <span class="font-bold text-cyan-300">{{ $operacionesStats['siniestros'] }} abiertos</span>
+            </a>
+
+            <!-- Embarque -->
+            <a href="{{ route('operations.embarque.index') }}" 
+               class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center space-x-2">
+                <span>🚢</span>
+                <span class="font-medium text-slate-200">Embarques:</span>
+                <span class="font-bold text-emerald-300">{{ $operacionesStats['embarque'] }} en mar</span>
+            </a>
+        </div>
+    </div>
+    @endif
+
     <!-- Buscador Principal -->
     <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">

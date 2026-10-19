@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\OperationsController;
 use Illuminate\Support\Facades\Route;
 
 // Ruta principal directa al CRM (sin contraseña)
@@ -21,6 +22,48 @@ Route::match(['get', 'post'], 'api/calculate-itp', [ClientController::class, 'ca
 Route::match(['get', 'post'], 'api/translate', [ClientController::class, 'translateText'])->name('api.translate');
 Route::match(['get', 'post'], 'api/calculate-pcs-refund', [ClientController::class, 'calculatePcsRefund'])->name('api.calculate-pcs-refund');
 
+// =========================================================================
+// MÓDULOS OPERATIVOS KFM (DATABASE25 EXCEL MIGRATION)
+// =========================================================================
+Route::prefix('operations')->name('operations.')->group(function () {
+    
+    // 1. GESTORÍA DGT & TRANSFERENCIAS
+    Route::get('gestoria', [OperationsController::class, 'indexGestoria'])->name('gestoria.index');
+    Route::post('gestoria', [OperationsController::class, 'storeGestoria'])->name('gestoria.store');
+    Route::patch('gestoria/{tramite}/status', [OperationsController::class, 'updateGestoriaStatus'])->name('gestoria.status');
+    // Documentos Oficiales Gestoría
+    Route::get('gestoria/{tramite}/portada', [OperationsController::class, 'documentoPortada'])->name('gestoria.portada');
+    Route::get('gestoria/{tramite}/mandato-comprador', [OperationsController::class, 'documentoMandatoComprador'])->name('gestoria.mandato-comprador');
+    Route::get('gestoria/{tramite}/mandato-vendedor', [OperationsController::class, 'documentoMandatoVendedor'])->name('gestoria.mandato-vendedor');
+    Route::get('gestoria/{tramite}/contrato-compraventa', [OperationsController::class, 'documentoContratoCompraventa'])->name('gestoria.contrato-compraventa');
+    Route::get('gestoria/{tramite}/extravio-vendedor', [OperationsController::class, 'documentoExtravioVendedor'])->name('gestoria.extravio-vendedor');
+    Route::get('gestoria/{tramite}/cesion', [OperationsController::class, 'documentoCesion'])->name('gestoria.cesion');
+
+    // 2. EXTORNOS & TRASLADOS PCS
+    Route::get('extornos', [OperationsController::class, 'indexExtornos'])->name('extornos.index');
+    Route::post('extornos', [OperationsController::class, 'storeExtorno'])->name('extornos.store');
+    Route::patch('extornos/{extorno}', [OperationsController::class, 'updateExtorno'])->name('extornos.update');
+
+    // 3. SIN MATRÍCULA / PLACAS PROVISIONALES
+    Route::get('sin-matricula', [OperationsController::class, 'indexSinMatricula'])->name('sin-matricula.index');
+    Route::post('sin-matricula', [OperationsController::class, 'storeSinMatricula'])->name('sin-matricula.store');
+    Route::patch('sin-matricula/{item}', [OperationsController::class, 'updateSinMatricula'])->name('sin-matricula.update');
+
+    // 4. PÓLIZAS DE EMBARQUE / SHIPPING POV
+    Route::get('embarque', [OperationsController::class, 'indexEmbarque'])->name('embarque.index');
+    Route::post('embarque', [OperationsController::class, 'storeEmbarque'])->name('embarque.store');
+    Route::patch('embarque/{embarque}', [OperationsController::class, 'updateEmbarque'])->name('embarque.update');
+
+    // 5. SINIESTROS & MULTAS ARAG
+    Route::get('siniestros', [OperationsController::class, 'indexSiniestros'])->name('siniestros.index');
+    Route::post('siniestros', [OperationsController::class, 'storeSiniestro'])->name('siniestros.store');
+    Route::patch('siniestros/{siniestro}', [OperationsController::class, 'updateSiniestro'])->name('siniestros.update');
+
+    // 6. PAGOS FRACCIONADOS (FINANCIACIÓN)
+    Route::get('pagos', [OperationsController::class, 'indexPagos'])->name('pagos.index');
+    Route::patch('pagos/{pago}', [OperationsController::class, 'updatePago'])->name('pagos.update');
+});
+
 // Endpoint de diagnóstico rápido de IP pública y cabeceras
 Route::get('ip-check', function (\Illuminate\Http\Request $request) {
     return response()->json([
@@ -31,4 +74,3 @@ Route::get('ip-check', function (\Illuminate\Http\Request $request) {
         'ips_autorizadas' => config('kfm.allowed_ips'),
     ]);
 });
-

@@ -58,26 +58,96 @@
                 </div>
 
                 <!-- Navigation Tabs -->
-                <nav class="hidden md:flex items-center space-x-2">
+                <nav class="hidden md:flex items-center space-x-1.5 lg:space-x-2">
                     <a href="{{ route('home') }}" 
-                       class="px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center space-x-2 {{ request()->routeIs('home') && !request('sede_id') && !request('agente') ? 'bg-white/20 text-white shadow-inner' : 'text-slate-200 hover:bg-white/10 hover:text-white' }}">
+                       class="px-3 py-2 rounded-lg text-xs lg:text-sm font-semibold transition-colors flex items-center space-x-1.5 {{ request()->routeIs('home') && !request('sede_id') && !request('agente') ? 'bg-white/20 text-white shadow-inner' : 'text-slate-200 hover:bg-white/10 hover:text-white' }}">
                         <svg class="w-4 h-4 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <span>Buscador Clientes</span>
+                        <span>Clientes</span>
                     </a>
 
                     <a href="{{ route('clients.create') }}" 
-                       class="px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center space-x-2 {{ request()->routeIs('clients.create') ? 'bg-emerald-500 text-white shadow-md' : 'bg-emerald-600/80 hover:bg-emerald-500 text-white' }}">
+                       class="px-2.5 py-2 rounded-lg text-xs lg:text-sm font-semibold transition-colors flex items-center space-x-1.5 {{ request()->routeIs('clients.create') ? 'bg-emerald-500 text-white shadow-md' : 'bg-emerald-600/80 hover:bg-emerald-500 text-white' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        <span>+ Nuevo Cliente</span>
+                        <span>+ Nuevo</span>
                     </a>
+
+                    <!-- Módulo Gestoría DGT -->
+                    <a href="{{ route('operations.gestoria.index') }}" 
+                       class="px-3 py-2 rounded-lg text-xs lg:text-sm font-semibold transition-colors flex items-center space-x-1.5 {{ request()->routeIs('operations.gestoria.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-200 hover:bg-white/10 hover:text-white' }}">
+                        <span>📋</span>
+                        <span>Gestoría DGT</span>
+                    </a>
+
+                    <!-- Dropdown Operaciones KFM (Excel DATABASE25) -->
+                    <div class="relative">
+                        <button type="button" 
+                                onclick="toggleOperacionesDropdown(event)" 
+                                class="px-3 py-2 rounded-lg text-xs lg:text-sm font-semibold text-slate-200 hover:bg-white/10 hover:text-white transition-colors flex items-center space-x-1.5 cursor-pointer {{ request()->routeIs('operations.extornos.*') || request()->routeIs('operations.sin-matricula.*') || request()->routeIs('operations.embarque.*') || request()->routeIs('operations.siniestros.*') || request()->routeIs('operations.pagos.*') ? 'bg-white/20 text-white font-bold' : '' }}">
+                            <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                            <span>Operaciones</span>
+                            <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        
+                        <div id="operacionesDropdown" class="hidden absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 py-1.5 z-50 text-xs divide-y divide-slate-100 overflow-hidden">
+                            <div class="px-4 py-2 bg-slate-50 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                <span>Operativa KFM Insurance</span>
+                                <span class="bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded text-[9px] font-bold">DATABASE25</span>
+                            </div>
+
+                            <!-- Extornos PCS -->
+                            <a href="{{ route('operations.extornos.index') }}" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-rose-50/70 transition text-slate-800">
+                                <span class="text-base p-1.5 rounded-lg bg-rose-100 text-rose-800">🛫</span>
+                                <div>
+                                    <strong class="block text-slate-900 font-bold text-xs">Extornos & Cancelaciones PCS</strong>
+                                    <span class="text-[11px] text-slate-500">Prima no consumida y GEICO Form</span>
+                                </div>
+                            </a>
+
+                            <!-- Sin Matrícula -->
+                            <a href="{{ route('operations.sin-matricula.index') }}" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-slate-800">
+                                <span class="text-base p-1.5 rounded-lg bg-amber-100 text-amber-800">🚗</span>
+                                <div>
+                                    <strong class="block text-slate-900 font-bold text-xs">Sin Matrícula / Provisionales</strong>
+                                    <span class="text-[11px] text-slate-500">Placas verdes y coches en regularización</span>
+                                </div>
+                            </a>
+
+                            <!-- Embarque POV -->
+                            <a href="{{ route('operations.embarque.index') }}" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-indigo-50/70 transition text-slate-800">
+                                <span class="text-base p-1.5 rounded-lg bg-indigo-100 text-indigo-800">🚢</span>
+                                <div>
+                                    <strong class="block text-slate-900 font-bold text-xs">Pólizas de Embarque POV</strong>
+                                    <span class="text-[11px] text-slate-500">Tránsito US ⇄ Rota y VPC peritación</span>
+                                </div>
+                            </a>
+
+                            <!-- Siniestros & Multas -->
+                            <a href="{{ route('operations.siniestros.index') }}" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-rose-50/70 transition text-slate-800">
+                                <span class="text-base p-1.5 rounded-lg bg-rose-100 text-rose-800">💥</span>
+                                <div>
+                                    <strong class="block text-slate-900 font-bold text-xs">Siniestros & Multas (ARAG)</strong>
+                                    <span class="text-[11px] text-slate-500">Partes con Diego y recursos jurídicos</span>
+                                </div>
+                            </a>
+
+                            <!-- Financiación / Pagos Fraccionados -->
+                            <a href="{{ route('operations.pagos.index') }}" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-emerald-50/70 transition text-slate-800">
+                                <span class="text-base p-1.5 rounded-lg bg-emerald-100 text-emerald-800">💳</span>
+                                <div>
+                                    <strong class="block text-slate-900 font-bold text-xs">Pagos Fraccionados (2 Plazos)</strong>
+                                    <span class="text-[11px] text-slate-500">Cobro de 2º plazo con tarjeta</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
 
                     <!-- Dropdown Herramientas NEX (Accesos Rápidos Chari) -->
                     <div class="relative">
                         <button type="button" 
                                 onclick="toggleHerramientasDropdown(event)" 
-                                class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:bg-white/10 hover:text-white transition-colors flex items-center space-x-1.5 cursor-pointer">
+                                class="px-3 py-2 rounded-lg text-xs lg:text-sm font-semibold text-slate-200 hover:bg-white/10 hover:text-white transition-colors flex items-center space-x-1.5 cursor-pointer">
                             <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-                            <span>Herramientas NEX</span>
+                            <span>Herramientas</span>
                             <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         
@@ -819,7 +889,19 @@ You can drop by our NEX office or send them by reply to this message. Thank you!
     <script>
         function toggleHerramientasDropdown(event) {
             event.stopPropagation();
+            const opDrop = document.getElementById('operacionesDropdown');
+            if (opDrop) opDrop.classList.add('hidden');
             const drop = document.getElementById('herramientasDropdown');
+            if (drop) {
+                drop.classList.toggle('hidden');
+            }
+        }
+
+        function toggleOperacionesDropdown(event) {
+            event.stopPropagation();
+            const hDrop = document.getElementById('herramientasDropdown');
+            if (hDrop) hDrop.classList.add('hidden');
+            const drop = document.getElementById('operacionesDropdown');
             if (drop) {
                 drop.classList.toggle('hidden');
             }
@@ -829,6 +911,10 @@ You can drop by our NEX office or send them by reply to this message. Thank you!
             const drop = document.getElementById('herramientasDropdown');
             if (drop && !drop.contains(e.target)) {
                 drop.classList.add('hidden');
+            }
+            const opDrop = document.getElementById('operacionesDropdown');
+            if (opDrop && !opDrop.contains(e.target)) {
+                opDrop.classList.add('hidden');
             }
         });
 

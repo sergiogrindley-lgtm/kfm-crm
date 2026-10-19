@@ -5,6 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\Policy;
 use App\Models\Sede;
+use App\Models\GestoriaTramite;
+use App\Models\Extorno;
+use App\Models\SinMatricula;
+use App\Models\PolizaEmbarque;
+use App\Models\Siniestro;
+use App\Models\PagoFraccionado;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
@@ -61,13 +67,22 @@ class ClientController extends Controller
         $activePolicies = Policy::where('estado', 'Activo')->count();
         $agentes = $this->agentesDisponibles;
 
+        $operacionesStats = [
+            'gestoria' => GestoriaTramite::whereIn('estado', ['DOCUMENTOS', 'OUT_GESTORIA'])->count(),
+            'extornos' => Extorno::where('status', 'Pendiente')->count(),
+            'sin_matricula' => SinMatricula::where('estado', 'Pendiente')->count(),
+            'siniestros' => Siniestro::where('tipo', 'Siniestro')->where('estado_siniestro', '!=', 'Cerrado')->count(),
+            'embarque' => PolizaEmbarque::where('estado', 'En Tránsito')->count(),
+        ];
+
         return view('clients.index', compact(
             'clients',
             'sedes',
             'totalClients',
             'totalPolicies',
             'activePolicies',
-            'agentes'
+            'agentes',
+            'operacionesStats'
         ));
     }
 
