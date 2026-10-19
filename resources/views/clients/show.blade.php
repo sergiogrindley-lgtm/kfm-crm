@@ -211,7 +211,7 @@
 
                 <div class="p-6 space-y-4">
                     @forelse($client->policies as $policy)
-                        <div class="p-5 rounded-xl border border-slate-200 bg-white hover:border-kfm-primary/50 transition-all shadow-sm space-y-3">
+                        <div class="p-5 rounded-xl border {{ strtolower($policy->estado) === 'activo' ? 'border-slate-200 bg-white hover:border-kfm-primary/50' : 'border-rose-300 bg-rose-50/20 hover:border-rose-400' }} transition-all shadow-sm space-y-3">
                             <!-- Cabecera de la póliza -->
                             <div class="flex items-start justify-between">
                                 <div class="flex items-center space-x-3">
@@ -249,10 +249,10 @@
                                 </div>
 
                                 <div class="flex flex-col items-end space-y-1">
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ $policy->estado === 'Activo' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200' }}">
-                                        {{ $policy->estado }}
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ strtolower($policy->estado) === 'activo' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200' }}">
+                                        {{ strtolower($policy->estado) === 'activo' ? '● ' . $policy->estado : '🛑 ' . $policy->estado }}
                                     </span>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase {{ $policy->balance === 'Paid Full' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800' }}">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase {{ $policy->balance === 'Paid Full' ? 'bg-blue-100 text-blue-800' : ($policy->balance === 'Cancelled' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800') }}">
                                         Balance: {{ $policy->balance }}
                                     </span>
                                 </div>
@@ -336,44 +336,91 @@
                                 </div>
 
                                 <div class="flex flex-wrap items-center gap-2">
-                                    @if($policy->matricula || strtolower($policy->ramo) === 'vehiculo')
-                                        <!-- 1. Traspaso Gestoría -->
+                                    @if(strtolower($policy->estado) === 'activo')
+                                        @if($policy->matricula || strtolower($policy->ramo) === 'vehiculo')
+                                            <!-- 1. Traspaso Gestoría -->
+                                            <button type="button" 
+                                                    onclick="openTraspasoModal('{{ $client->id }}', '{{ $policy->id }}', '{{ addslashes($client->full_name) }}', '{{ addslashes($policy->matricula) }}', '{{ addslashes($policy->marca . ' ' . $policy->modelo) }}', '{{ substr($policy->vin ?: '8491', -4) }}', '{{ $policy->numero_poliza }}')"
+                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#9b1c31] hover:bg-[#7f1627] text-white shadow-sm transition cursor-pointer">
+                                                <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                                                <span>⚡ Traspaso Gestoría</span>
+                                            </button>
+
+                                            <!-- 2. Formulario GEICO Military -->
+                                            <a href="{{ route('clients.geico', [$client, $policy]) }}" target="_blank"
+                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#002868] hover:bg-[#001b44] text-white shadow-sm transition">
+                                                <span>🇺🇸</span>
+                                                <span>Formulario GEICO</span>
+                                            </a>
+
+                                            <!-- 3. Mandato DGT Colegiado -->
+                                            <a href="{{ route('clients.mandato', [$client, $policy]) }}" target="_blank"
+                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white shadow-sm transition">
+                                                <span>⚖️</span>
+                                                <span>Mandato DGT</span>
+                                            </a>
+
+                                            <!-- 4. Carta Verde (CIS) -->
+                                            <a href="{{ route('clients.carta-verde', [$client, $policy]) }}" target="_blank"
+                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm transition">
+                                                <span>🟢</span>
+                                                <span>Carta Verde (CIS)</span>
+                                            </a>
+                                        @endif
+
+                                        <!-- 5. Baja PCS / Reembolso Prorrateado -->
                                         <button type="button" 
-                                                onclick="openTraspasoModal('{{ $client->id }}', '{{ $policy->id }}', '{{ addslashes($client->full_name) }}', '{{ addslashes($policy->matricula) }}', '{{ addslashes($policy->marca . ' ' . $policy->modelo) }}', '{{ substr($policy->vin ?: '8491', -4) }}', '{{ $policy->numero_poliza }}')"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#9b1c31] hover:bg-[#7f1627] text-white shadow-sm transition cursor-pointer">
-                                            <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                                            <span>⚡ Traspaso Gestoría</span>
+                                                onclick="openPcsRefundModal('{{ addslashes($client->full_name) }}', '{{ $policy->numero_poliza }}', '{{ addslashes($policy->matricula ?: ($policy->marca . ' ' . $policy->modelo)) }}', '{{ $policy->prima ?: '642,50 €' }}', '{{ $policy->fecha_pago ?: '15/11/2025' }}', '{{ $policy->fecha_vencimiento ?: '15/11/2026' }}')"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition cursor-pointer">
+                                            <span>🛫</span>
+                                            <span>Baja PCS / Devolución</span>
                                         </button>
 
-                                        <!-- 2. Formulario GEICO Military -->
-                                        <a href="{{ route('clients.geico', [$client, $policy]) }}" target="_blank"
-                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#002868] hover:bg-[#001b44] text-white shadow-sm transition">
-                                            <span>🇺🇸</span>
-                                            <span>Formulario GEICO</span>
-                                        </a>
+                                        <!-- 6. Botón Cancelar Póliza -->
+                                        <button type="button" 
+                                                onclick="openCancelPolicyModal('{{ $policy->id }}', '{{ $policy->numero_poliza }}', '{{ addslashes($policy->marca . ' ' . $policy->modelo) }}', '{{ addslashes($policy->matricula ?: $policy->ramo) }}')"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 hover:border-rose-400 shadow-sm transition cursor-pointer ml-auto">
+                                            <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                            <span>🚫 Cancelar Póliza</span>
+                                        </button>
+                                    @else
+                                        <!-- Panel de Póliza Cancelada / En Baja -->
+                                        <div class="w-full bg-rose-50/80 border border-rose-200 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2.5">
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+                                                <span class="text-xs font-bold text-rose-900">
+                                                    Póliza Cancelada / En Baja
+                                                </span>
+                                                <span class="text-[11px] text-rose-700 hidden sm:inline">
+                                                    (Historial preservado para auditoría y DGT)
+                                                </span>
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <button type="button" 
+                                                        onclick="openPcsRefundModal('{{ addslashes($client->full_name) }}', '{{ $policy->numero_poliza }}', '{{ addslashes($policy->matricula ?: ($policy->marca . ' ' . $policy->modelo)) }}', '{{ $policy->prima ?: '642,50 €' }}', '{{ $policy->fecha_pago ?: '15/11/2025' }}', '{{ $policy->fecha_vencimiento ?: '15/11/2026' }}')"
+                                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-xs transition cursor-pointer">
+                                                    <span>🛫 Ver Liquidación PCS</span>
+                                                </button>
 
-                                        <!-- 3. Mandato DGT Colegiado -->
-                                        <a href="{{ route('clients.mandato', [$client, $policy]) }}" target="_blank"
-                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white shadow-sm transition">
-                                            <span>⚖️</span>
-                                            <span>Mandato DGT</span>
-                                        </a>
+                                                <form action="{{ route('clients.policies.reactivate', [$client, $policy]) }}" method="POST" onsubmit="return confirm('¿Reactivar la póliza #{{ $policy->numero_poliza }} a estado Activo?');">
+                                                    @csrf
+                                                    <button type="submit" 
+                                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition cursor-pointer">
+                                                        <span>🔄 Reactivar a Activo</span>
+                                                    </button>
+                                                </form>
 
-                                        <!-- 4. Carta Verde (CIS) -->
-                                        <a href="{{ route('clients.carta-verde', [$client, $policy]) }}" target="_blank"
-                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm transition">
-                                            <span>🟢</span>
-                                            <span>Carta Verde (CIS)</span>
-                                        </a>
+                                                <form action="{{ route('clients.policies.destroy', [$client, $policy]) }}" method="POST" onsubmit="return confirm('¿Eliminar definitivamente el registro de la póliza #{{ $policy->numero_poliza }}? Esta acción no se puede deshacer.');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" 
+                                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-rose-700 border border-rose-300 hover:bg-rose-50 transition cursor-pointer">
+                                                        <span>🗑️ Eliminar</span>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
                                     @endif
-
-                                    <!-- 5. Baja PCS / Reembolso Prorrateado -->
-                                    <button type="button" 
-                                            onclick="openPcsRefundModal('{{ addslashes($client->full_name) }}', '{{ $policy->numero_poliza }}', '{{ addslashes($policy->matricula ?: ($policy->marca . ' ' . $policy->modelo)) }}', '{{ $policy->prima ?: '642,50 €' }}', '{{ $policy->fecha_pago ?: '15/11/2025' }}', '{{ $policy->fecha_vencimiento ?: '15/11/2026' }}')"
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition cursor-pointer">
-                                        <span>🛫</span>
-                                        <span>Baja PCS / Devolución</span>
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -844,12 +891,25 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
         window.open(`https://web.whatsapp.com/send?text=${text}`, '_blank');
     }
 
+    // Modal de Cancelación de Póliza
+    function openCancelPolicyModal(policyId, numeroPoliza, vehiculo, matricula) {
+        document.getElementById('cancel_modal_poliza').innerText = '#' + (numeroPoliza || '1842910');
+        document.getElementById('cancel_modal_vehiculo').innerText = vehiculo + (matricula ? ' (' + matricula + ')' : '');
+        document.getElementById('cancelPolicyForm').action = `/clients/{{ $client->id }}/policies/${policyId}/cancel`;
+        document.getElementById('cancelPolicyModal').classList.remove('hidden');
+    }
+
+    function closeCancelPolicyModal() {
+        document.getElementById('cancelPolicyModal').classList.add('hidden');
+    }
+
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeDeleteClientModal();
             closeTraspasoModal();
             closeWhatsAppModal();
             closePcsRefundModal();
+            closeCancelPolicyModal();
         }
     });
 </script>
@@ -1239,6 +1299,101 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
                     </button>
                 </div>
             </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Cancelación / Baja de Póliza -->
+<div id="cancelPolicyModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeCancelPolicyModal()"></div>
+
+    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200">
+            
+            <!-- Header Modal -->
+            <div class="bg-gradient-to-r from-rose-600 via-rose-700 to-slate-900 text-white p-5 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-xl">
+                        🛑
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base font-display">Cancelar / Dar de Baja Póliza</h3>
+                        <p class="text-xs text-rose-100">Registra el motivo y la fecha efectiva de baja en el expediente</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeCancelPolicyModal()" class="text-white/80 hover:text-white cursor-pointer text-xl leading-none">✕</button>
+            </div>
+
+            <!-- Body Form -->
+            <form id="cancelPolicyForm" method="POST" action="">
+                @csrf
+                <div class="p-6 space-y-4 text-xs">
+                    
+                    <!-- Resumen de la Póliza a Cancelar -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <span class="block text-slate-400 font-semibold text-[10px] uppercase">Póliza:</span>
+                            <span class="font-mono font-bold text-slate-900" id="cancel_modal_poliza"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 font-semibold text-[10px] uppercase">Riesgo / Vehículo:</span>
+                            <strong class="text-slate-900 block truncate" id="cancel_modal_vehiculo"></strong>
+                        </div>
+                    </div>
+
+                    <!-- Motivo de Cancelación -->
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Motivo de la Cancelación / Baja *</label>
+                        <select name="motivo" id="cancel_motivo" required class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500">
+                            <option value="Órdenes de Traslado PCS (Permanent Change of Station - DoD)">🛫 Órdenes de Traslado PCS (Permanent Change of Station - DoD)</option>
+                            <option value="Venta / Traspaso de Vehículo">🤝 Venta / Traspaso de Vehículo a otro Titular</option>
+                            <option value="No Renovación a Vencimiento">⏳ No Renovación a Vencimiento (Petición Cliente)</option>
+                            <option value="Baja Anticipada por Repatriación a EE.UU.">🇺🇸 Baja Anticipada por Repatriación a EE.UU.</option>
+                            <option value="Cambio de Compañía Aseguradora">🔄 Cambio de Compañía Aseguradora</option>
+                            <option value="Siniestro Total o Desguace de Vehículo">💥 Siniestro Total o Desguace de Vehículo</option>
+                            <option value="Impago de Recibo / Rechazo Bancario">⚠️ Impago de Recibo / Rechazo Bancario</option>
+                            <option value="Baja Voluntaria">📝 Baja Voluntaria Solicitada por el Tomador</option>
+                        </select>
+                    </div>
+
+                    <!-- Fecha de Baja Efectiva -->
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Fecha Efectiva de la Baja</label>
+                        <input type="text" name="fecha_baja" id="cancel_fecha_baja" value="{{ date('d/m/Y') }}"
+                               placeholder="dd/mm/aaaa"
+                               class="w-full text-xs font-mono font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <span class="text-[10px] text-slate-400 mt-0.5 block">Fecha en la que cesan los efectos de la cobertura</span>
+                    </div>
+
+                    <!-- Notas Adicionales -->
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Observaciones / Notas para el Registro</label>
+                        <textarea name="notas" id="cancel_notas" rows="2" placeholder="ej: Militar entregó coche en VPC el día 19/10. Solicitada carta de no siniestralidad."
+                                  class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500"></textarea>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-900 text-[11px] flex items-center gap-2">
+                        <span>💡</span>
+                        <span>La póliza quedará marcada en rojo como <strong>Cancelada</strong> manteniendo todo el historial, matrículas y datos para futuras consultas o gestiones tributarias. Puedes reactivarla en cualquier momento si fue un error.</span>
+                    </div>
+
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="bg-slate-50 px-6 py-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 text-xs font-bold">
+                    <button type="button" onclick="closeCancelPolicyModal()"
+                            class="text-slate-500 hover:text-slate-700 px-3 py-2.5 transition cursor-pointer">
+                        Volver sin Cancelar
+                    </button>
+                    
+                    <button type="submit"
+                            class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                        <span>Confirmar Baja de Póliza</span>
+                    </button>
+                </div>
+            </form>
 
         </div>
     </div>

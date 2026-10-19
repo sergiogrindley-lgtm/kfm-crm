@@ -212,6 +212,71 @@ class ClientController extends Controller
             ->with('success', 'Nueva póliza añadida al cliente.');
     }
 
+    /**
+     * Cancelar o dar de baja una póliza del cliente
+     */
+    public function cancelPolicy(Request $request, Client $client, Policy $policy)
+    {
+        $validated = $request->validate([
+            'motivo' => 'required|string|max:255',
+            'fecha_baja' => 'nullable|string|max:50',
+            'notas' => 'nullable|string',
+        ]);
+
+        $motivo = $validated['motivo'];
+        $fechaBaja = $validated['fecha_baja'] ?: date('d/m/Y');
+        $notas = !empty($validated['notas']) ? trim($validated['notas']) : null;
+
+        $registroBaja = "● BAJA ({$fechaBaja}): {$motivo}";
+        if ($notas) {
+            $registroBaja .= " — Nota: {$notas}";
+        }
+
+        // Anexar al historial de observaciones
+        $observacionesActuales = $policy->observaciones ? trim($policy->observaciones) . "\n" : '';
+        $nuevaObservacion = $observacionesActuales . $registroBaja;
+
+        $policy->update([
+            'estado' => 'Cancelada',
+            'balance' => 'Cancelled',
+            'observaciones' => $nuevaObservacion,
+        ]);
+
+        return redirect()->route('clients.show', $client)
+            ->with('success', "Póliza #{$policy->numero_poliza} dada de baja correctamente (Motivo: {$motivo}).");
+    }
+
+    /**
+     * Reactivar una póliza previamente cancelada
+     */
+    public function reactivatePolicy(Client $client, Policy $policy)
+    {
+        $fecha = date('d/m/Y');
+        $observacionesActuales = $policy->observaciones ? trim($policy->observaciones) . "\n" : '';
+        $nuevaObservacion = $observacionesActuales . "● REACTIVADA ({$fecha}): Póliza reactivada a estado Activo.";
+
+        $policy->update([
+            'estado' => 'Activo',
+            'balance' => 'Paid Full',
+            'observaciones' => $nuevaObservacion,
+        ]);
+
+        return redirect()->route('clients.show', $client)
+            ->with('success', "Póliza #{$policy->numero_poliza} reactivada a estado Activo con éxito.");
+    }
+
+    /**
+     * Eliminar definitivamente una póliza (para errores o duplicados)
+     */
+    public function destroyPolicy(Client $client, Policy $policy)
+    {
+        $numeroPoliza = $policy->numero_poliza ?: ($policy->marca . ' ' . $policy->modelo);
+        $policy->delete();
+
+        return redirect()->route('clients.show', $client)
+            ->with('success', "Póliza #{$numeroPoliza} eliminada permanentemente del sistema.");
+    }
+
     public function destroy(Client $client)
     {
         $fullName = $client->full_name;
