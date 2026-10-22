@@ -30,6 +30,7 @@ Route::prefix('operations')->name('operations.')->group(function () {
     // 1. GESTORÍA DGT & TRANSFERENCIAS
     Route::get('gestoria', [OperationsController::class, 'indexGestoria'])->name('gestoria.index');
     Route::post('gestoria', [OperationsController::class, 'storeGestoria'])->name('gestoria.store');
+    Route::put('gestoria/{tramite}', [OperationsController::class, 'updateGestoria'])->name('gestoria.update');
     Route::patch('gestoria/{tramite}/status', [OperationsController::class, 'updateGestoriaStatus'])->name('gestoria.status');
     // Documentos Oficiales Gestoría
     Route::get('gestoria/{tramite}/portada', [OperationsController::class, 'documentoPortada'])->name('gestoria.portada');

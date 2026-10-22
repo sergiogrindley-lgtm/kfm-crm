@@ -34,11 +34,12 @@ class GestoriaTramite extends Model
     public function getStatusBadgeColorAttribute(): string
     {
         return match ($this->estado) {
-            'DOCUMENTOS' => 'bg-amber-100 text-amber-800 border-amber-300',
-            'OUT_GESTORIA' => 'bg-indigo-100 text-indigo-800 border-indigo-300',
-            'BACK_AVISADO' => 'bg-cyan-100 text-cyan-800 border-cyan-300',
-            'LIQUIDADO' => 'bg-blue-100 text-blue-800 border-blue-300',
-            'RECOGIDO' => 'bg-emerald-100 text-emerald-800 border-emerald-300',
+            'PREPARADO' => 'bg-emerald-100 text-emerald-800 border-emerald-300',
+            'PENDIENTE_DOC', 'DOCUMENTOS' => 'bg-amber-100 text-amber-800 border-amber-300',
+            'ENVIADO_GESTORIA', 'OUT_GESTORIA' => 'bg-purple-100 text-purple-800 border-purple-300',
+            'PERMISO_RECIBIDO', 'BACK_AVISADO', 'RECOGIDO', 'LIQUIDADO' => 'bg-white text-slate-800 border-slate-300 shadow-xs',
+            'CANCELADO' => 'bg-red-100 text-red-800 border-red-300',
+            'CESION_POLIZA' => 'bg-slate-200 text-slate-700 border-slate-400',
             default => 'bg-slate-100 text-slate-800 border-slate-300',
         };
     }
@@ -46,11 +47,15 @@ class GestoriaTramite extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->estado) {
-            'DOCUMENTOS' => '1. Documentación Recibida',
-            'OUT_GESTORIA' => '2. Enviado a Gestoría',
-            'BACK_AVISADO' => '3. Devuelto / Cliente Avisado',
-            'LIQUIDADO' => '4. Liquidado / Pagado',
-            'RECOGIDO' => '5. Recogido por Cliente',
+            'PREPARADO' => 'Preparado',
+            'PENDIENTE_DOC', 'DOCUMENTOS' => 'Pendiente de documentación',
+            'ENVIADO_GESTORIA', 'OUT_GESTORIA' => 'Enviado a gestoría',
+            'PERMISO_RECIBIDO' => 'Permiso de circulación recibido',
+            'CANCELADO' => 'Cancelado',
+            'CESION_POLIZA' => 'Cesión de póliza',
+            'BACK_AVISADO' => 'Permiso de circulación recibido',
+            'LIQUIDADO' => 'Permiso de circulación recibido',
+            'RECOGIDO' => 'Permiso de circulación recibido',
             default => $this->estado,
         };
     }

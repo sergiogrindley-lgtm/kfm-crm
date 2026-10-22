@@ -26,9 +26,25 @@
             <span class="text-slate-400">• Hoja de Ruta & Checklist</span>
         </div>
         <div class="flex items-center space-x-2">
-            <button onclick="window.print()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-md cursor-pointer">
-                <span>🖨️ Imprimir Hoja de Expediente</span>
+            <button onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-md cursor-pointer">
+                <span>🖨️ Imprimir</span>
             </button>
+            @php
+                $waText = "Hola, os enviamos nuevo expediente de Gestoría DGT desde KFM Insurance:\n\n"
+                    . "📋 Matrícula: " . $tramite->matricula . " (" . $tramite->marca . " " . $tramite->modelo . ")\n"
+                    . "🔹 Trámite: " . $tramite->tipo . "\n"
+                    . "👤 Comprador: " . $tramite->buyer_nombre . " (" . ($tramite->buyer_dni ?: 'DOD ID: ' . $tramite->buyer_fa) . ")\n"
+                    . "🚗 Vendedor: " . $tramite->seller_nombre . " (" . ($tramite->seller_dni ?: 'DOD ID: ' . $tramite->seller_fa) . ")\n"
+                    . ($tramite->recibo_numero ? ("🧾 Nº Recibo: " . $tramite->recibo_numero . "\n") : "")
+                    . ($tramite->tiene_cesion ? "🛡️ Incluye Cesión de Póliza KFM\n" : "")
+                    . "📍 Oficina: " . ($tramite->sede ? $tramite->sede->name : 'KFM Rota') . "\n"
+                    . "👤 Agente KFM: " . ($tramite->agente ?: 'KFM') . "\n\n"
+                    . "Toda la documentación y mandatos están preparados en oficina.";
+                $waUrl = "https://api.whatsapp.com/send?text=" . urlencode($waText);
+            @endphp
+            <a href="{{ $waUrl }}" target="_blank" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-md cursor-pointer">
+                <span>📲 Mandar a gestoría por WhatsApp</span>
+            </a>
             <button onclick="window.close()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl transition">
                 Cerrar
             </button>
@@ -50,6 +66,9 @@
                     {{ $tramite->matricula }}
                 </span>
                 <span class="block text-[10px] text-slate-400 mt-1 uppercase font-semibold">EXP: KFM-{{ date('Y') }}-{{ str_pad($tramite->id, 4, '0', STR_PAD_LEFT) }}</span>
+                @if($tramite->recibo_numero)
+                    <span class="inline-block bg-indigo-50 text-indigo-700 font-bold font-mono text-[10px] px-2 py-0.5 rounded border border-indigo-200 mt-1">RECIBO: #{{ $tramite->recibo_numero }}</span>
+                @endif
             </div>
         </div>
 
@@ -104,10 +123,6 @@
                         <span class="text-slate-400 text-[10px] uppercase block font-semibold">Domicilio:</span>
                         <span class="uppercase">{{ $tramite->buyer_direccion }}, {{ $tramite->buyer_cp }}</span>
                     </div>
-                    <div>
-                        <span class="text-slate-400 text-[10px] uppercase block font-semibold">Contacto:</span>
-                        <span>{{ $tramite->buyer_telefono }} • {{ $tramite->buyer_email }}</span>
-                    </div>
                 </div>
             </div>
 
@@ -131,10 +146,6 @@
                     <div>
                         <span class="text-slate-400 text-[10px] uppercase block font-semibold">Domicilio:</span>
                         <span class="uppercase">{{ $tramite->seller_direccion }}, {{ $tramite->seller_cp }}</span>
-                    </div>
-                    <div>
-                        <span class="text-slate-400 text-[10px] uppercase block font-semibold">Contacto:</span>
-                        <span>{{ $tramite->seller_contacto }}</span>
                     </div>
                 </div>
             </div>

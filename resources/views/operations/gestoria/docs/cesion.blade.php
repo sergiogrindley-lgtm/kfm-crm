@@ -54,7 +54,7 @@
         <div class="space-y-6 text-sm leading-relaxed text-justify py-4">
             <p>
                 <strong>Yo, D./Dña.</strong> <span class="uppercase font-bold text-slate-900">{{ $tramite->seller_nombre }}</span>, 
-                con DNI / NIE / Passport <strong class="font-mono text-slate-900">{{ $tramite->seller_dni }}</strong> @if($tramite->seller_fa) (DOD ID: <strong class="font-mono">{{ $tramite->seller_fa }}</strong>)@endif, 
+                con SSN / DOD ID <strong class="font-mono text-slate-900">{{ $tramite->seller_fa ?: ($tramite->seller_dni ?: '***-**-****') }}</strong>, 
                 en calidad de tomador de la póliza de seguro asociada al vehículo reseñado,
             </p>
 
@@ -64,7 +64,7 @@
 
             <p>
                 <strong>D./Dña.</strong> <span class="uppercase font-bold text-slate-900">{{ $tramite->buyer_nombre }}</span>, 
-                con DNI / NIE / Passport <strong class="font-mono text-slate-900">{{ $tramite->buyer_dni }}</strong> @if($tramite->buyer_fa) (DOD ID: <strong class="font-mono">{{ $tramite->buyer_fa }}</strong>)@endif, 
+                con SSN (Social Security Number) <strong class="font-mono text-slate-900">{{ $tramite->ssn ?: '***-**-****' }}</strong>@if($tramite->buyer_fa) (DOD ID: <strong class="font-mono">{{ $tramite->buyer_fa }}</strong>)@endif, 
                 con fecha de nacimiento <strong>{{ $tramite->buyer_dob ?: 'No indicada' }}</strong> y domicilio en <span class="uppercase font-semibold">{{ $tramite->buyer_direccion }}</span> (CP: {{ $tramite->buyer_cp ?: '11520' }}), 
                 correspondiente a mi vehículo:
             </p>

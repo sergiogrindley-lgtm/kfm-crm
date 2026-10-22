@@ -49,11 +49,12 @@ class OperationsController extends Controller
 
         $stats = [
             'total' => GestoriaTramite::count(),
-            'documentos' => GestoriaTramite::where('estado', 'DOCUMENTOS')->count(),
-            'out_gestoria' => GestoriaTramite::where('estado', 'OUT_GESTORIA')->count(),
-            'back_avisado' => GestoriaTramite::where('estado', 'BACK_AVISADO')->count(),
-            'liquidado' => GestoriaTramite::where('estado', 'LIQUIDADO')->count(),
-            'recogido' => GestoriaTramite::where('estado', 'RECOGIDO')->count(),
+            'preparado' => GestoriaTramite::where('estado', 'PREPARADO')->count(),
+            'pendiente_doc' => GestoriaTramite::whereIn('estado', ['PENDIENTE_DOC', 'DOCUMENTOS'])->count(),
+            'enviado_gestoria' => GestoriaTramite::whereIn('estado', ['ENVIADO_GESTORIA', 'OUT_GESTORIA'])->count(),
+            'permiso_recibido' => GestoriaTramite::whereIn('estado', ['PERMISO_RECIBIDO', 'BACK_AVISADO', 'LIQUIDADO', 'RECOGIDO'])->count(),
+            'cancelado' => GestoriaTramite::where('estado', 'CANCELADO')->count(),
+            'cesion_poliza' => GestoriaTramite::where('estado', 'CESION_POLIZA')->count(),
         ];
 
         $sedes = Sede::all();
@@ -73,7 +74,7 @@ class OperationsController extends Controller
             'modelo' => 'required|string|max:100',
             'precio_venta' => 'nullable|string|max:50',
             'buyer_nombre' => 'required|string|max:150',
-            'buyer_dni' => 'required|string|max:50',
+            'buyer_dni' => 'nullable|string|max:50',
             'buyer_fa' => 'nullable|string|max:50',
             'buyer_dob' => 'nullable|string|max:50',
             'buyer_email' => 'nullable|string|max:100',
@@ -81,13 +82,14 @@ class OperationsController extends Controller
             'buyer_direccion' => 'nullable|string|max:255',
             'buyer_cp' => 'nullable|string|max:20',
             'seller_nombre' => 'required|string|max:150',
-            'seller_dni' => 'required|string|max:50',
+            'seller_dni' => 'nullable|string|max:50',
             'seller_fa' => 'nullable|string|max:50',
             'seller_direccion' => 'nullable|string|max:255',
             'seller_cp' => 'nullable|string|max:20',
             'seller_contacto' => 'nullable|string|max:100',
             'precio_tramite' => 'nullable|string|max:50',
             'itp_cuota' => 'nullable|string|max:50',
+            'recibo_numero' => 'nullable|string|max:50',
             'estado' => 'nullable|string|max:50',
             'tiene_cesion' => 'nullable|boolean',
             'ssn' => 'nullable|string|max:50',
@@ -96,14 +98,14 @@ class OperationsController extends Controller
         ]);
 
         $validated['matricula'] = strtoupper(trim($validated['matricula']));
-        $validated['vin'] = $validated['vin'] ? strtoupper(trim($validated['vin'])) : null;
+        $validated['vin'] = !empty($validated['vin']) ? strtoupper(trim($validated['vin'])) : null;
         $validated['buyer_nombre'] = strtoupper(trim($validated['buyer_nombre']));
-        $validated['buyer_dni'] = strtoupper(trim($validated['buyer_dni']));
+        $validated['buyer_dni'] = !empty($validated['buyer_dni']) ? strtoupper(trim($validated['buyer_dni'])) : null;
         $validated['seller_nombre'] = strtoupper(trim($validated['seller_nombre']));
-        $validated['seller_dni'] = strtoupper(trim($validated['seller_dni']));
+        $validated['seller_dni'] = !empty($validated['seller_dni']) ? strtoupper(trim($validated['seller_dni'])) : null;
         $validated['fecha_tramite'] = date('d/m/Y');
-        $validated['estado'] = $validated['estado'] ?? 'DOCUMENTOS';
-        $validated['tiene_cesion'] = $request->has('tiene_cesion');
+        $validated['estado'] = $validated['estado'] ?? 'PREPARADO';
+        $validated['tiene_cesion'] = $request->has('tiene_cesion') || $request->input('tipo') === 'Cesión de póliza';
 
         // Documentos checklist por defecto
         $validated['documentos_checklist'] = [
@@ -123,6 +125,55 @@ class OperationsController extends Controller
             ->with('success', "Expediente para {$tramite->matricula} ({$tramite->buyer_nombre}) registrado correctamente.");
     }
 
+    public function updateGestoria(Request $request, GestoriaTramite $tramite)
+    {
+        $validated = $request->validate([
+            'tipo' => 'required|string|max:100',
+            'agente' => 'nullable|string|max:50',
+            'sede_id' => 'nullable|exists:sedes,id',
+            'matricula' => 'required|string|max:50',
+            'vin' => 'nullable|string|max:50',
+            'marca' => 'required|string|max:100',
+            'modelo' => 'required|string|max:100',
+            'precio_venta' => 'nullable|string|max:50',
+            'buyer_nombre' => 'required|string|max:150',
+            'buyer_dni' => 'nullable|string|max:50',
+            'buyer_fa' => 'nullable|string|max:50',
+            'buyer_dob' => 'nullable|string|max:50',
+            'buyer_email' => 'nullable|string|max:100',
+            'buyer_telefono' => 'nullable|string|max:50',
+            'buyer_direccion' => 'nullable|string|max:255',
+            'buyer_cp' => 'nullable|string|max:20',
+            'seller_nombre' => 'required|string|max:150',
+            'seller_dni' => 'nullable|string|max:50',
+            'seller_fa' => 'nullable|string|max:50',
+            'seller_direccion' => 'nullable|string|max:255',
+            'seller_cp' => 'nullable|string|max:20',
+            'seller_contacto' => 'nullable|string|max:100',
+            'precio_tramite' => 'nullable|string|max:50',
+            'itp_cuota' => 'nullable|string|max:50',
+            'recibo_numero' => 'nullable|string|max:50',
+            'estado' => 'required|string|max:50',
+            'tiene_cesion' => 'nullable|boolean',
+            'ssn' => 'nullable|string|max:50',
+            'box_ship' => 'nullable|string|max:100',
+            'observaciones' => 'nullable|string',
+        ]);
+
+        $validated['matricula'] = strtoupper(trim($validated['matricula']));
+        $validated['vin'] = !empty($validated['vin']) ? strtoupper(trim($validated['vin'])) : null;
+        $validated['buyer_nombre'] = strtoupper(trim($validated['buyer_nombre']));
+        $validated['buyer_dni'] = !empty($validated['buyer_dni']) ? strtoupper(trim($validated['buyer_dni'])) : null;
+        $validated['seller_nombre'] = strtoupper(trim($validated['seller_nombre']));
+        $validated['seller_dni'] = !empty($validated['seller_dni']) ? strtoupper(trim($validated['seller_dni'])) : null;
+        $validated['tiene_cesion'] = $request->has('tiene_cesion') || $request->input('tipo') === 'Cesión de póliza';
+
+        $tramite->update($validated);
+
+        return redirect()->route('operations.gestoria.index')
+            ->with('success', "Expediente {$tramite->matricula} actualizado correctamente.");
+    }
+
     public function updateGestoriaStatus(Request $request, GestoriaTramite $tramite)
     {
         $estado = $request->input('estado');
@@ -130,21 +181,16 @@ class OperationsController extends Controller
 
         $data = ['estado' => $estado];
 
-        if ($estado === 'OUT_GESTORIA' && !$tramite->fecha_out_gestoria) {
+        if ($estado === 'ENVIADO_GESTORIA' && !$tramite->fecha_out_gestoria) {
             $data['fecha_out_gestoria'] = $hoy;
-        } elseif ($estado === 'BACK_AVISADO' && !$tramite->fecha_back_avisado) {
-            $data['fecha_back_avisado'] = $hoy;
-        } elseif ($estado === 'LIQUIDADO' && !$tramite->fecha_liquidado) {
-            $data['fecha_liquidado'] = $hoy;
-            $data['pago_estado'] = 'Pagado';
-        } elseif ($estado === 'RECOGIDO' && !$tramite->fecha_recogido) {
+        } elseif ($estado === 'PERMISO_RECIBIDO' && !$tramite->fecha_recogido) {
             $data['fecha_recogido'] = $hoy;
         }
 
         $tramite->update($data);
 
         return redirect()->back()
-            ->with('success', "Expediente {$tramite->matricula} actualizado a estado {$tramite->status_label}.");
+            ->with('success', "Expediente {$tramite->matricula} actualizado a estado: {$tramite->status_label}.");
     }
 
     /**
