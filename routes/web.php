@@ -39,6 +39,7 @@ Route::prefix('operations')->name('operations.')->group(function () {
     Route::get('gestoria/{tramite}/contrato-compraventa', [OperationsController::class, 'documentoContratoCompraventa'])->name('gestoria.contrato-compraventa');
     Route::get('gestoria/{tramite}/extravio-vendedor', [OperationsController::class, 'documentoExtravioVendedor'])->name('gestoria.extravio-vendedor');
     Route::get('gestoria/{tramite}/cesion', [OperationsController::class, 'documentoCesion'])->name('gestoria.cesion');
+    Route::get('gestoria/{tramite}/embargo', [OperationsController::class, 'documentoEmbargo'])->name('gestoria.embargo');
 
     // 2. EXTORNOS & TRASLADOS PCS
     Route::get('extornos', [OperationsController::class, 'indexExtornos'])->name('extornos.index');

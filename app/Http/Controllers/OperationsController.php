@@ -38,11 +38,31 @@ class OperationsController extends Controller
         }
 
         if ($estado = $request->input('estado')) {
-            $query->where('estado', $estado);
+            if ($estado === 'PENDIENTE_DOC') {
+                $query->whereIn('estado', ['PENDIENTE_DOC', 'DOCUMENTOS']);
+            } elseif ($estado === 'ENVIADO_GESTORIA') {
+                $query->whereIn('estado', ['ENVIADO_GESTORIA', 'OUT_GESTORIA']);
+            } elseif (in_array($estado, ['PERMISO_RECIBIDO', 'TERMINADAS', 'TERMINADA'])) {
+                $query->whereIn('estado', ['PERMISO_RECIBIDO', 'BACK_AVISADO', 'LIQUIDADO', 'RECOGIDO']);
+            } else {
+                $query->where('estado', $estado);
+            }
+        }
+
+        if ($tipo = $request->input('tipo')) {
+            if ($tipo === 'Transferencia' || $tipo === 'Transferencias') {
+                $query->where('tipo', 'like', '%Transferencia%');
+            } else {
+                $query->where('tipo', $tipo);
+            }
         }
 
         if ($sedeId = $request->input('sede_id')) {
             $query->where('sede_id', $sedeId);
+        }
+
+        if ($agente = $request->input('agente')) {
+            $query->where('agente', $agente);
         }
 
         $tramites = $query->paginate(20)->withQueryString();
@@ -55,6 +75,7 @@ class OperationsController extends Controller
             'permiso_recibido' => GestoriaTramite::whereIn('estado', ['PERMISO_RECIBIDO', 'BACK_AVISADO', 'LIQUIDADO', 'RECOGIDO'])->count(),
             'cancelado' => GestoriaTramite::where('estado', 'CANCELADO')->count(),
             'cesion_poliza' => GestoriaTramite::where('estado', 'CESION_POLIZA')->count(),
+            'transferencias' => GestoriaTramite::where('tipo', 'like', '%Transferencia%')->count(),
         ];
 
         $sedes = Sede::all();
@@ -72,6 +93,7 @@ class OperationsController extends Controller
             'vin' => 'nullable|string|max:50',
             'marca' => 'required|string|max:100',
             'modelo' => 'required|string|max:100',
+            'fecha_tramite' => 'nullable|string|max:50',
             'precio_venta' => 'nullable|string|max:50',
             'buyer_nombre' => 'required|string|max:150',
             'buyer_dni' => 'nullable|string|max:50',
@@ -103,7 +125,7 @@ class OperationsController extends Controller
         $validated['buyer_dni'] = !empty($validated['buyer_dni']) ? strtoupper(trim($validated['buyer_dni'])) : null;
         $validated['seller_nombre'] = strtoupper(trim($validated['seller_nombre']));
         $validated['seller_dni'] = !empty($validated['seller_dni']) ? strtoupper(trim($validated['seller_dni'])) : null;
-        $validated['fecha_tramite'] = date('d/m/Y');
+        $validated['fecha_tramite'] = !empty($validated['fecha_tramite']) ? trim($validated['fecha_tramite']) : date('d/m/Y');
         $validated['estado'] = $validated['estado'] ?? 'PREPARADO';
         $validated['tiene_cesion'] = $request->has('tiene_cesion') || $request->input('tipo') === 'Cesión de póliza';
 
@@ -135,6 +157,7 @@ class OperationsController extends Controller
             'vin' => 'nullable|string|max:50',
             'marca' => 'required|string|max:100',
             'modelo' => 'required|string|max:100',
+            'fecha_tramite' => 'nullable|string|max:50',
             'precio_venta' => 'nullable|string|max:50',
             'buyer_nombre' => 'required|string|max:150',
             'buyer_dni' => 'nullable|string|max:50',
@@ -213,17 +236,155 @@ class OperationsController extends Controller
 
     public function documentoContratoCompraventa(GestoriaTramite $tramite)
     {
-        return view('operations.gestoria.docs.contrato-compraventa', compact('tramite'));
+        $fecha = $tramite->fecha_tramite ?: ($tramite->created_at ? $tramite->created_at->format('d/m/Y') : date('d/m/Y'));
+        $dia = date('d');
+        $mesNombre = 'OCTUBRE';
+        $ano = date('Y');
+
+        if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', trim($fecha), $m)) {
+            $dia = (int)$m[1];
+            $meses = [
+                1 => 'ENERO', 2 => 'FEBRERO', 3 => 'MARZO', 4 => 'ABRIL',
+                5 => 'MAYO', 6 => 'JUNIO', 7 => 'JULIO', 8 => 'AGOSTO',
+                9 => 'SEPTIEMBRE', 10 => 'OCTUBRE', 11 => 'NOVIEMBRE', 12 => 'DICIEMBRE'
+            ];
+            $mesNombre = $meses[(int)$m[2]] ?? 'OCTUBRE';
+            $ano = $m[3];
+        }
+
+        $precioNum = 1000;
+        if (!empty($tramite->precio_venta)) {
+            $cleaned = str_replace(['€', ' ', '.'], '', $tramite->precio_venta);
+            $cleaned = str_replace(',', '.', $cleaned);
+            $parsed = (float)$cleaned;
+            if ($parsed > 0) {
+                $precioNum = $parsed;
+            }
+        }
+        $precioLetras = $this->numeroALetras($precioNum);
+        $precioFormatted = number_format($precioNum, 2, ',', '.') . ' €';
+
+        return view('operations.gestoria.docs.contrato-compraventa', compact('tramite', 'dia', 'mesNombre', 'ano', 'precioLetras', 'precioFormatted'));
     }
 
     public function documentoExtravioVendedor(GestoriaTramite $tramite)
     {
-        return view('operations.gestoria.docs.extravio-vendedor', compact('tramite'));
+        $fecha = $tramite->fecha_tramite ?: ($tramite->created_at ? $tramite->created_at->format('d/m/Y') : date('d/m/Y'));
+        $dia = date('d');
+        $mesNombre = 'OCTUBRE';
+        $ano = date('Y');
+
+        if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', trim($fecha), $m)) {
+            $dia = (int)$m[1];
+            $meses = [
+                1 => 'ENERO', 2 => 'FEBRERO', 3 => 'MARZO', 4 => 'ABRIL',
+                5 => 'MAYO', 6 => 'JUNIO', 7 => 'JULIO', 8 => 'AGOSTO',
+                9 => 'SEPTIEMBRE', 10 => 'OCTUBRE', 11 => 'NOVIEMBRE', 12 => 'DICIEMBRE'
+            ];
+            $mesNombre = $meses[(int)$m[2]] ?? 'OCTUBRE';
+            $ano = $m[3];
+        }
+
+        return view('operations.gestoria.docs.extravio-vendedor', compact('tramite', 'dia', 'mesNombre', 'ano'));
     }
 
     public function documentoCesion(GestoriaTramite $tramite)
     {
-        return view('operations.gestoria.docs.cesion', compact('tramite'));
+        $fecha = $tramite->fecha_tramite ?: ($tramite->created_at ? $tramite->created_at->format('d/m/Y') : date('d/m/Y'));
+        $dia = date('d');
+        $mesNombre = 'OCTUBRE';
+        $ano = date('Y');
+
+        if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', trim($fecha), $m)) {
+            $dia = (int)$m[1];
+            $meses = [
+                1 => 'ENERO', 2 => 'FEBRERO', 3 => 'MARZO', 4 => 'ABRIL',
+                5 => 'MAYO', 6 => 'JUNIO', 7 => 'JULIO', 8 => 'AGOSTO',
+                9 => 'SEPTIEMBRE', 10 => 'OCTUBRE', 11 => 'NOVIEMBRE', 12 => 'DICIEMBRE'
+            ];
+            $mesNombre = $meses[(int)$m[2]] ?? 'OCTUBRE';
+            $ano = $m[3];
+        }
+
+        return view('operations.gestoria.docs.cesion', compact('tramite', 'dia', 'mesNombre', 'ano'));
+    }
+
+    public function documentoEmbargo(GestoriaTramite $tramite)
+    {
+        $fecha = $tramite->fecha_tramite ?: ($tramite->created_at ? $tramite->created_at->format('d/m/Y') : date('d/m/Y'));
+        $dia = date('d');
+        $mesNombre = 'OCTUBRE';
+        $ano = date('Y');
+
+        if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', trim($fecha), $m)) {
+            $dia = (int)$m[1];
+            $meses = [
+                1 => 'ENERO', 2 => 'FEBRERO', 3 => 'MARZO', 4 => 'ABRIL',
+                5 => 'MAYO', 6 => 'JUNIO', 7 => 'JULIO', 8 => 'AGOSTO',
+                9 => 'SEPTIEMBRE', 10 => 'OCTUBRE', 11 => 'NOVIEMBRE', 12 => 'DICIEMBRE'
+            ];
+            $mesNombre = $meses[(int)$m[2]] ?? 'OCTUBRE';
+            $ano = $m[3];
+        }
+
+        return view('operations.gestoria.docs.embargo', compact('tramite', 'dia', 'mesNombre', 'ano'));
+    }
+
+    private function numeroALetras($number): string
+    {
+        $unidades = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+        $especiales = [11 => 'ONCE', 12 => 'DOCE', 13 => 'TRECE', 14 => 'CATORCE', 15 => 'QUINCE', 16 => 'DIECISÉIS', 17 => 'DIECISIETE', 18 => 'DIECIOCHO', 19 => 'DIECINUEVE'];
+        $decenas = ['', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+        $centenas = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+
+        $number = (int)$number;
+        if ($number === 0) return 'CERO EUROS';
+        if ($number === 100) return 'CIEN EUROS';
+
+        $convertir3 = function($n) use ($unidades, $especiales, $decenas, $centenas) {
+            $res = '';
+            $c = (int)($n / 100);
+            $restoCentena = $n % 100;
+            $d = (int)($restoCentena / 10);
+            $u = $restoCentena % 10;
+
+            if ($n === 100) return 'CIEN';
+            if ($c > 0) $res .= $centenas[$c] . ' ';
+
+            if ($restoCentena >= 11 && $restoCentena <= 19) {
+                $res .= $especiales[$restoCentena];
+            } elseif ($restoCentena === 10) {
+                $res .= 'DIEZ';
+            } elseif ($restoCentena === 20) {
+                $res .= 'VEINTE';
+            } elseif ($restoCentena > 20 && $restoCentena < 30) {
+                $res .= 'VEINTI' . $unidades[$u];
+            } else {
+                if ($d > 0) {
+                    $res .= $decenas[$d];
+                    if ($u > 0) $res .= ' Y ' . $unidades[$u];
+                } elseif ($u > 0) {
+                    $res .= $unidades[$u];
+                }
+            }
+            return trim($res);
+        };
+
+        $miles = (int)($number / 1000);
+        $resto = $number % 1000;
+        $texto = '';
+
+        if ($miles === 1) {
+            $texto .= 'MIL ';
+        } elseif ($miles > 1) {
+            $texto .= $convertir3($miles) . ' MIL ';
+        }
+
+        if ($resto > 0) {
+            $texto .= $convertir3($resto);
+        }
+
+        return trim($texto) . ' EUROS';
     }
 
     /**

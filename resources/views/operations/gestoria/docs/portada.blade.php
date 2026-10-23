@@ -56,10 +56,13 @@
         
         <!-- Header: KFM + DGT Info -->
         <div class="flex items-start justify-between border-b-2 border-slate-900 pb-5">
-            <div>
-                <h1 class="text-2xl font-black tracking-tight text-slate-900 font-display">KFM INSURANCE & PATRIA GESTORÍA</h1>
-                <p class="text-xs text-slate-500 mt-0.5">Plaza del Triunfo nº 7, 11520 Rota (Cádiz) • Oficina NEX Base Naval Rota</p>
-                <p class="text-[11px] text-slate-400 font-mono">Destino: GESTORÍA BAHÍA & NAVAL • Fernando Sánchez Naval (Col. 1271)</p>
+            <div class="flex items-start gap-4">
+                <img src="{{ asset('img/logo.png') }}" alt="KFM Insurance" class="h-12 w-auto object-contain mt-0.5">
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight text-slate-900 font-display">KFM INSURANCE & PATRIA GESTORÍA</h1>
+                    <p class="text-xs text-slate-500 mt-0.5">Plaza del Triunfo nº 7, 11520 Rota (Cádiz) • Oficina NEX Base Naval Rota</p>
+                    <p class="text-[11px] text-slate-400 font-mono">Destino: GESTORÍA BAHÍA & NAVAL • Fernando Sánchez de Nieva Ballesta (Col. 1201)</p>
+                </div>
             </div>
             <div class="text-right">
                 <span class="inline-block bg-slate-900 text-white font-mono font-bold text-base px-3 py-1 rounded-lg">

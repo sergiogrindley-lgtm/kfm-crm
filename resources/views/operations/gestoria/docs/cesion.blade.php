@@ -3,130 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cesión de Póliza KFM — {{ $tramite->matricula }}</title>
+    <title>Cesión de Póliza de Seguro — {{ $tramite->matricula }} — KFM Insurance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; line-height: 1.6; }
+        @page {
+            size: A4 portrait;
+            margin: 14mm 18mm 14mm 18mm;
+        }
+        body {
+            font-family: Arial, 'Helvetica Neue', Helvetica, 'Plus Jakarta Sans', sans-serif;
+            color: #0f172a;
+            background-color: #f8fafc;
+            line-height: 1.6;
+        }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         @media print {
-            body { background: white; padding: 0 !important; }
+            body { background: white !important; padding: 0 !important; }
             .no-print { display: none !important; }
-            .print-border-none { border: none !important; box-shadow: none !important; }
+            .print-sheet {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
         }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body class="p-4 sm:p-8 text-[13px]">
 
     <!-- Action Bar (No Print) -->
-    <div class="max-w-4xl mx-auto mb-6 flex items-center justify-between no-print bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-lg">
+    <div class="max-w-3xl mx-auto mb-6 flex items-center justify-between no-print bg-slate-900 text-white px-5 py-3 rounded-xl shadow-lg">
         <div class="flex items-center space-x-3 text-xs">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="font-bold uppercase tracking-wider text-slate-300">Documento Oficial de Cesión de Póliza KFM</span>
+            <span class="font-bold uppercase tracking-wider text-slate-200">Documento Oficial de Cesión de Póliza</span>
+            <span class="text-slate-400">• KFM Insurance Rota</span>
         </div>
         <div class="flex items-center space-x-2">
-            <button onclick="window.print()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-md cursor-pointer">
-                <span>🖨️ Imprimir Hoja de Cesión</span>
+            <button onclick="window.print()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 font-bold text-xs rounded-lg transition flex items-center gap-1.5 shadow-md cursor-pointer">
+                <span>🖨️ Imprimir Cesión</span>
             </button>
-            <button onclick="window.close()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl transition">
+            <button onclick="window.close()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg transition cursor-pointer">
                 Cerrar
             </button>
         </div>
     </div>
 
-    <div class="max-w-4xl mx-auto bg-white p-10 sm:p-14 rounded-2xl shadow-xl border border-slate-200 print-border-none space-y-6 text-xs">
+    <!-- Official Document Sheet -->
+    <div class="max-w-3xl mx-auto bg-white p-12 sm:p-16 rounded-xl shadow-xl border border-slate-200 print-sheet space-y-8 text-slate-900">
         
-        <!-- Header Corporate -->
-        <div class="flex items-start justify-between border-b-2 border-slate-900 pb-5">
-            <div>
-                <h1 class="text-2xl font-black tracking-tight text-slate-900 font-display">KFM INSURANCE</h1>
-                <p class="text-xs font-semibold text-slate-600 mt-0.5">PLAZA DEL TRIUNFO Nº 7 • 11520 ROTA (CÁDIZ)</p>
-                <p class="text-[11px] text-slate-400">Oficina NEX Navy Exchange Base Naval Rota • Tel: 956 84 00 50</p>
+        <!-- Header Corporativo Oficial con Logo KFM -->
+        <div class="flex items-center justify-between border-b-2 border-slate-900 pb-5">
+            <div class="flex items-center gap-4">
+                <img src="{{ asset('img/logo.png') }}" alt="KFM Insurance" class="h-12 w-auto object-contain">
+                <div>
+                    <h1 class="text-base font-black tracking-wider text-slate-900 uppercase">KFM INSURANCE</h1>
+                    <p class="text-xs font-bold text-slate-700 uppercase">PLAZA DEL TRIUNFO Nº 7</p>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">11520 ROTA (CÁDIZ)</p>
+                </div>
             </div>
             <div class="text-right">
-                <span class="inline-block bg-emerald-600 text-white font-bold text-xs uppercase px-3 py-1 rounded-lg">
-                    CESIÓN DE SEGURO
+                <span class="inline-block bg-slate-900 text-white font-mono font-bold text-xs px-2.5 py-1 rounded">
+                    {{ $tramite->matricula }}
                 </span>
-                <span class="block text-[11px] font-mono text-slate-500 mt-1">En Rota, a {{ $tramite->fecha_tramite ?: date('d/m/Y') }}</span>
+                <span class="block text-[10px] text-slate-400 mt-1 uppercase font-semibold">Oficina Central & NEX Base Naval</span>
             </div>
         </div>
 
-        <div class="space-y-6 text-sm leading-relaxed text-justify py-4">
+        <!-- Fecha Oficial (Alineada a la derecha como en el documento modelo) -->
+        <div class="text-right text-sm">
+            <span>En Rota, a <strong>{{ $dia }} DE {{ $mesNombre }} DE {{ $ano }}</strong></span>
+        </div>
+
+        <!-- Declaración Principal de Cesión de Uso y Derechos -->
+        <div class="bg-slate-50/80 p-6 rounded-xl border border-slate-200 space-y-4 text-sm leading-relaxed text-slate-900 text-justify">
             <p>
-                <strong>Yo, D./Dña.</strong> <span class="uppercase font-bold text-slate-900">{{ $tramite->seller_nombre }}</span>, 
-                con SSN / DOD ID <strong class="font-mono text-slate-900">{{ $tramite->seller_fa ?: ($tramite->seller_dni ?: '***-**-****') }}</strong>, 
-                en calidad de tomador de la póliza de seguro asociada al vehículo reseñado,
+                Yo, <strong class="uppercase text-black">{{ $tramite->seller_nombre }}</strong>, 
+                con póliza <strong class="font-mono text-indigo-700">{{ $tramite->policy ? $tramite->policy->policy_number : ($tramite->observaciones ?: 'KFM-AUTO-2026') }}</strong>,
             </p>
-
-            <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl font-medium text-emerald-950">
-                <strong>CEDO EL USO, DERECHOS Y OBLIGACIONES DE LA PÓLIZA DE SEGURO A:</strong>
-            </div>
-
             <p>
-                <strong>D./Dña.</strong> <span class="uppercase font-bold text-slate-900">{{ $tramite->buyer_nombre }}</span>, 
-                con SSN (Social Security Number) <strong class="font-mono text-slate-900">{{ $tramite->ssn ?: '***-**-****' }}</strong>@if($tramite->buyer_fa) (DOD ID: <strong class="font-mono">{{ $tramite->buyer_fa }}</strong>)@endif, 
-                con fecha de nacimiento <strong>{{ $tramite->buyer_dob ?: 'No indicada' }}</strong> y domicilio en <span class="uppercase font-semibold">{{ $tramite->buyer_direccion }}</span> (CP: {{ $tramite->buyer_cp ?: '11520' }}), 
-                correspondiente a mi vehículo:
+                cedo el uso, derechos y obligaciones a <strong class="uppercase text-black">{{ $tramite->buyer_nombre }}</strong>
             </p>
-
-            <!-- Vehicle Identification Box -->
-            <div class="bg-slate-50 border border-slate-300 rounded-xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
-                <div>
-                    <span class="block text-[10px] uppercase font-bold text-slate-400">Matrícula:</span>
-                    <strong class="font-mono text-base text-slate-900">{{ $tramite->matricula }}</strong>
-                </div>
-                <div>
-                    <span class="block text-[10px] uppercase font-bold text-slate-400">Marca:</span>
-                    <strong class="text-sm text-slate-900 uppercase">{{ $tramite->marca }}</strong>
-                </div>
-                <div>
-                    <span class="block text-[10px] uppercase font-bold text-slate-400">Modelo:</span>
-                    <strong class="text-sm text-slate-900 uppercase">{{ $tramite->modelo }}</strong>
-                </div>
-                <div>
-                    <span class="block text-[10px] uppercase font-bold text-slate-400">Bastidor:</span>
-                    <span class="font-mono text-[11px] text-slate-800 block truncate">{{ $tramite->vin ?: 'S/D' }}</span>
-                </div>
-            </div>
-
-            <p class="text-xs text-slate-600">
-                Ambas partes aceptan la cesión de la cobertura aseguradora en los mismos términos vigentes hasta el vencimiento natural de la anualidad de la póliza, autorizando a <strong>KFM Insurance</strong> a gestionar el correspondiente suplemento de cambio de tomador y conductor habitual ante la compañía aseguradora correspondiente (Patria Hispana / GEICO).
+            <p>
+                de mi vehículo <strong class="uppercase text-black">{{ $tramite->marca }} {{ $tramite->modelo }}</strong> 
+                con matrícula <strong class="font-mono font-bold text-black uppercase">{{ $tramite->matricula }}</strong> 
+                @if($tramite->vin) (Bastidor: <span class="font-mono">{{ $tramite->vin }}</span>)@endif.
             </p>
         </div>
 
-        <!-- Military Identity Box (Fiel al Excel Cesion Poliza) -->
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 grid grid-cols-3 gap-3 text-xs">
-            <div>
-                <span class="block text-[10px] uppercase font-bold text-slate-400">SSN (Social Security):</span>
-                <span class="font-mono font-bold text-slate-800">{{ $tramite->ssn ?: '***-**-****' }}</span>
+        <!-- Firmas Cruzadas Oficiales -->
+        <div class="pt-8 pb-4 flex justify-between items-start text-xs font-semibold text-black">
+            <div class="w-5/12">
+                <p>Firmado (Comprador / Receptor):</p>
+                <p class="text-sm font-bold uppercase mt-1 text-slate-900">{{ $tramite->buyer_nombre }}</p>
+                <div class="h-20 border-b border-dashed border-slate-300 mt-4"></div>
             </div>
-            <div>
-                <span class="block text-[10px] uppercase font-bold text-slate-400">DOB (Date of Birth):</span>
-                <span class="font-mono font-bold text-slate-800">{{ $tramite->buyer_dob ?: '19/11/1995' }}</span>
-            </div>
-            <div>
-                <span class="block text-[10px] uppercase font-bold text-slate-400">BOX / SHIP (Navy):</span>
-                <span class="font-mono font-bold text-slate-800">{{ $tramite->box_ship ?: 'PSC 819 / NAVSTA ROTA' }}</span>
+            <div class="w-5/12 text-right">
+                <p>Firmado (Vendedor / Cedente):</p>
+                <p class="text-sm font-bold uppercase mt-1 text-slate-900">{{ $tramite->seller_nombre }}</p>
+                <div class="h-20 border-b border-dashed border-slate-300 mt-4"></div>
             </div>
         </div>
 
-        <!-- Signatures -->
-        <div class="pt-8 border-t border-slate-200 grid grid-cols-2 gap-12 text-center text-xs">
-            <div>
-                <span class="block font-bold text-slate-900 uppercase">FIRMADO (CEDENTE / TOMADOR ANTERIOR):</span>
-                <span class="text-[11px] text-slate-500 block uppercase mt-0.5">{{ $tramite->seller_nombre }}</span>
-                <div class="h-20 border-b border-dotted border-slate-400 mx-6 mt-4"></div>
+        <!-- Tarjeta de Datos Militares / Identificación del Receptor (Buyer) -->
+        <div class="border border-slate-200 rounded-xl p-5 bg-slate-50 text-xs space-y-1.5 font-medium text-slate-800">
+            <div class="font-bold text-[11px] text-slate-500 uppercase tracking-wider mb-2">
+                Datos de Identificación del Nuevo Titular (Buyer Identity Details)
             </div>
-
-            <div>
-                <span class="block font-bold text-slate-900 uppercase">FIRMADO (CESIONARIO / NUEVO TOMADOR):</span>
-                <span class="text-[11px] text-slate-500 block uppercase mt-0.5">{{ $tramite->buyer_nombre }}</span>
-                <div class="h-20 border-b border-dotted border-slate-400 mx-6 mt-4"></div>
-            </div>
+            <p>
+                <span class="inline-block w-20 font-bold text-slate-600">SSN:</span> 
+                <strong class="font-mono text-black">{{ $tramite->ssn ?: ($tramite->buyer_fa ?: '***-**-****') }}</strong>
+            </p>
+            <p>
+                <span class="inline-block w-20 font-bold text-slate-600">DOB:</span> 
+                <strong class="font-mono text-black">{{ $tramite->buyer_dob ?: '04/04/1995' }}</strong>
+            </p>
+            <p>
+                <span class="inline-block w-20 font-bold text-slate-600">ADDRESS:</span> 
+                <strong class="uppercase text-black">{{ $tramite->buyer_direccion ?: 'LU BASE NAVAL DE ROTA 999' }}, {{ $tramite->buyer_cp ?: '11520' }} ROTA</strong>
+            </p>
+            @if($tramite->box_ship)
+                <p>
+                    <span class="inline-block w-20 font-bold text-slate-600">BOX / SHIP:</span> 
+                    <strong class="font-mono text-black">{{ $tramite->box_ship }}</strong>
+                </p>
+            @endif
         </div>
 
-        <div class="pt-4 text-center text-[10px] text-slate-400 border-t border-slate-100">
-            Diligencia KFM Insurance Rota • Trámite integrado con Gestoría Bahía & Naval
+        <!-- Footer Discreto -->
+        <div class="border-t border-slate-200 pt-3 flex items-center justify-between text-[10px] text-slate-400">
+            <span>KFM Insurance • Agencia de Seguros Oficial Patria & GEICO</span>
+            <span>Plaza del Triunfo Nº 7, Rota • Tel: +34 956 84 00 50</span>
         </div>
 
     </div>

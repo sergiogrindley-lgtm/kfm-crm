@@ -75,13 +75,13 @@
 
         <!-- 4. Permiso de circulación recibido (Blanco) -->
         <a href="{{ route('operations.gestoria.index', ['estado' => 'PERMISO_RECIBIDO']) }}" 
-           class="p-3 rounded-2xl bg-white border-2 border-slate-300 shadow-xs hover:border-slate-400 transition {{ in_array(request('estado'), ['PERMISO_RECIBIDO', 'BACK_AVISADO', 'RECOGIDO', 'LIQUIDADO']) ? 'ring-2 ring-slate-600' : '' }}">
+           class="p-3 rounded-2xl bg-white border-2 border-slate-300 shadow-xs hover:border-slate-400 transition {{ in_array(request('estado'), ['PERMISO_RECIBIDO', 'BACK_AVISADO', 'RECOGIDO', 'LIQUIDADO', 'TERMINADAS']) ? 'ring-2 ring-slate-600' : '' }}">
             <div class="flex items-center justify-between">
                 <span class="text-[10px] uppercase font-bold text-slate-700 block">4. Permiso recibido</span>
                 <span class="w-2 h-2 rounded-full bg-slate-400 border border-slate-500"></span>
             </div>
             <span class="text-xl font-black text-slate-900">{{ $stats['permiso_recibido'] }}</span>
-            <span class="text-[10px] text-slate-500 block mt-0.5">Físico en oficina</span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Terminadas en oficina</span>
         </a>
 
         <!-- 5. Cancelado (Rojo) -->
@@ -107,30 +107,107 @@
         </a>
     </div>
 
-    <!-- Search & Filter Bar -->
-    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-        <form method="GET" action="{{ route('operations.gestoria.index') }}" class="flex-1 flex items-center gap-2 max-w-md">
-            @if(request('estado'))
-                <input type="hidden" name="estado" value="{{ request('estado') }}">
-            @endif
-            <div class="relative w-full">
+    <!-- Search & Filter Toolbar Completa -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3 text-xs">
+        <form method="GET" action="{{ route('operations.gestoria.index') }}" class="flex flex-wrap items-center gap-2.5">
+            
+            <!-- Buscador de texto -->
+            <div class="relative flex-1 min-w-[220px]">
                 <input type="text" name="q" value="{{ request('q') }}"
-                       placeholder="Buscar por matrícula, bastidor, comprador, vendedor..."
+                       placeholder="Buscar matrícula, bastidor, cliente..."
                        class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
                 <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
+
+            <!-- Filtro por Estado (con Terminadas) -->
+            <div class="min-w-[170px]">
+                <select name="estado" onchange="this.form.submit()" 
+                        class="w-full py-2 px-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                    <option value="">Todos los Estados</option>
+                    <option value="PREPARADO" {{ request('estado') === 'PREPARADO' ? 'selected' : '' }}>🟢 1. Preparado</option>
+                    <option value="PENDIENTE_DOC" {{ in_array(request('estado'), ['PENDIENTE_DOC', 'DOCUMENTOS']) ? 'selected' : '' }}>🟡 2. Pendiente doc.</option>
+                    <option value="ENVIADO_GESTORIA" {{ in_array(request('estado'), ['ENVIADO_GESTORIA', 'OUT_GESTORIA']) ? 'selected' : '' }}>🟣 3. Enviado gestoría</option>
+                    <option value="PERMISO_RECIBIDO" {{ in_array(request('estado'), ['PERMISO_RECIBIDO', 'BACK_AVISADO', 'RECOGIDO', 'LIQUIDADO', 'TERMINADAS']) ? 'selected' : '' }}>⚪ 4. Permiso recibido (Terminadas)</option>
+                    <option value="CANCELADO" {{ request('estado') === 'CANCELADO' ? 'selected' : '' }}>🔴 5. Cancelado</option>
+                    <option value="CESION_POLIZA" {{ request('estado') === 'CESION_POLIZA' ? 'selected' : '' }}>🔘 6. Cesión de póliza</option>
+                </select>
+            </div>
+
+            <!-- Filtro por Tipo de Trámite -->
+            <div class="min-w-[170px]">
+                <select name="tipo" onchange="this.form.submit()" 
+                        class="w-full py-2 px-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                    <option value="">Todos los Trámites</option>
+                    <option value="Transferencia" {{ request('tipo') === 'Transferencia' ? 'selected' : '' }}>🚗 Solo Transferencias</option>
+                    <option value="Transferencia ordinaria" {{ request('tipo') === 'Transferencia ordinaria' ? 'selected' : '' }}>Transferencia ordinaria</option>
+                    <option value="Duplicado permiso circulación" {{ request('tipo') === 'Duplicado permiso circulación' ? 'selected' : '' }}>Duplicado permiso circulación</option>
+                    <option value="Duplicado ITV" {{ request('tipo') === 'Duplicado ITV' ? 'selected' : '' }}>Duplicado ITV</option>
+                    <option value="Cesión de póliza" {{ request('tipo') === 'Cesión de póliza' ? 'selected' : '' }}>Cesión de póliza</option>
+                </select>
+            </div>
+
+            <!-- Filtro por Sede -->
+            <div class="min-w-[130px]">
+                <select name="sede_id" onchange="this.form.submit()" 
+                        class="w-full py-2 px-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                    <option value="">Todas las Sedes</option>
+                    @foreach($sedes as $s)
+                        <option value="{{ $s->id }}" {{ request('sede_id') == $s->id ? 'selected' : '' }}>📍 {{ $s->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Filtro por Agente -->
+            <div class="min-w-[120px]">
+                <select name="agente" onchange="this.form.submit()" 
+                        class="w-full py-2 px-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                    <option value="">Todos los Agentes</option>
+                    @foreach(['Kerry', 'Coral', 'Conchi', 'Chari', 'Silvia'] as $ag)
+                        <option value="{{ $ag }}" {{ request('agente') === $ag ? 'selected' : '' }}>👤 {{ $ag }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             <button type="submit" class="px-3.5 py-2 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition cursor-pointer">
                 Filtrar
             </button>
-            @if(request('q') || request('estado'))
-                <a href="{{ route('operations.gestoria.index') }}" class="text-slate-400 hover:text-slate-600 px-2 py-1">
-                    Limpiar
+
+            @if(request('q') || request('estado') || request('tipo') || request('sede_id') || request('agente'))
+                <a href="{{ route('operations.gestoria.index') }}" class="text-rose-600 hover:text-rose-800 font-bold px-2 py-1">
+                    ✕ Limpiar
                 </a>
             @endif
         </form>
 
-        <div class="text-[11px] text-slate-400">
-            Mostrando <strong>{{ $tramites->total() }}</strong> expedientes de gestoría DGT
+        <!-- Filtros Rápidos (Pills) directos -->
+        <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-1.5">
+                <span class="text-slate-400 font-bold text-[10px] uppercase mr-1">Accesos directos:</span>
+                
+                <a href="{{ route('operations.gestoria.index') }}" 
+                   class="px-2.5 py-1 rounded-lg border text-[11px] font-bold transition {{ !request('estado') && !request('tipo') ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100' }}">
+                    Todos ({{ $stats['total'] }})
+                </a>
+
+                <a href="{{ route('operations.gestoria.index', ['tipo' => 'Transferencia', 'estado' => 'PENDIENTE_DOC']) }}" 
+                   class="px-2.5 py-1 rounded-lg border text-[11px] font-bold transition {{ request('tipo') == 'Transferencia' && request('estado') == 'PENDIENTE_DOC' ? 'bg-amber-500 text-white border-amber-500' : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' }}">
+                    🟡 Transferencias con Documentos Pendientes
+                </a>
+
+                <a href="{{ route('operations.gestoria.index', ['estado' => 'PERMISO_RECIBIDO']) }}" 
+                   class="px-2.5 py-1 rounded-lg border text-[11px] font-bold transition {{ request('estado') == 'PERMISO_RECIBIDO' ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 shadow-2xs' }}">
+                    ⚪ Expedientes Terminados ({{ $stats['permiso_recibido'] }})
+                </a>
+
+                <a href="{{ route('operations.gestoria.index', ['tipo' => 'Transferencia']) }}" 
+                   class="px-2.5 py-1 rounded-lg border text-[11px] font-bold transition {{ request('tipo') == 'Transferencia' && !request('estado') ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100' }}">
+                    🚗 Todas las Transferencias ({{ $stats['transferencias'] }})
+                </a>
+            </div>
+
+            <div class="text-[11px] text-slate-400 font-medium">
+                Mostrando <strong>{{ $tramites->total() }}</strong> expedientes
+            </div>
         </div>
     </div>
 
@@ -143,7 +220,7 @@
                         <th class="py-3.5 px-4">Vehículo / Trámite</th>
                         <th class="py-3.5 px-4">Comprador (Buyer)</th>
                         <th class="py-3.5 px-4">Vendedor (Seller)</th>
-                        <th class="py-3.5 px-4">Importes & Recibo</th>
+                        <th class="py-3.5 px-4">Importes, Fecha & Recibo</th>
                         <th class="py-3.5 px-4">Estado Gestoría</th>
                         <th class="py-3.5 px-4 text-right">Acciones & Documentos</th>
                     </tr>
@@ -212,7 +289,7 @@
                                 </span>
                             </td>
 
-                            <!-- Importes & Recibo -->
+                            <!-- Importes, Recibo & Fecha -->
                             <td class="py-3 px-4">
                                 @if($tramite->recibo_numero)
                                     <div class="mb-1">
@@ -232,6 +309,12 @@
                                         ITP (4%): {{ $tramite->itp_cuota }}
                                     </div>
                                 @endif
+                                <div class="mt-1.5">
+                                    <span class="inline-flex items-center gap-1 text-[10.5px] font-bold text-slate-800 bg-slate-100 border border-slate-300 px-2 py-0.5 rounded shadow-2xs" title="Fecha en que se formalizó la transferencia">
+                                        <span class="text-indigo-600">📅</span>
+                                        <span>Fecha: <strong class="font-mono text-slate-950">{{ $tramite->fecha_tramite ?: ($tramite->created_at ? $tramite->created_at->format('d/m/Y') : date('d/m/Y')) }}</strong></span>
+                                    </span>
+                                </div>
                             </td>
 
                             <!-- Estado & Pipeline Switcher -->
@@ -300,6 +383,13 @@
                                        class="px-2 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg text-amber-800 font-medium text-[10px]"
                                        title="Declaración jurada de extravío DGT">
                                         <span>Extravío</span>
+                                    </a>
+
+                                    <!-- Comunicación de Embargos y Precintos -->
+                                    <a href="{{ route('operations.gestoria.embargo', $tramite) }}" target="_blank"
+                                       class="px-2 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg text-amber-900 font-bold text-[10px] shadow-2xs"
+                                       title="Comunicación oficial de embargos y/o precintos">
+                                        <span>⚠️ Embargos</span>
                                     </a>
 
                                     <!-- Cesión de Póliza -->
@@ -413,17 +503,21 @@
                                 <input type="text" name="modelo" required placeholder="Ej: FOCUS 1.5" class="w-full uppercase px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
                             <div>
-                                <label class="block text-slate-700 font-semibold mb-1">Precio Venta Declarado</label>
+                                <label class="block text-slate-700 font-semibold mb-1">Fecha Transferencia *</label>
+                                <input type="text" name="fecha_tramite" value="{{ date('d/m/Y') }}" placeholder="d/m/Y" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-slate-700 font-semibold mb-1">Precio Venta</label>
                                 <input type="text" name="precio_venta" value="1.000,00 €" class="w-full font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
                             <div>
-                                <label class="block text-slate-700 font-semibold mb-1">Precio Trámite Gestoría</label>
+                                <label class="block text-slate-700 font-semibold mb-1">Precio Trámite</label>
                                 <input type="text" name="precio_tramite" value="120,00 €" class="w-full font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
                             <div>
-                                <label class="block text-slate-700 font-semibold mb-1">Cuota ITP Junta (4%)</label>
+                                <label class="block text-slate-700 font-semibold mb-1">Cuota ITP (4%)</label>
                                 <input type="text" name="itp_cuota" value="84,00 €" class="w-full font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
                             <div>
@@ -655,7 +749,11 @@
                                 <input type="text" name="modelo" id="edit_modelo" required class="w-full uppercase px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                            <div>
+                                <label class="block text-slate-700 font-semibold mb-1">Fecha Transferencia *</label>
+                                <input type="text" name="fecha_tramite" id="edit_fecha_tramite" placeholder="d/m/Y" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                            </div>
                             <div>
                                 <label class="block text-slate-700 font-semibold mb-1">Precio Venta</label>
                                 <input type="text" name="precio_venta" id="edit_precio_venta" class="w-full font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
@@ -820,6 +918,7 @@
         document.getElementById('edit_precio_tramite').value = tramite.precio_tramite || '120,00 €';
         document.getElementById('edit_itp_cuota').value = tramite.itp_cuota || '84,00 €';
         document.getElementById('edit_recibo_numero').value = tramite.recibo_numero || '';
+        document.getElementById('edit_fecha_tramite').value = tramite.fecha_tramite || '';
 
         document.getElementById('edit_buyer_nombre').value = tramite.buyer_nombre || '';
         document.getElementById('edit_buyer_dni').value = tramite.buyer_dni || '';

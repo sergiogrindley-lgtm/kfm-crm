@@ -3,144 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contrato de Compra-Venta Oficial — {{ $tramite->matricula }} — KFM Rota</title>
+    <title>Contrato de Compra-Venta — {{ $tramite->matricula }} — KFM Insurance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; line-height: 1.6; }
+        @page {
+            size: A4 portrait;
+            margin: 12mm 16mm 12mm 16mm;
+        }
+        body {
+            font-family: Arial, 'Helvetica Neue', Helvetica, 'Plus Jakarta Sans', sans-serif;
+            color: #0f172a;
+            background-color: #f8fafc;
+            line-height: 1.45;
+        }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         @media print {
-            body { background: white; padding: 0 !important; }
+            body { background: white !important; padding: 0 !important; }
             .no-print { display: none !important; }
-            .print-border-none { border: none !important; box-shadow: none !important; }
+            .print-sheet {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
         }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body class="p-3 sm:p-6 text-[12.5px]">
 
     <!-- Action Bar (No Print) -->
-    <div class="max-w-4xl mx-auto mb-6 flex items-center justify-between no-print bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-lg">
+    <div class="max-w-3xl mx-auto mb-4 flex items-center justify-between no-print bg-slate-900 text-white px-5 py-2.5 rounded-xl shadow-lg">
         <div class="flex items-center space-x-3 text-xs">
-            <span class="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-pulse"></span>
-            <span class="font-bold uppercase tracking-wider text-slate-300">Contrato Oficial de Compra-Venta (3 Ejemplares)</span>
-            <span class="text-slate-400">• Modelo Legal DGT Rota</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="font-bold uppercase tracking-wider text-slate-200">Contrato Oficial de Compra-Venta</span>
+            <span class="text-slate-400">• Modelo KFM Rota</span>
         </div>
         <div class="flex items-center space-x-2">
-            <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-md cursor-pointer">
-                <span>🖨️ Imprimir Contrato (3 Ejemplares)</span>
+            <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 font-bold text-xs rounded-lg transition flex items-center gap-1.5 shadow-md cursor-pointer">
+                <span>🖨️ Imprimir Contrato</span>
             </button>
-            <button onclick="window.close()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl transition">
+            <button onclick="window.close()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg transition cursor-pointer">
                 Cerrar
             </button>
         </div>
     </div>
 
     <!-- Official Document Sheet -->
-    <div class="max-w-4xl mx-auto bg-white p-10 sm:p-14 rounded-2xl shadow-xl border border-slate-200 print-border-none space-y-6 text-sm">
+    <div class="max-w-3xl mx-auto bg-white p-10 sm:p-12 rounded-xl shadow-xl border border-slate-200 print-sheet space-y-4 text-slate-900">
         
-        <!-- Document Title -->
-        <div class="text-center border-b-2 border-slate-900 pb-4">
-            <h1 class="text-2xl font-black uppercase tracking-wider text-slate-900">CONTRATO DE COMPRA-VENTA</h1>
-            <p class="text-xs text-slate-500 uppercase tracking-widest mt-1">Vehículo Automóvil Usado • Término Municipal de Rota (Cádiz)</p>
+        <!-- Header con Logo de KFM Insurance -->
+        <div class="flex items-center justify-between border-b-2 border-slate-900 pb-3">
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('img/logo.png') }}" alt="KFM Insurance" class="h-10 w-auto object-contain">
+                <div>
+                    <h2 class="text-xs font-black tracking-wider text-slate-900 uppercase">KFM INSURANCE</h2>
+                    <p class="text-[10px] text-slate-500 font-semibold uppercase">Agencia de Seguros & Gestoría DGT • Plaza del Triunfo Nº 7, Rota</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">
+                    {{ $tramite->matricula }}
+                </span>
+                <span class="block text-[9.5px] text-slate-400 mt-0.5 font-semibold">REF: {{ $tramite->recibo_numero ? 'REC #' . $tramite->recibo_numero : 'KFM-DGT' }}</span>
+            </div>
+        </div>
+
+        <!-- Título Centrado Oficial -->
+        <div class="text-center pt-1 pb-1">
+            <h1 class="text-base font-bold uppercase tracking-wider text-black pb-1 inline-block border-b-2 border-black">
+                CONTRATO DE COMPRA-VENTA
+            </h1>
         </div>
 
         <!-- Lugar y Fecha -->
+        <p class="text-slate-900 pt-1">
+            En <strong>ROTA</strong>, a <strong>{{ $dia }}</strong> de <strong>{{ $mesNombre }}</strong> de <strong>{{ $ano }}</strong>, reunidos
+        </p>
+
+        @php
+            $formatAddress = function($dir, $cp) {
+                $dir = trim($dir ?: '');
+                $cp = trim($cp ?: '11520');
+                if (empty($dir)) {
+                    return "ROTA (CÁDIZ), CP {$cp}";
+                }
+                if (stripos($dir, 'ROTA') !== false) {
+                    return "{$dir}, CP {$cp}";
+                }
+                return "ROTA (CÁDIZ), CP {$cp}, {$dir}";
+            };
+        @endphp
+
+        <!-- Comparecientes: VENDEDOR PRIMERO (Según modelo oficial KFM) -->
+        <div class="space-y-3 text-justify">
+            <p>
+                <strong>DE UNA PARTE, D</strong> <strong class="uppercase text-black">{{ $tramite->seller_nombre }}</strong><br>
+                con domicilio en <strong>{{ $formatAddress($tramite->seller_direccion, $tramite->seller_cp) }}</strong>, 
+                con NIF/CIF con número <strong class="font-mono text-black">{{ $tramite->seller_dni ?: ($tramite->seller_fa ?: 'No aportado') }}</strong>, 
+                en su propio nombre y en concepto de <strong>VENDEDOR</strong>.
+            </p>
+
+            <p>
+                <strong>Y DE UNA PARTE, D</strong> <strong class="uppercase text-black">{{ $tramite->buyer_nombre }}</strong><br>
+                con domicilio en <strong>{{ $formatAddress($tramite->buyer_direccion, $tramite->buyer_cp) }}</strong>, 
+                con NIF/CIF con número <strong class="font-mono text-black">{{ $tramite->buyer_dni ?: ($tramite->buyer_fa ?: 'No aportado') }}</strong>, 
+                en su propio nombre y en concepto de <strong>COMPRADOR</strong>.
+            </p>
+        </div>
+
+        <!-- Manifiestan -->
+        <div class="pt-2 text-center">
+            <strong class="tracking-widest uppercase text-xs text-black">MANIFIESTAN</strong>
+        </div>
+
         <p class="text-justify">
-            En <strong>Rota (Cádiz)</strong>, a las <strong>{{ date('H:i') }} horas</strong>, a <strong>{{ $tramite->fecha_tramite ?: date('d/m/Y') }}</strong>, reunidos:
+            Que han convenido y por el presente documento lo llevan a efecto formalizar contrato de compra-venta del vehículo cuyas características señalan a continuación:
         </p>
 
-        <!-- Comparecientes -->
-        <div class="space-y-4">
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <p class="text-justify">
-                    <strong>DE UNA PARTE, D./Dña.</strong> <span class="font-bold uppercase">{{ $tramite->buyer_nombre }}</span>, 
-                    con domicilio en <span class="uppercase">{{ $tramite->buyer_direccion }}</span>, 
-                    C.P. <strong>{{ $tramite->buyer_cp ?: '11520' }}</strong>, 
-                    con DNI / NIE / CIF número <strong class="font-mono">{{ $tramite->buyer_dni }}</strong> @if($tramite->buyer_fa) (DOD ID / FA: <span class="font-mono">{{ $tramite->buyer_fa }}</span>)@endif, 
-                    en su propio nombre y concepto de <strong>COMPRADOR</strong>.
-                </p>
-            </div>
-
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <p class="text-justify">
-                    <strong>Y DE OTRA PARTE, D./Dña.</strong> <span class="font-bold uppercase">{{ $tramite->seller_nombre }}</span>, 
-                    con domicilio en <span class="uppercase">{{ $tramite->seller_direccion }}</span>, 
-                    C.P. <strong>{{ $tramite->seller_cp ?: '11520' }}</strong>, 
-                    con DNI / NIE / CIF número <strong class="font-mono">{{ $tramite->seller_dni }}</strong> @if($tramite->seller_fa) (DOD ID / FA: <span class="font-mono">{{ $tramite->seller_fa }}</span>)@endif, 
-                    en su propio nombre y concepto de <strong>VENDEDOR</strong>.
-                </p>
-            </div>
+        <!-- Datos del Vehículo -->
+        <div class="pl-8 sm:pl-12 space-y-1 font-semibold text-slate-900 my-2">
+            <p>Bastidor Nº <span class="font-mono font-bold text-black">{{ $tramite->vin ?: 'No especificado' }}</span></p>
+            <p>Matrícula <span class="font-mono font-bold text-black uppercase">{{ $tramite->matricula }}</span></p>
+            <p>Marca <span class="uppercase font-bold text-black">{{ $tramite->marca }} {{ $tramite->modelo }}</span></p>
         </div>
 
-        <!-- Cláusula Manifiestan -->
-        <div class="space-y-3 pt-2">
-            <h3 class="text-center font-black tracking-widest uppercase text-xs text-slate-800">MANIFIESTAN</h3>
-            
-            <p class="text-justify leading-relaxed text-xs">
-                Declarando el vendedor en el presente acto, que el vehículo es de su completa y exclusiva propiedad y se halla totalmente libre de embargos, cargas y gravámenes incluidos los derivados de la legislación vigente, así como queda el vendedor obligado a atender las obligaciones contraídas hasta la firma del presente contrato, respondiendo el vendedor en todo momento de las responsabilidades que por cualquier motivo, causa o razón apareciesen contra el vehículo automóvil objeto del presente contrato, obligándose a indemnizar al comprador por cualquier reclamación aun las injustificadas que pudieran hacerse y que correspondan a actos anteriores al día de la fecha de la firma del contrato.
+        <!-- Cláusulas Exactas del Modelo KFM -->
+        <div class="space-y-2.5 text-justify">
+            <p>
+                <strong>1º)</strong> El comprador, queda obligado a efectuar la transferencia que la legislación vigente ordena, aceptando cuantas responsabilidades se originen contra el vehículo a partir del día de la fecha, quedando conforme de las condiciones mecánicas y generales de conservación con que recibe el vehículo y los accesorios correspondientes, salvo aquellos ocultos que tengan su origen en dolo o mala fe del vendedor.
             </p>
 
-            <p class="text-justify leading-relaxed text-xs">
-                El comprador queda obligado a efectuar la transferencia que la legislación vigente ordena ante la Jefatura Provincial de Tráfico, aceptando cuantas responsabilidades se originen contra el vehículo a partir del día y de la fecha, quedando conforme de las condiciones mecánicas y generales de conservación con que recibe el vehículo y los accesorios correspondientes.
+            <p>
+                <strong>2º)</strong> El vendedor declara que no pesa sobre el vehículo ninguna carga o gravamen ni impuesto, deuda o sanción pendientes de abono en la fecha de la firma de este contrato, comprometiéndose en caso contrario a regularizar tal situación a su exclusivo cargo.
             </p>
         </div>
 
-        <!-- Identificación del Vehículo -->
-        <div class="border-2 border-slate-900 rounded-xl p-4 my-4 bg-slate-50/50">
-            <div class="grid grid-cols-3 gap-4 text-center">
-                <div>
-                    <span class="block text-[10px] uppercase font-bold text-slate-500">Matrícula:</span>
-                    <strong class="font-mono text-lg text-slate-900">{{ $tramite->matricula }}</strong>
-                </div>
-                <div>
-                    <span class="block text-[10px] uppercase font-bold text-slate-500">Marca:</span>
-                    <strong class="text-base text-slate-900 uppercase">{{ $tramite->marca }}</strong>
-                </div>
-                <div>
-                    <span class="block text-[10px] uppercase font-bold text-slate-500">Modelo:</span>
-                    <strong class="text-base text-slate-900 uppercase">{{ $tramite->modelo }}</strong>
-                </div>
-            </div>
-            @if($tramite->vin)
-                <div class="text-center pt-2 mt-2 border-t border-slate-200">
-                    <span class="text-[10px] uppercase font-bold text-slate-500">Número de Bastidor (VIN):</span>
-                    <span class="font-mono font-bold text-xs text-slate-800 ml-2">{{ $tramite->vin }}</span>
-                </div>
-            @endif
-        </div>
-
-        <!-- Precio de Compraventa -->
-        <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-center">
-            <span class="text-xs uppercase font-bold text-indigo-900">El precio convenido para la compraventa es de:</span>
-            <div class="text-2xl font-black text-indigo-950 font-mono mt-0.5">
-                {{ $tramite->precio_venta ?: '1.000,00 €' }}
-            </div>
-            <span class="text-[11px] text-indigo-700">Importe satisfecho íntegramente en este acto por el comprador al vendedor</span>
-        </div>
-
-        <p class="text-justify text-xs">
-            Y para que así conste y surta los efectos oportunos ante la Dirección General de Tráfico, organismos tributarios y autoridades competentes, se firman tres ejemplares a un solo efecto en el lugar y fecha arriba indicados.
+        <!-- Precio Convenido -->
+        <p class="text-justify pt-1 font-medium">
+            El precio de la compraventa es de <strong class="uppercase text-black">{{ $precioLetras }} ({{ $precioFormatted }})</strong>
         </p>
 
-        <!-- Firmas -->
-        <div class="pt-8 grid grid-cols-2 gap-12 text-center text-xs">
-            <div>
-                <span class="block font-bold text-slate-900 uppercase">EL COMPRADOR</span>
-                <span class="text-[11px] text-slate-500 block uppercase">{{ $tramite->buyer_nombre }}</span>
-                <span class="text-[10px] font-mono text-slate-400 block">DNI/NIE: {{ $tramite->buyer_dni }}</span>
-                <div class="h-20 border-b border-dotted border-slate-400 mx-6 mt-4"></div>
-            </div>
+        <p class="text-justify pt-1">
+            Y para que así conste firma el presente contrato en el lugar y fecha arriba indicados.
+        </p>
 
-            <div>
-                <span class="block font-bold text-slate-900 uppercase">EL VENDEDOR</span>
-                <span class="text-[11px] text-slate-500 block uppercase">{{ $tramite->seller_nombre }}</span>
-                <span class="text-[10px] font-mono text-slate-400 block">DNI/NIE: {{ $tramite->seller_dni }}</span>
-                <div class="h-20 border-b border-dotted border-slate-400 mx-6 mt-4"></div>
+        <!-- Espacio de Firmas Oficiales -->
+        <div class="pt-14 pb-4 flex justify-between items-start text-xs font-semibold text-black">
+            <div class="w-2/5">
+                <p class="font-bold">El Vendedor,</p>
+                <p class="text-[11px] text-slate-500 font-normal uppercase mt-0.5">{{ $tramite->seller_nombre }}</p>
+                <div class="h-16"></div>
+            </div>
+            <div class="w-2/5 text-right">
+                <p class="font-bold">El Comprador,</p>
+                <p class="text-[11px] text-slate-500 font-normal uppercase mt-0.5">{{ $tramite->buyer_nombre }}</p>
+                <div class="h-16"></div>
             </div>
         </div>
 
-        <div class="pt-6 text-center text-[10px] text-slate-400 border-t border-slate-200">
-            Documento formalizado en las oficinas de KFM Insurance • Agencia de Seguros y Gestoría Oficial • Rota (Cádiz)
+        <!-- Pie de página discreto -->
+        <div class="border-t border-slate-200 pt-2 flex items-center justify-between text-[9px] text-slate-400">
+            <span>KFM Insurance • Gestoría DGT Rota & NEX Base Naval</span>
+            <span>Documento formalizado conforme al Código Civil y Ley de Tráfico</span>
         </div>
 
     </div>
