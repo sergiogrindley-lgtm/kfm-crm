@@ -240,12 +240,44 @@ class OperationsController extends Controller
 
     public function documentoMandatoComprador(GestoriaTramite $tramite)
     {
-        return view('operations.gestoria.docs.mandato-comprador', compact('tramite'));
+        $fecha = $tramite->fecha_tramite ?: ($tramite->created_at ? $tramite->created_at->format('d/m/Y') : date('d/m/Y'));
+        $dia = date('d');
+        $mesNombre = 'OCTUBRE';
+        $ano = date('Y');
+
+        if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', trim($fecha), $m)) {
+            $dia = (int)$m[1];
+            $meses = [
+                1 => 'ENERO', 2 => 'FEBRERO', 3 => 'MARZO', 4 => 'ABRIL',
+                5 => 'MAYO', 6 => 'JUNIO', 7 => 'JULIO', 8 => 'AGOSTO',
+                9 => 'SEPTIEMBRE', 10 => 'OCTUBRE', 11 => 'NOVIEMBRE', 12 => 'DICIEMBRE'
+            ];
+            $mesNombre = $meses[(int)$m[2]] ?? 'OCTUBRE';
+            $ano = $m[3];
+        }
+
+        return view('operations.gestoria.docs.mandato-comprador', compact('tramite', 'dia', 'mesNombre', 'ano'));
     }
 
     public function documentoMandatoVendedor(GestoriaTramite $tramite)
     {
-        return view('operations.gestoria.docs.mandato-vendedor', compact('tramite'));
+        $fecha = $tramite->fecha_tramite ?: ($tramite->created_at ? $tramite->created_at->format('d/m/Y') : date('d/m/Y'));
+        $dia = date('d');
+        $mesNombre = 'OCTUBRE';
+        $ano = date('Y');
+
+        if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', trim($fecha), $m)) {
+            $dia = (int)$m[1];
+            $meses = [
+                1 => 'ENERO', 2 => 'FEBRERO', 3 => 'MARZO', 4 => 'ABRIL',
+                5 => 'MAYO', 6 => 'JUNIO', 7 => 'JULIO', 8 => 'AGOSTO',
+                9 => 'SEPTIEMBRE', 10 => 'OCTUBRE', 11 => 'NOVIEMBRE', 12 => 'DICIEMBRE'
+            ];
+            $mesNombre = $meses[(int)$m[2]] ?? 'OCTUBRE';
+            $ano = $m[3];
+        }
+
+        return view('operations.gestoria.docs.mandato-vendedor', compact('tramite', 'dia', 'mesNombre', 'ano'));
     }
 
     public function documentoContratoCompraventa(GestoriaTramite $tramite)

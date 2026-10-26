@@ -3,21 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mandato DGT Vendedor — {{ $tramite->matricula }} — KFM Rota</title>
+    <title>Mandato Oficial DGT — Vendedor — {{ $tramite->matricula }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         @page {
             size: A4 portrait;
-            margin: 12mm 16mm 12mm 16mm;
+            margin: 8mm 12mm 8mm 12mm;
         }
         body {
-            font-family: Arial, 'Helvetica Neue', Helvetica, 'Plus Jakarta Sans', sans-serif;
-            color: #0f172a;
-            background-color: #f8fafc;
-            line-height: 1.5;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #000;
+            background-color: #f1f5f9;
+            line-height: 1.35;
         }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
         @media print {
             body { background: white !important; padding: 0 !important; }
             .no-print { display: none !important; }
@@ -29,15 +27,28 @@
                 max-width: 100% !important;
             }
         }
+        .field-val {
+            background-color: #e2e8f0;
+            padding: 1px 4px;
+            font-weight: 600;
+            color: #000;
+            font-family: Arial, Helvetica, sans-serif;
+            border-bottom: 1px solid #94a3b8;
+            text-transform: uppercase;
+        }
+        .field-line {
+            color: #94a3b8;
+            letter-spacing: -0.5px;
+        }
     </style>
 </head>
-<body class="p-3 sm:p-6 text-[12px]">
+<body class="p-3 sm:p-6 text-[10px]">
 
     <!-- Action Bar (No Print) -->
     <div class="max-w-3xl mx-auto mb-4 flex items-center justify-between no-print bg-slate-900 text-white px-5 py-2.5 rounded-xl shadow-lg">
         <div class="flex items-center space-x-3 text-xs">
             <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-            <span class="font-bold uppercase tracking-wider text-slate-200">Mandato Oficial DGT — Vendedor</span>
+            <span class="font-bold uppercase tracking-wider text-slate-200">Mandato Oficial DGT — Vendedor (Transmitente)</span>
         </div>
         <div class="flex items-center space-x-2">
             <button onclick="window.print()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 font-bold text-xs rounded-lg transition flex items-center gap-1.5 shadow-md cursor-pointer">
@@ -50,73 +61,108 @@
     </div>
 
     <!-- Official Document Sheet -->
-    <div class="max-w-3xl mx-auto bg-white p-10 sm:p-12 rounded-xl shadow-xl border border-slate-200 print-sheet space-y-4 text-slate-900">
+    <div class="max-w-3xl mx-auto bg-white p-8 sm:p-12 rounded-xl shadow-xl border border-slate-200 print-sheet text-black text-[9.5px]">
         
-        <!-- Header Oficial Colegiado (QA + Escudo) -->
-        <div class="text-center pb-2 border-b border-slate-200">
-            <img src="{{ asset('img/logo-dgt-gestor.png') }}" alt="Consejo General de Colegios de Gestores Administrativos de España" class="h-14 w-auto mx-auto object-contain">
+        <!-- Header Oficial Colegiado (Consejo General) -->
+        <div class="text-center mb-5">
+            <img src="{{ asset('img/logo-consejo-gestores.png') }}" alt="Consejo General de Colegios de Gestores Administrativos de España" class="h-16 w-auto mx-auto object-contain">
         </div>
 
-        <div class="space-y-2.5 leading-relaxed text-justify text-[11px] text-slate-800">
+        <div class="space-y-2.5 leading-relaxed text-justify">
             <p>
-                D./Dña. <strong class="uppercase text-black">{{ $tramite->seller_nombre }}</strong> con DNI/NIE 
-                <strong class="font-mono text-black">{{ $tramite->seller_dni ?: ($tramite->seller_fa ?: 'No aportado') }}</strong>, 
-                que declara tener poder suficiente para actuar en su propio nombre y en concepto de <strong>MANDANTE</strong>, 
-                con domicilio a efectos de notificaciones en <strong class="uppercase text-black">{{ $tramite->seller_direccion ?: 'ROTA (CÁDIZ)' }}</strong>, 
-                C.P. <strong class="text-black">{{ $tramite->seller_cp ?: '11520' }}</strong> de ROTA (CÁDIZ), dice y otorga:
+                D./ña. <span class="field-val">{{ $tramite->seller_nombre }}</span> con DNI <span class="field-val">{{ $tramite->seller_dni ?: ($tramite->seller_fa ?: '___________') }}</span>
+                y D./ña. <span class="field-line">_________________________________</span> con DNI <span class="field-line">________________</span>, que declara/declaran tener
+                poder suficiente para actuar en su propio nombre y/o en representación de <span class="field-line">________________________________</span> con DNI/CIF nº
+                <span class="field-line">____________________</span> y domicilio a efectos de notificaciones en <span class="field-val">ROTA (CADIZ)</span> calle
+                <span class="field-val">{{ $tramite->seller_direccion ?: 'ROTA (CADIZ)' }}</span> nº <span class="field-val">12</span> C.P. <span class="field-val">{{ $tramite->seller_cp ?: '11520' }}</span>, en concepto de <strong>MANDANTE</strong>, dice y otorga:
             </p>
 
             <p>
-                Que por el presente documento confiere, con carácter específico, <strong>MANDATO DE REPRESENTACIÓN</strong> a favor de, el/los Gestor/es Administrativo/s en ejercicio, 
-                D./Dña. <strong class="text-black">FERNANDO SÁNCHEZ DE NIEVA BALLESTA</strong>, con DNI <strong class="font-mono text-black">75796515S</strong>, 
-                número de colegiado <strong class="font-mono text-black">1271</strong>, perteneciente al Ilustre Colegio Oficial de Gestores Administrativos de 
-                <strong class="text-black">SEVILLA</strong>, y al despacho profesional con domicilio en <strong class="text-black">CALLE AURORA Nº 11, C.P. 11500, EL PUERTO DE SANTA MARÍA (CÁDIZ)</strong>, 
-                en concepto de <strong>MANDATARIO/S</strong>, para su actuación ante todos los órganos y entidades de la Administración del Estado, Autonómica, Provincial y Local que resulten competentes, y específicamente ante la Dirección General de Tráfico del Ministerio del Interior del Gobierno de España, para que promueva, solicite y realice todos los trámites necesarios con el siguiente <strong>ASUNTO</strong>:
+                Que por el presente documento confiere, con <strong>carácter específico, MANDATO CON REPRESENTACIÓN</strong> a favor de, el/los Gestor/es Administrativo/s en ejercicio, D./ña <span class="field-val">FERNANDO SANCHEZ DE NIEVA BALLESTA</span>, con DNI <span class="field-val">75796515S</span>, número de
+                colegiado <span class="field-val">1271</span>, y D./ña <span class="field-line">_________________________________</span>, con DNI <span class="field-line">_________________</span>, número de
+                colegiado <span class="field-line">____________</span> y D./ña <span class="field-line">____________________________________________________________________</span>,
+                todos ellos pertenecientes al Colegio Oficial de Gestores Administrativos de <span class="field-val">SEVILLA</span>, y al despacho
+                profesional <span class="field-line">_____________________________________</span> con domicilio en <span class="field-val">PTO STA MARIA</span> calle
+                <span class="field-val">CALLE AURORA</span> nº <span class="field-val">11</span> C.P. <span class="field-val">11500</span>, en concepto de <strong>MANDATARIO/S</strong>, para su
+                actuación ante todos los órganos y entidades de la Administración del Estado, Autonómica, Provincial y Local que resulten competentes, y
+                específicamente ante la Dirección General de Tráfico del Ministerio del Interior del Gobierno de España, para que promueva, solicite y realice todos
+                los trámites necesarios con el siguiente <strong>ASUNTO</strong>:
             </p>
 
-            <div class="py-1.5 px-3 bg-slate-50 border border-slate-300 rounded font-bold text-center text-xs text-black uppercase">
-                Transferencia de vehículo matrícula: <span class="font-mono">{{ $tramite->matricula }}</span>
-                @if($tramite->vin) — Bastidor: <span class="font-mono">{{ $tramite->vin }}</span>@endif
+            <div class="space-y-1">
+                <p>• <span class="field-val">SOLICITUD DE TRANSMISION DE VEHICULO ({{ $tramite->matricula }})</span></p>
+                <p>• <span class="field-line">_________________________________________________________________________________________________________</span></p>
             </div>
 
-            <div class="space-y-1.5 text-[8.5px] text-slate-600 leading-normal border-t border-b border-slate-200 py-2">
+            <div class="space-y-2 text-[8px] leading-normal pt-1">
                 <p>
-                    El presente mandato, que se regirá por los artículos 1709 a 1739 del Código Civil, se confiere al amparo del artículo 5 de la Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas, y del artículo 1 del Estatuto Orgánico de la Profesión de Gestor Administrativo, aprobado por Decreto 424/1963.
+                    El presente mandato, que se regirá por los artículos 1709 a 1739 del Código Civil, se confiere al amparo del artículo 5 de la Ley 39/2015, de 1 de
+                    octubre, del Procedimiento Administrativo Común de las Administraciones Públicas, y del artículo 1 del Estatuto Orgánico de la Profesión de Gestor
+                    Administrativo, aprobado por Decreto 424/1963.
                 </p>
                 <p>
-                    El mandante autoriza al mandatario/s para que nombre/n sustituto/s, en caso de necesidad justificada, a favor de un/os Gestor/es Administrativo/s colegiado/s ejerciente/s. El presente mandato mantendrá su vigencia mientras no sea expresamente revocado por el mandante y comunicado fehacientemente su revocación al mandatario/s, pudiendo ser su revocación parcial sobre alguno de ellos, quedando en todos los términos vigente sobre aquel/aquellos mandatario/s a quién/es no se le haya comunicado la revocación. El mandatario/s a los que se les revoque el presente mandato quedan obligados a devolver el mismo al Mandante en el mismo momento en el que se le comunique la revocación. En caso de fallecimiento, jubilación, o cese de negocio del mandatario/s, o cualquier otra causa que impida la terminación del mandato, el mandante autoriza de forma expresa que el trámite encomendado sea finalizado por el gestor/es administrativo/s que le/s sustituya/n oficialmente.
+                    El mandante autoriza al mandatario/s para que nombre/n sustituto/s, en caso de necesidad justificada, a favor de un/os Gestor/es Administrativo/s
+                    colegiado/s ejerciente/s. El presente mandato mantendrá su vigencia mientras no sea expresamente revocado por el mandante y comunicado
+                    fehacientemente su revocación al mandatario/s, pudiendo ser su revocación parcial sobre alguno de ellos, quedando en todos los términos vigente
+                    sobre aquel/aquellos mandatario/s a quién/es no se le haya comunicado la revocación. El mandatario/s a los que se les revoque el presente mandato
+                    quedan obligados a devolver el mismo al Mandante en el mismo momento en el que se le comunique la revocación. En caso de fallecimiento,
+                    jubilación, o cese de negocio del mandatario/s, o cualquier otra causa que impida la terminación del mandato, el mandante autoriza de forma expresa
+                    que el trámite encomendado sea finalizado por el gestor/es administrativo/s que le/s sustituya/n oficialmente.
                 </p>
                 <p>
-                    El mandante declara bajo su responsabilidad de conformidad con el artículo 69 de la Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas, que cumple con los requisitos establecidos en la normativa vigente para obtener el reconocimiento de un derecho o facultad o para su ejercicio, que dispone de la documentación que así lo acredita, que es auténtica y su contenido enteramente correcto, y que entrega al gestor Administrativo, el cual se responsabiliza de su custodia, se compromete a ponerla a disposición de la Administración cuando le sea requerida, y a mantener el cumplimiento de las anteriores obligaciones durante el período de tiempo inherente al trámite conferido.
+                    El mandante declara bajo su responsabilidad de conformidad con el artículo 69 de la Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo
+                    Común de las Administraciones Públicas, que cumple con los requisitos establecidos en la normativa vigente para obtener el reconocimiento de un
+                    derecho o facultad o para su ejercicio, que dispone de la documentación que así lo acredita, que es auténtica y su contenido enteramente correcto,
+                    y que entrega al gestor Administrativo, el cual se responsabiliza de su custodia, se compromete a ponerla a disposición de la Administración cuando
+                    le sea requerida, y a mantener el cumplimiento de las anteriores obligaciones durante el período de tiempo inherente al trámite conferido.
                 </p>
                 <p>
-                    El mandante declara, que conoce y consiente que los datos que suministra pueden incorporarse a ficheros automatizados de los que serán responsables el Gestor/es Administrativo/s al que se le otorga el mandato, el Colegio Oficial de Gestores Administrativos citado, y el Consejo General de Colegios de Gestores Administrativos de España, con el único objeto y plazo de posibilitar la prestación de los servicios profesionales objeto del presente mandato y el cumplimiento por estos de las obligaciones derivadas del trámite encomendado. No obstante lo anterior, el mandatario se reserva el derecho de custodia y conservación de los datos personales recabados con fines de cumplimiento de obligaciones legales exigidas por la normativa tributaria, laboral, civil o mercantil, así como para la atención o emprendimiento de reclamaciones y/o acciones judiciales. El mandante tendrá derecho a la portabilidad de sus datos, a su acceso, rectificación, supresión, limitación, y oposición, dirigiéndose al Consejo General de Colegios de Gestores Administrativos de España en la dirección electrónica consejo@consejogestores.net, o por correo postal a la calle Mayor nº 58, 28013 de Madrid, así como en la dirección postal del Mandatario, donde podrá ampliar la información sobre sus derechos y ejercer los mismos, como a interponer las reclamaciones que estime oportunas ante la Agencia Española de Protección de Datos, en los términos previstos en la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales, y el Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo de 27 de abril de 2016. Pudiendo ampliar la información sobre el tratamiento de sus datos en la dirección www.consejogestores.org (política de privacidad).
-                </p>
-                <p class="font-bold text-slate-800">
-                    El mandatario/s acepta/n el mandato conferido y se obliga a cumplirlo de conformidad con las instrucciones del mandante, y declara/n bajo su responsabilidad que los documentos recibidos del mandante han sido verificados en cuanto a la corrección formal de los datos contenidos en los mismos.
+                    El mandante declara, que conoce y consiente que los datos que suministra pueden incorporarse a ficheros automatizados de los que serán
+                    responsables el Gestor/es Administrativo/s al que se le otorga el mandato, el Colegio Oficial de Gestores Administrativos citado, y el Consejo General
+                    de Colegios de Gestores Administrativos de España, con el único objeto y plazo de posibilitar la prestación de los servicios profesionales objeto del
+                    presente mandato y el cumplimiento por estos de las obligaciones derivadas del trámite encomendado. No obstante, lo anterior, el mandatario se
+                    reserva el derecho de custodia y conservación de los datos personales recabados con fines de cumplimiento de obligaciones legales exigidas por la
+                    normativa tributaria, laboral, civil o mercantil, así como para la atención o emprendimiento de reclamaciones y/o acciones judiciales. El mandante
+                    tendrá derecho a la portabilidad de sus datos, a su acceso, rectificación, supresión, limitación, y oposición, dirigiéndose al Consejo General de
+                    Colegios de Gestores Administrativos de España en la dirección electrónica <span class="underline">consejo@consejogestores.net</span>, o por correo postal a la calle Mayor nº
+                    58, 28013 de Madrid, así como en la dirección postal del Mandatario, donde podrá ampliar la información sobre sus derechos y ejercer los mismos,
+                    como a interponer las reclamaciones que estime oportunas ante la Agencia Española de Protección de Datos, o su equivalente en su país de
+                    residencia como Autoridad de Control, en los términos previstos en la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales
+                    y garantía de los derechos digitales, y el Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo de 27 de abril de 2016. Pudiendo ampliar
+                    la información sobre el tratamiento de sus datos en la dirección <span class="underline">www.consejogestores.org</span> (política de privacidad).
                 </p>
             </div>
-        </div>
 
-        <div class="pt-3 border-t border-slate-200 grid grid-cols-2 gap-8 text-center text-xs">
-            <div>
-                <p class="text-slate-500 mb-1">En Rota, a <strong>{{ $tramite->fecha_tramite ?: date('d/m/Y') }}</strong></p>
-                <strong class="block text-black uppercase">EL MANDANTE (VENDEDOR)</strong>
-                <p class="text-[11px] text-slate-600 uppercase mt-0.5">{{ $tramite->seller_nombre }}</p>
-                <div class="h-16 border-b border-dashed border-slate-300 mx-4 mt-1"></div>
+            <!-- Firma Mandante -->
+            <div class="pt-2 text-center">
+                <p class="text-[9px]">
+                    En <span class="field-val">ROTA</span> a <span class="field-val">{{ $dia }}</span> de <span class="field-val">{{ $mesNombre }}</span> de <span class="field-val">{{ $ano }}</span>
+                </p>
+                <div class="h-9 flex items-end justify-center">
+                    <span class="mr-4 text-xs font-bold">X</span>
+                    <span class="field-line">__________________________________________________</span>
+                </div>
+                <p class="font-bold text-[9px] uppercase tracking-wider mt-0.5">EL MANDANTE</p>
             </div>
 
-            <div>
-                <p class="text-slate-500 mb-1">En El Puerto de Santa María, a <strong>{{ $tramite->fecha_tramite ?: date('d/m/Y') }}</strong></p>
-                <strong class="block text-black uppercase">EL MANDATARIO</strong>
-                <p class="text-[11px] text-slate-600 uppercase mt-0.5">FERNANDO SÁNCHEZ DE NIEVA BALLESTA (COL. 1271)</p>
-                <div class="h-16 border-b border-dashed border-slate-300 mx-4 mt-1"></div>
-            </div>
-        </div>
+            <!-- Cláusula Aceptación Gestor -->
+            <p class="text-[8px] leading-normal text-justify pt-1">
+                El mandatario/s acepta/n el mandato conferido y se obliga a cumplirlo de conformidad con las instrucciones del mandante, y declara/n bajo su
+                responsabilidad que los documentos recibidos del mandante han sido verificados en cuanto a la corrección formal de los datos contenidos en los
+                mismos.
+            </p>
 
-        <div class="border-t border-slate-200 pt-2 flex items-center justify-between text-[9px] text-slate-400">
-            <span>Colegio Oficial de Gestores Administrativos • Consejo General</span>
-            <span>Tramitado a través de KFM Insurance Rota</span>
+            <!-- Firma Mandatario -->
+            <div class="pt-1 text-center">
+                <p class="text-[9px]">
+                    En <span class="field-val">PTO STA MARIA</span> a <span class="field-val">{{ $dia }}</span> de <span class="field-val">{{ $mesNombre }}</span> de <span class="field-val">{{ $ano }}</span>
+                </p>
+                <div class="h-9 flex items-end justify-center">
+                    <span class="field-line">__________________________________________________</span>
+                </div>
+                <p class="font-bold text-[9px] uppercase tracking-wider mt-0.5">EL MANDATARIO/S</p>
+            </div>
+
         </div>
 
     </div>
