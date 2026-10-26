@@ -240,7 +240,11 @@
                                             @endif
                                         </div>
                                         <div class="text-xs text-slate-500 mt-0.5">
-                                            Contratación: <span class="font-semibold uppercase text-slate-700">{{ $policy->ramo }}</span> • Cía: <strong class="text-kfm-primary">{{ $policy->codigo_aseguradora }} ({{ $policy->aseguradora }})</strong>
+                                            Contratación: <span class="font-semibold uppercase text-slate-700">{{ $policy->ramo }}</span>
+                                            @if($policy->categoria)
+                                                • Categoría: <span class="font-semibold text-kfm-primary">{{ $policy->categoria }}</span>
+                                            @endif
+                                            • Cía: <strong class="text-kfm-primary">{{ $policy->codigo_aseguradora }} ({{ $policy->aseguradora }})</strong>
                                             @if($policy->agente)
                                                 • Tramitado por: <strong>{{ $policy->agente }}</strong>
                                             @endif
@@ -259,10 +263,14 @@
                             </div>
 
                             <!-- Facturación -->
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100 text-xs">
+                            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-3 border-t border-slate-100 text-xs">
                                 <div>
                                     <span class="block text-slate-400 font-medium">Nº Póliza:</span>
                                     <span class="font-mono font-bold text-slate-800">{{ $policy->numero_poliza ?: '—' }}</span>
+                                </div>
+                                <div>
+                                    <span class="block text-slate-400 font-medium">Nº Recibo:</span>
+                                    <span class="font-mono font-bold {{ $policy->recibo_numero ? 'text-indigo-700' : 'text-slate-400' }}">{{ $policy->recibo_numero ?: '—' }}</span>
                                 </div>
                                 <div>
                                     <span class="block text-slate-400 font-medium">Prima (€):</span>
@@ -532,10 +540,14 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría</label>
-                                    <select class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
-                                        <option>POV Militar (NAVSTA Base Rota)</option>
-                                        <option>Turismo Particular (Residente)</option>
-                                        <option>Motocicleta / Scooter</option>
+                                    <select name="categoria_vehiculo" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800">
+                                        <option value="Turismo" selected>Turismo</option>
+                                        <option value="Furgoneta">Furgoneta</option>
+                                        <option value="Camiones">Camiones</option>
+                                        <option value="Autocaravana">Autocaravana</option>
+                                        <option value="Microcar">Microcar</option>
+                                        <option value="Motocicleta">Motocicleta</option>
+                                        <option value="Ciclomotores">Ciclomotores</option>
                                     </select>
                                 </div>
                             </div>
@@ -557,6 +569,15 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría (Régimen)</label>
+                                    <select name="categoria_hogar" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800">
+                                        <option value="Owner" selected>Owner</option>
+                                        <option value="Renter">Renter</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- 3. RC -->
@@ -564,10 +585,10 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Modalidad RC</label>
-                                    <select class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
-                                        <option>RC Animales de Compañía / Perros (PPP)</option>
-                                        <option>RC Familiar y Privada</option>
-                                        <option>RC Profesional / Cazador</option>
+                                    <select name="categoria_rc" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800">
+                                        <option value="Animales de compañía/perros" selected>Animales de compañía/perros</option>
+                                        <option value="Profesional/autónomo">Profesional/autónomo</option>
+                                        <option value="Otros">Otros</option>
                                     </select>
                                 </div>
                                 <div>
@@ -616,7 +637,12 @@
                     </div>
 
                     <!-- Facturación y Estados -->
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nº Recibo</label>
+                            <input type="text" name="recibo_numero" placeholder="Ej: 2026-0814" 
+                                   class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                        </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Prima (€)</label>
                             <input type="text" name="prima" placeholder="Ej: 587,16 €" 

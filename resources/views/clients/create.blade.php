@@ -30,43 +30,14 @@
     <form method="POST" action="{{ route('clients.store') }}" class="space-y-6">
         @csrf
 
-        <!-- 1. Oficina y Agente Tramitadora -->
+        <!-- Sede y Agente por defecto KFM -->
+        <input type="hidden" name="sede_id" value="{{ old('sede_id', 2) }}">
+        <input type="hidden" name="agente" value="{{ old('agente', 'Kerry') }}">
+
+        <!-- 1. Datos Personales -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
             <h2 class="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center space-x-2">
-                <span>🏢 1. Oficina y Agente</span>
-            </h2>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Oficina Asignada <span class="text-rose-500">*</span></label>
-                    <div class="grid grid-cols-2 gap-3">
-                        @foreach($sedes as $sede)
-                            <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-slate-50 transition {{ old('sede_id', 2) == $sede->id ? 'border-kfm-primary bg-sky-50/50 ring-2 ring-kfm-primary/20' : 'border-slate-200' }}">
-                                <input type="radio" name="sede_id" value="{{ $sede->id }}" {{ old('sede_id', 2) == $sede->id ? 'checked' : '' }} class="h-4 w-4 text-kfm-primary focus:ring-kfm-primary border-slate-300">
-                                <div class="ml-2.5">
-                                    <span class="block text-xs font-bold text-slate-900">{{ $sede->name }}</span>
-                                </div>
-                            </label>
-                        @endforeach
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Agente Tramitador/a <span class="text-rose-500">*</span></label>
-                    <select name="agente" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                        @foreach($agentes as $ag)
-                            <option value="{{ $ag }}" {{ old('agente', 'Kerry') == $ag ? 'selected' : '' }}>{{ $ag }}</option>
-                        @endforeach
-                    </select>
-                    <span class="text-[11px] text-slate-400 mt-1 block">Equipo activo KFM Rota</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. Datos Personales -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center space-x-2">
-                <span>👤 2. Datos Personales</span>
+                <span>👤 1. Datos Personales</span>
             </h2>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -144,11 +115,11 @@
             </div>
         </div>
 
-        <!-- 3. Contratación & Facturación (Opcional Inicial) -->
+        <!-- 2. Contratación & Facturación (Opcional Inicial) -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-5">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h2 class="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center space-x-2">
-                    <span>🛡️ 3. Contratación y Facturación</span>
+                    <span>🛡️ 2. Contratación y Facturación</span>
                 </h2>
                 <span class="text-xs text-slate-400">Puedes dejarlo en blanco o darlo de alta ahora</span>
             </div>
@@ -237,28 +208,18 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría / Uso del Vehículo</label>
-                            <select class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
-                                <option>POV Militar (NAVSTA Base Rota)</option>
-                                <option>Turismo Particular (Residente)</option>
-                                <option>Motocicleta / Scooter</option>
-                                <option>Vehículo Importado EE.UU.</option>
-                                <option>Vehículo Comercial / Furgoneta</option>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría del Vehículo</label>
+                            <select name="categoria_vehiculo" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-kfm-primary">
+                                <option value="Turismo" selected>Turismo</option>
+                                <option value="Furgoneta">Furgoneta</option>
+                                <option value="Camiones">Camiones</option>
+                                <option value="Autocaravana">Autocaravana</option>
+                                <option value="Microcar">Microcar</option>
+                                <option value="Motocicleta">Motocicleta</option>
+                                <option value="Ciclomotores">Ciclomotores</option>
                             </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Carta Verde (Green Card)</label>
-                            <select class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
-                                <option>Emitida en el acto (Requerida en base)</option>
-                                <option>Pendiente de emisión</option>
-                                <option>No requerida (Circulación nacional)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Combustible / Año</label>
-                            <input type="text" placeholder="Ej: Gasolina • 2021" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
                         </div>
                     </div>
                 </div>
@@ -283,26 +244,21 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Régimen del Militar/Cliente</label>
-                            <select class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
-                                <option>Inquilino (Renters SOFA Base)</option>
-                                <option>Propietario Residente</option>
-                                <option>Arrendador (Propietario alquila)</option>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría (Régimen)</label>
+                            <select name="categoria_hogar" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-kfm-primary">
+                                <option value="Owner" selected>Owner</option>
+                                <option value="Renter">Renter</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Capital Continente (€)</label>
-                            <input type="text" placeholder="Ej: 120.000 €" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                            <input type="text" name="capital_continente" placeholder="Ej: 120.000 €" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Capital Contenido (€)</label>
-                            <input type="text" placeholder="Ej: 30.000 €" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">RC Inquilino / Locativa (€)</label>
-                            <input type="text" placeholder="Ej: 300.000 €" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                            <input type="text" name="capital_contenido" placeholder="Ej: 30.000 €" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
                         </div>
                     </div>
                 </div>
@@ -311,13 +267,11 @@
                 <div id="bloque-RC" class="space-y-4 hidden">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Modalidad de RC</label>
-                            <select class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
-                                <option>RC Animales de Compañía / Perros (PPP)</option>
-                                <option>RC Familiar y Vida Privada</option>
-                                <option>RC Cazador y Armas</option>
-                                <option>RC Profesional / Autónomo</option>
-                                <option>RC Embarcación de Recreo</option>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría (Modalidad de RC)</label>
+                            <select name="categoria_rc" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-kfm-primary">
+                                <option value="Animales de compañía/perros" selected>Animales de compañía/perros</option>
+                                <option value="Profesional/autónomo">Profesional/autónomo</option>
+                                <option value="Otros">Otros</option>
                             </select>
                         </div>
                         <div>
@@ -415,11 +369,16 @@
             <div class="pt-2">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-600 block mb-2">Información de Facturación</span>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nº de Recibo</label>
+                        <input type="text" name="recibo_numero" value="{{ old('recibo_numero') }}" placeholder="Ej: 2026-0814" 
+                               class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-600 mb-1">Prima (€)</label>
-                        <input type="text" name="prima" placeholder="Ej: 406,05 €" 
-                               class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-emerald-700">
+                        <input type="text" name="prima" value="{{ old('prima') }}" placeholder="Ej: 406,05 €" 
+                               class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-emerald-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-600 mb-1">Tipo de Pago</label>
@@ -443,12 +402,12 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                     <div>
                         <label class="block text-xs font-medium text-slate-600 mb-1">Fecha de Pago</label>
-                        <input type="text" name="fecha_pago" placeholder="DD/MM/AAAA" 
+                        <input type="text" name="fecha_pago" value="{{ old('fecha_pago') }}" placeholder="DD/MM/AAAA" 
                                class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-600 mb-1">Fecha de Vencimiento</label>
-                        <input type="text" name="fecha_vencimiento" placeholder="DD/MM/AAAA" 
+                        <input type="text" name="fecha_vencimiento" value="{{ old('fecha_vencimiento') }}" placeholder="DD/MM/AAAA" 
                                class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
                     </div>
                     <div>
@@ -462,7 +421,7 @@
             </div>
         </div>
 
-        <!-- 4. Observaciones -->
+        <!-- 3. Observaciones -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-2">
             <label class="block text-xs font-semibold text-slate-700 mb-1">Observaciones / Notas Internas</label>
             <textarea name="observaciones" rows="3" placeholder="Anotaciones de gestión, detalles del cliente o requerimientos de base..." 
