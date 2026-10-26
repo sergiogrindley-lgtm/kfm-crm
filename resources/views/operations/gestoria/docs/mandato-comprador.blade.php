@@ -8,27 +8,39 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 8mm 12mm 8mm 12mm;
+            margin: 12mm 15mm 12mm 15mm;
         }
         body {
             font-family: Arial, Helvetica, sans-serif;
             color: #000;
             background-color: #f1f5f9;
-            line-height: 1.35;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
         }
         @media print {
-            body { background: white !important; padding: 0 !important; }
+            body { background: white !important; padding: 0 !important; margin: 0 !important; }
             .no-print { display: none !important; }
             .print-sheet {
                 border: none !important;
                 box-shadow: none !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                width: 100% !important;
                 max-width: 100% !important;
             }
         }
+        .print-sheet {
+            width: 210mm;
+            max-width: 100%;
+            min-height: 297mm;
+            padding: 14mm 16mm;
+            margin: 0 auto;
+            background: white;
+            box-sizing: border-box;
+        }
         .field-val {
-            background-color: #e2e8f0;
+            background-color: #f1f5f9;
             padding: 1px 4px;
             font-weight: 600;
             color: #000;
@@ -37,15 +49,15 @@
             text-transform: uppercase;
         }
         .field-line {
-            color: #94a3b8;
+            color: #64748b;
             letter-spacing: -0.5px;
         }
     </style>
 </head>
-<body class="p-3 sm:p-6 text-[10px]">
+<body class="py-4 text-[10px]">
 
     <!-- Action Bar (No Print) -->
-    <div class="max-w-3xl mx-auto mb-4 flex items-center justify-between no-print bg-slate-900 text-white px-5 py-2.5 rounded-xl shadow-lg">
+    <div class="max-w-[210mm] mx-auto mb-4 flex items-center justify-between no-print bg-slate-900 text-white px-5 py-2.5 rounded-xl shadow-lg">
         <div class="flex items-center space-x-3 text-xs">
             <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
             <span class="font-bold uppercase tracking-wider text-slate-200">Mandato Oficial DGT — Comprador (Adquirente)</span>
@@ -61,7 +73,7 @@
     </div>
 
     <!-- Official Document Sheet -->
-    <div class="max-w-3xl mx-auto bg-white p-8 sm:p-12 rounded-xl shadow-xl border border-slate-200 print-sheet text-black text-[9.5px]">
+    <div class="print-sheet shadow-xl border border-slate-200 text-black text-[9.5px]">
         
         <!-- Header Oficial Colegiado (Consejo General) -->
         <div class="text-center mb-5">

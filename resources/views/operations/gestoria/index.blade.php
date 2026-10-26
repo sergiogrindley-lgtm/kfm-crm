@@ -199,9 +199,9 @@
                     ⚪ Expedientes Terminados ({{ $stats['permiso_recibido'] }})
                 </a>
 
-                <a href="{{ route('operations.gestoria.index', ['tipo' => 'Transferencia']) }}" 
-                   class="px-2.5 py-1 rounded-lg border text-[11px] font-bold transition {{ request('tipo') == 'Transferencia' && !request('estado') ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100' }}">
-                    🚗 Todas las Transferencias ({{ $stats['transferencias'] }})
+                <a href="{{ route('operations.gestoria.index', ['estado' => 'CESION_POLIZA']) }}" 
+                   class="px-2.5 py-1 rounded-lg border text-[11px] font-bold transition {{ request('estado') == 'CESION_POLIZA' || request('tipo') == 'cesion' ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' }}">
+                    🛡️ Con Cesión de Póliza ({{ $stats['cesion_poliza'] }})
                 </a>
             </div>
 

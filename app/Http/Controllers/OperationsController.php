@@ -38,7 +38,13 @@ class OperationsController extends Controller
         }
 
         if ($estado = $request->input('estado')) {
-            if ($estado === 'PENDIENTE_DOC') {
+            if ($estado === 'CESION_POLIZA') {
+                $query->where(function ($q) {
+                    $q->where('estado', 'CESION_POLIZA')
+                      ->orWhere('tiene_cesion', true)
+                      ->orWhere('tipo', 'like', '%Cesión%');
+                });
+            } elseif ($estado === 'PENDIENTE_DOC') {
                 $query->whereIn('estado', ['PENDIENTE_DOC', 'DOCUMENTOS']);
             } elseif ($estado === 'ENVIADO_GESTORIA') {
                 $query->whereIn('estado', ['ENVIADO_GESTORIA', 'OUT_GESTORIA']);
@@ -50,7 +56,13 @@ class OperationsController extends Controller
         }
 
         if ($tipo = $request->input('tipo')) {
-            if ($tipo === 'Transferencia' || $tipo === 'Transferencias') {
+            if ($tipo === 'Cesión de póliza' || $tipo === 'cesion') {
+                $query->where(function ($q) {
+                    $q->where('tiene_cesion', true)
+                      ->orWhere('estado', 'CESION_POLIZA')
+                      ->orWhere('tipo', 'like', '%Cesión%');
+                });
+            } elseif ($tipo === 'Transferencia' || $tipo === 'Transferencias') {
                 $query->where(function ($q) {
                     $q->where('tipo', 'like', '%Transferencia%')
                       ->orWhere('tipo', 'like', '%Cesión%')
@@ -79,7 +91,11 @@ class OperationsController extends Controller
             'enviado_gestoria' => GestoriaTramite::whereIn('estado', ['ENVIADO_GESTORIA', 'OUT_GESTORIA'])->count(),
             'permiso_recibido' => GestoriaTramite::whereIn('estado', ['PERMISO_RECIBIDO', 'BACK_AVISADO', 'LIQUIDADO', 'RECOGIDO'])->count(),
             'cancelado' => GestoriaTramite::where('estado', 'CANCELADO')->count(),
-            'cesion_poliza' => GestoriaTramite::where('estado', 'CESION_POLIZA')->orWhere('tiene_cesion', true)->count(),
+            'cesion_poliza' => GestoriaTramite::where(function ($q) {
+                $q->where('estado', 'CESION_POLIZA')
+                  ->orWhere('tiene_cesion', true)
+                  ->orWhere('tipo', 'like', '%Cesión%');
+            })->count(),
             'transferencias' => GestoriaTramite::where(function ($q) {
                 $q->where('tipo', 'like', '%Transferencia%')
                   ->orWhere('tipo', 'like', '%Cesión%')
