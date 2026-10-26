@@ -114,6 +114,7 @@ class OperationsController extends Controller
             'recibo_numero' => 'nullable|string|max:50',
             'estado' => 'nullable|string|max:50',
             'tiene_cesion' => 'nullable|boolean',
+            'numero_poliza' => 'nullable|string|max:100',
             'ssn' => 'nullable|string|max:50',
             'box_ship' => 'nullable|string|max:100',
             'observaciones' => 'nullable|string',
@@ -128,6 +129,7 @@ class OperationsController extends Controller
         $validated['fecha_tramite'] = !empty($validated['fecha_tramite']) ? trim($validated['fecha_tramite']) : date('d/m/Y');
         $validated['estado'] = $validated['estado'] ?? 'PREPARADO';
         $validated['tiene_cesion'] = $request->has('tiene_cesion') || $request->input('tipo') === 'Cesión de póliza';
+        $validated['numero_poliza'] = !empty($validated['numero_poliza']) ? strtoupper(trim($validated['numero_poliza'])) : null;
 
         // Documentos checklist por defecto
         $validated['documentos_checklist'] = [
@@ -178,6 +180,7 @@ class OperationsController extends Controller
             'recibo_numero' => 'nullable|string|max:50',
             'estado' => 'required|string|max:50',
             'tiene_cesion' => 'nullable|boolean',
+            'numero_poliza' => 'nullable|string|max:100',
             'ssn' => 'nullable|string|max:50',
             'box_ship' => 'nullable|string|max:100',
             'observaciones' => 'nullable|string',
@@ -190,6 +193,7 @@ class OperationsController extends Controller
         $validated['seller_nombre'] = strtoupper(trim($validated['seller_nombre']));
         $validated['seller_dni'] = !empty($validated['seller_dni']) ? strtoupper(trim($validated['seller_dni'])) : null;
         $validated['tiene_cesion'] = $request->has('tiene_cesion') || $request->input('tipo') === 'Cesión de póliza';
+        $validated['numero_poliza'] = !empty($validated['numero_poliza']) ? strtoupper(trim($validated['numero_poliza'])) : null;
 
         $tramite->update($validated);
 

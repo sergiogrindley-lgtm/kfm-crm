@@ -67,6 +67,11 @@
                 <span class="inline-block bg-slate-900 text-white font-mono font-bold text-xs px-2.5 py-1 rounded">
                     {{ $tramite->matricula }}
                 </span>
+                @if($tramite->numero_poliza)
+                    <span class="block text-xs font-mono font-bold text-indigo-700 mt-1 uppercase">
+                        PÓLIZA Nº {{ $tramite->numero_poliza }}
+                    </span>
+                @endif
                 <span class="block text-[10px] text-slate-400 mt-1 uppercase font-semibold">Oficina Central & NEX Base Naval</span>
             </div>
         </div>
@@ -80,7 +85,7 @@
         <div class="bg-slate-50/80 p-6 rounded-xl border border-slate-200 space-y-4 text-sm leading-relaxed text-slate-900 text-justify">
             <p>
                 Yo, <strong class="uppercase text-black">{{ $tramite->seller_nombre }}</strong>, 
-                con póliza <strong class="font-mono text-indigo-700">{{ $tramite->policy ? $tramite->policy->policy_number : ($tramite->observaciones ?: 'KFM-AUTO-2026') }}</strong>,
+                con póliza <strong class="font-mono text-indigo-700">{{ $tramite->numero_poliza ?: ($tramite->policy ? $tramite->policy->policy_number : '__________________') }}</strong>,
             </p>
             <p>
                 cedo el uso, derechos y obligaciones a <strong class="uppercase text-black">{{ $tramite->buyer_nombre }}</strong>
@@ -119,16 +124,13 @@
                 <span class="inline-block w-20 font-bold text-slate-600">DOB:</span> 
                 <strong class="font-mono text-black">{{ $tramite->buyer_dob ?: '04/04/1995' }}</strong>
             </p>
+            @php
+                $displayAddress = trim($tramite->box_ship ?: ($tramite->buyer_direccion ?: 'LU BASE NAVAL DE ROTA 999'));
+            @endphp
             <p>
                 <span class="inline-block w-20 font-bold text-slate-600">ADDRESS:</span> 
-                <strong class="uppercase text-black">{{ $tramite->buyer_direccion ?: 'LU BASE NAVAL DE ROTA 999' }}, {{ $tramite->buyer_cp ?: '11520' }} ROTA</strong>
+                <strong class="uppercase text-black">{{ $displayAddress }}</strong>
             </p>
-            @if($tramite->box_ship)
-                <p>
-                    <span class="inline-block w-20 font-bold text-slate-600">BOX / SHIP:</span> 
-                    <strong class="font-mono text-black">{{ $tramite->box_ship }}</strong>
-                </p>
-            @endif
         </div>
 
         <!-- Footer Discreto -->

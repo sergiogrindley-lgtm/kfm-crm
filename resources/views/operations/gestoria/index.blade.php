@@ -237,7 +237,7 @@
                                     </span>
                                     @if($tramite->tiene_cesion || $tramite->tipo === 'Cesión de póliza')
                                         <span class="text-[9px] bg-slate-200 text-slate-800 border border-slate-300 px-1.5 py-0.5 rounded font-bold" title="Cesión de póliza incluida">
-                                            + Cesión
+                                            + Cesión @if($tramite->numero_poliza)<span class="font-mono text-[8px] text-slate-600">({{ $tramite->numero_poliza }})</span>@endif
                                         </span>
                                     @endif
                                 </div>
@@ -561,7 +561,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <div class="sm:col-span-2">
                                 <label class="block text-slate-700 font-semibold mb-1">Dirección (Local o Base)</label>
-                                <input type="text" name="buyer_direccion" value="LU BASE NAVAL DE ROTA 999" class="w-full uppercase px-3 py-1.5 border border-slate-300 rounded-lg">
+                                <input type="text" name="buyer_direccion" placeholder="Ej. LU BASE NAVAL DE ROTA 999 o USS OSCAR AUSTIN" class="w-full uppercase px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
                             <div>
                                 <label class="block text-slate-700 font-semibold mb-1">C.P.</label>
@@ -590,7 +590,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <div class="sm:col-span-2">
                                 <label class="block text-slate-700 font-semibold mb-1">Dirección Vendedor</label>
-                                <input type="text" name="seller_direccion" value="C/ SAN JUAN DE PUERTO RICO 12, ROTA" class="w-full uppercase px-3 py-1.5 border border-slate-300 rounded-lg">
+                                <input type="text" name="seller_direccion" placeholder="Ej. C/ SAN JUAN DE PUERTO RICO 12, ROTA" class="w-full uppercase px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
                             <div>
                                 <label class="block text-slate-700 font-semibold mb-1">Contacto Vendedor</label>
@@ -607,17 +607,25 @@
                                 ¿Incluye Cesión de Póliza de Seguro KFM?
                             </label>
                         </div>
-                        <div id="create_ssn_container" class="pt-2 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div id="create_ssn_container" class="pt-2 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <div>
                                 <label class="block text-slate-800 font-bold mb-1">
-                                    SSN (Social Security Number) <span class="text-rose-600">*</span>
+                                    Nº Póliza a Ceder <span class="text-rose-600">*</span>
+                                </label>
+                                <input type="text" name="numero_poliza" id="create_numero_poliza" placeholder="Ej. POL-2026 / 8492" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg bg-white uppercase">
+                                <span class="text-[9px] text-slate-500 block mt-0.5">Póliza del vendedor que se cede</span>
+                            </div>
+                            <div>
+                                <label class="block text-slate-800 font-bold mb-1">
+                                    SSN Comprador <span class="text-rose-600">*</span>
                                 </label>
                                 <input type="text" name="ssn" id="create_ssn" placeholder="***-**-4912" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg bg-white">
-                                <span class="text-[9px] text-slate-500 block mt-0.5">En el documento de cesión aparecerá el SSN y no el NIE</span>
+                                <span class="text-[9px] text-slate-500 block mt-0.5">SSN militar en lugar de NIE</span>
                             </div>
                             <div>
                                 <label class="block text-slate-700 font-semibold mb-1">Box / Ship (Navy DoD)</label>
-                                <input type="text" name="box_ship" placeholder="PSC 819 / NAVSTA ROTA" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg bg-white">
+                                <input type="text" name="box_ship" placeholder="Ej. USS OSCAR AUSTIN DDG 79" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg bg-white uppercase">
+                                <span class="text-[9px] text-slate-500 block mt-0.5">Destino militar o barco</span>
                             </div>
                         </div>
                     </div>
@@ -853,17 +861,25 @@
                                 ¿Incluye Cesión de Póliza de Seguro KFM?
                             </label>
                         </div>
-                        <div id="edit_ssn_container" class="pt-2 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div id="edit_ssn_container" class="pt-2 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <div>
                                 <label class="block text-slate-800 font-bold mb-1">
-                                    SSN (Social Security Number) <span class="text-rose-600">*</span>
+                                    Nº Póliza a Ceder <span class="text-rose-600">*</span>
+                                </label>
+                                <input type="text" name="numero_poliza" id="edit_numero_poliza" placeholder="Ej. POL-2026 / 8492" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg bg-white uppercase">
+                                <span class="text-[9px] text-slate-500 block mt-0.5">Póliza del vendedor que se cede</span>
+                            </div>
+                            <div>
+                                <label class="block text-slate-800 font-bold mb-1">
+                                    SSN Comprador <span class="text-rose-600">*</span>
                                 </label>
                                 <input type="text" name="ssn" id="edit_ssn" placeholder="***-**-4912" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg bg-white">
-                                <span class="text-[9px] text-slate-500 block mt-0.5">En el documento de cesión aparecerá el SSN y no el NIE</span>
+                                <span class="text-[9px] text-slate-500 block mt-0.5">SSN militar en lugar de NIE</span>
                             </div>
                             <div>
                                 <label class="block text-slate-700 font-semibold mb-1">Box / Ship (Navy DoD)</label>
-                                <input type="text" name="box_ship" id="edit_box_ship" placeholder="PSC 819 / NAVSTA ROTA" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg bg-white">
+                                <input type="text" name="box_ship" id="edit_box_ship" placeholder="Ej. USS OSCAR AUSTIN DDG 79" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg bg-white uppercase">
+                                <span class="text-[9px] text-slate-500 block mt-0.5">Destino militar o barco</span>
                             </div>
                         </div>
                     </div>
@@ -937,6 +953,7 @@
 
         const hasCesion = tramite.tiene_cesion || tramite.tipo === 'Cesión de póliza';
         document.getElementById('edit_tiene_cesion').checked = hasCesion;
+        document.getElementById('edit_numero_poliza').value = tramite.numero_poliza || (tramite.policy ? tramite.policy.policy_number : '');
         document.getElementById('edit_ssn').value = tramite.ssn || '';
         document.getElementById('edit_box_ship').value = tramite.box_ship || '';
         document.getElementById('edit_observaciones').value = tramite.observaciones || '';
