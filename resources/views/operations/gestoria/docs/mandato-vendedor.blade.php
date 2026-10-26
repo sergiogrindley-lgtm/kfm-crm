@@ -8,18 +8,24 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 12mm 15mm 12mm 15mm;
+            margin: 8mm 14mm 8mm 14mm;
         }
         body {
             font-family: Arial, Helvetica, sans-serif;
             color: #000;
             background-color: #f1f5f9;
-            line-height: 1.4;
+            line-height: 1.3;
             margin: 0;
             padding: 0;
         }
         @media print {
-            body { background: white !important; padding: 0 !important; margin: 0 !important; }
+            html, body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+            }
             .no-print { display: none !important; }
             .print-sheet {
                 border: none !important;
@@ -28,24 +34,26 @@
                 margin: 0 !important;
                 width: 100% !important;
                 max-width: 100% !important;
+                min-height: auto !important;
+                height: auto !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
             }
         }
         .print-sheet {
             width: 210mm;
             max-width: 100%;
-            min-height: 297mm;
-            padding: 14mm 16mm;
+            padding: 10mm 15mm;
             margin: 0 auto;
             background: white;
             box-sizing: border-box;
         }
         .field-val {
-            background-color: #f1f5f9;
-            padding: 1px 4px;
             font-weight: 600;
             color: #000;
             font-family: Arial, Helvetica, sans-serif;
-            border-bottom: 1px solid #94a3b8;
+            border-bottom: 1px solid #475569;
+            padding: 0 2px;
             text-transform: uppercase;
         }
         .field-line {
@@ -73,14 +81,14 @@
     </div>
 
     <!-- Official Document Sheet -->
-    <div class="print-sheet shadow-xl border border-slate-200 text-black text-[9.5px]">
+    <div class="print-sheet shadow-xl border border-slate-200 text-black text-[9px]">
         
         <!-- Header Oficial Colegiado (Consejo General) -->
-        <div class="text-center mb-5">
-            <img src="{{ asset('img/logo-consejo-gestores.png') }}" alt="Consejo General de Colegios de Gestores Administrativos de España" class="h-16 w-auto mx-auto object-contain">
+        <div class="text-center mb-2.5">
+            <img src="{{ asset('img/logo-consejo-gestores.png') }}" alt="Consejo General de Colegios de Gestores Administrativos de España" class="h-12 w-auto mx-auto object-contain">
         </div>
 
-        <div class="space-y-2.5 leading-relaxed text-justify">
+        <div class="space-y-2 leading-snug text-justify">
             <p>
                 D./ña. <span class="field-val">{{ $tramite->seller_nombre }}</span> con DNI <span class="field-val">{{ $tramite->seller_dni ?: ($tramite->seller_fa ?: '___________') }}</span>
                 y D./ña. <span class="field-line">_________________________________</span> con DNI <span class="field-line">________________</span>, que declara/declaran tener
@@ -101,12 +109,12 @@
                 los trámites necesarios con el siguiente <strong>ASUNTO</strong>:
             </p>
 
-            <div class="space-y-1">
+            <div class="space-y-0.5">
                 <p>• <span class="field-val">SOLICITUD DE TRANSMISION DE VEHICULO ({{ $tramite->matricula }})</span></p>
                 <p>• <span class="field-line">_________________________________________________________________________________________________________</span></p>
             </div>
 
-            <div class="space-y-2 text-[8px] leading-normal pt-1">
+            <div class="space-y-1.5 text-[7.5px] leading-tight pt-0.5">
                 <p>
                     El presente mandato, que se regirá por los artículos 1709 a 1739 del Código Civil, se confiere al amparo del artículo 5 de la Ley 39/2015, de 1 de
                     octubre, del Procedimiento Administrativo Común de las Administraciones Públicas, y del artículo 1 del Estatuto Orgánico de la Profesión de Gestor
@@ -146,33 +154,28 @@
             </div>
 
             <!-- Firma Mandante -->
-            <div class="pt-2 text-center">
-                <p class="text-[9px]">
+            <div class="pt-1 text-center">
+                <p class="text-[8.5px]">
                     En <span class="field-val">ROTA</span> a <span class="field-val">{{ $dia }}</span> de <span class="field-val">{{ $mesNombre }}</span> de <span class="field-val">{{ $ano }}</span>
                 </p>
-                <div class="h-9 flex items-end justify-center">
-                    <span class="mr-4 text-xs font-bold">X</span>
-                    <span class="field-line">__________________________________________________</span>
-                </div>
-                <p class="font-bold text-[9px] uppercase tracking-wider mt-0.5">EL MANDANTE</p>
+                <div class="h-6"></div>
+                <p class="font-bold text-[8.5px] uppercase tracking-wider">EL MANDANTE</p>
             </div>
 
             <!-- Cláusula Aceptación Gestor -->
-            <p class="text-[8px] leading-normal text-justify pt-1">
+            <p class="text-[7.5px] leading-tight text-justify pt-0.5">
                 El mandatario/s acepta/n el mandato conferido y se obliga a cumplirlo de conformidad con las instrucciones del mandante, y declara/n bajo su
                 responsabilidad que los documentos recibidos del mandante han sido verificados en cuanto a la corrección formal de los datos contenidos en los
                 mismos.
             </p>
 
             <!-- Firma Mandatario -->
-            <div class="pt-1 text-center">
-                <p class="text-[9px]">
-                    En <span class="field-val">PTO STA MARIA</span> a <span class="field-val">{{ $dia }}</span> de <span class="field-val">{{ $mesNombre }}</span> de <span class="field-val">{{ $ano }}</span>
+            <div class="pt-0.5 text-center">
+                <p class="text-[8.5px]">
+                    En <span class="field-val">ROTA</span> a <span class="field-val">{{ $dia }}</span> de <span class="field-val">{{ $mesNombre }}</span> de <span class="field-val">{{ $ano }}</span>
                 </p>
-                <div class="h-9 flex items-end justify-center">
-                    <span class="field-line">__________________________________________________</span>
-                </div>
-                <p class="font-bold text-[9px] uppercase tracking-wider mt-0.5">EL MANDATARIO/S</p>
+                <div class="h-6"></div>
+                <p class="font-bold text-[8.5px] uppercase tracking-wider">EL MANDATARIO/S</p>
             </div>
 
         </div>
