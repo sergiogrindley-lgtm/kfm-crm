@@ -69,9 +69,11 @@
                     {{ $tramite->matricula }}
                 </span>
                 <span class="block text-[10px] text-slate-400 mt-1 uppercase font-semibold">EXP: KFM-{{ date('Y') }}-{{ str_pad($tramite->id, 4, '0', STR_PAD_LEFT) }}</span>
-                @if($tramite->recibo_numero)
-                    <span class="inline-block bg-indigo-50 text-indigo-700 font-bold font-mono text-[10px] px-2 py-0.5 rounded border border-indigo-200 mt-1">RECIBO: #{{ $tramite->recibo_numero }}</span>
-                @endif
+                <div class="mt-1">
+                    <span class="inline-block {{ $tramite->recibo_numero ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-amber-50 text-amber-800 border-amber-300' }} border font-mono font-bold text-xs px-2.5 py-1 rounded-md shadow-2xs">
+                        Nº RECIBO: {{ $tramite->recibo_numero ?: 'PENDIENTE' }}
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -198,6 +200,10 @@
 
         <!-- Financial Summary -->
         <div class="bg-slate-900 text-white p-4 rounded-xl flex flex-wrap items-center justify-between text-xs gap-3">
+            <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Nº Recibo / Cobro:</span>
+                <span class="text-base font-bold font-mono text-emerald-400">{{ $tramite->recibo_numero ?: 'Pendiente' }}</span>
+            </div>
             <div>
                 <span class="text-slate-400 block text-[10px] uppercase font-bold">Importe de Venta Declarado:</span>
                 <span class="text-base font-bold text-white">{{ $tramite->precio_venta ?: '1.000,00 €' }}</span>

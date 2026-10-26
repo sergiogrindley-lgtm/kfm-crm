@@ -186,12 +186,12 @@
                 
                 <a href="{{ route('operations.gestoria.index') }}" 
                    class="px-2.5 py-1 rounded-lg border text-[11px] font-bold transition {{ !request('estado') && !request('tipo') ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100' }}">
-                    Todos ({{ $stats['total'] }})
+                    Todos los Expedientes ({{ $stats['total'] }})
                 </a>
 
-                <a href="{{ route('operations.gestoria.index', ['tipo' => 'Transferencia', 'estado' => 'PENDIENTE_DOC']) }}" 
-                   class="px-2.5 py-1 rounded-lg border text-[11px] font-bold transition {{ request('tipo') == 'Transferencia' && request('estado') == 'PENDIENTE_DOC' ? 'bg-amber-500 text-white border-amber-500' : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' }}">
-                    🟡 Transferencias con Documentos Pendientes
+                <a href="{{ route('operations.gestoria.index', ['estado' => 'PENDIENTE_DOC']) }}" 
+                   class="px-2.5 py-1 rounded-lg border text-[11px] font-bold transition {{ request('estado') == 'PENDIENTE_DOC' ? 'bg-amber-500 text-white border-amber-500' : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' }}">
+                    🟡 Documentos Pendientes ({{ $stats['pendiente_doc'] }})
                 </a>
 
                 <a href="{{ route('operations.gestoria.index', ['estado' => 'PERMISO_RECIBIDO']) }}" 

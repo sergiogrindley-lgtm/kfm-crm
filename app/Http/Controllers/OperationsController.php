@@ -51,7 +51,12 @@ class OperationsController extends Controller
 
         if ($tipo = $request->input('tipo')) {
             if ($tipo === 'Transferencia' || $tipo === 'Transferencias') {
-                $query->where('tipo', 'like', '%Transferencia%');
+                $query->where(function ($q) {
+                    $q->where('tipo', 'like', '%Transferencia%')
+                      ->orWhere('tipo', 'like', '%Cesión%')
+                      ->orWhere('tiene_cesion', true)
+                      ->orWhereNull('tipo');
+                });
             } else {
                 $query->where('tipo', $tipo);
             }
@@ -74,8 +79,13 @@ class OperationsController extends Controller
             'enviado_gestoria' => GestoriaTramite::whereIn('estado', ['ENVIADO_GESTORIA', 'OUT_GESTORIA'])->count(),
             'permiso_recibido' => GestoriaTramite::whereIn('estado', ['PERMISO_RECIBIDO', 'BACK_AVISADO', 'LIQUIDADO', 'RECOGIDO'])->count(),
             'cancelado' => GestoriaTramite::where('estado', 'CANCELADO')->count(),
-            'cesion_poliza' => GestoriaTramite::where('estado', 'CESION_POLIZA')->count(),
-            'transferencias' => GestoriaTramite::where('tipo', 'like', '%Transferencia%')->count(),
+            'cesion_poliza' => GestoriaTramite::where('estado', 'CESION_POLIZA')->orWhere('tiene_cesion', true)->count(),
+            'transferencias' => GestoriaTramite::where(function ($q) {
+                $q->where('tipo', 'like', '%Transferencia%')
+                  ->orWhere('tipo', 'like', '%Cesión%')
+                  ->orWhere('tiene_cesion', true)
+                  ->orWhereNull('tipo');
+            })->count(),
         ];
 
         $sedes = Sede::all();
