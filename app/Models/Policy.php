@@ -29,6 +29,7 @@ class Policy extends Model
         'tipo_facturacion',
         'balance',
         'liquidacion',
+        'fecha_liquidacion',
         'fecha_pago',
         'fecha_vencimiento',
         'estado',

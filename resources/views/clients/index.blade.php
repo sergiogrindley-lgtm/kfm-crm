@@ -221,6 +221,11 @@
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium bg-slate-100 text-slate-700 border border-slate-200">
                                             {{ $client->doc_identidad ?: 'SIN DOC' }}
                                         </span>
+                                        @if($client->ssn)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                                SSN: {{ $client->ssn }}
+                                            </span>
+                                        @endif
                                         @if($client->dob)
                                             <span class="text-xs text-slate-400">DOB: {{ $client->dob }}</span>
                                         @endif

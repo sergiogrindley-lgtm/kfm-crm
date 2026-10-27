@@ -40,7 +40,7 @@
                 <span>👤 1. Datos Personales</span>
             </h2>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre <span class="text-rose-500">*</span></label>
                     <input type="text" name="nombre" value="{{ old('nombre') }}" required placeholder="Ej: JONATHAN" 
@@ -52,9 +52,14 @@
                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Doc. Identificación (DNI/NIE/SSN)</label>
-                    <input type="text" name="doc_identidad" value="{{ old('doc_identidad') }}" placeholder="Ej: 582811386 o Y1979608N" 
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">DNI / NIE / CIF</label>
+                    <input type="text" name="doc_identidad" value="{{ old('doc_identidad') }}" placeholder="Ej: 48991448R o Y1979608N" 
                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">SSN (Social Security)</label>
+                    <input type="text" name="ssn" value="{{ old('ssn') }}" placeholder="Ej: 582-81-1386" 
+                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
                 </div>
             </div>
 
@@ -138,12 +143,9 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Aseguradora (Código)</label>
-                    <select name="codigo_aseguradora" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                        <option value="81">81 — Patria Hispana</option>
-                        <option value="87">87 — Entidad 87 (Liberty)</option>
-                        <option value="Allianz">Allianz Seguros</option>
-                        <option value="Reale">Reale Seguros</option>
-                        <option value="Mapfre">Mapfre</option>
+                    <select name="codigo_aseguradora" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                        <option value="81" selected>Patria 81</option>
+                        <option value="87">GEICO 87</option>
                     </select>
                 </div>
                 <div>
@@ -265,7 +267,7 @@
 
                 <!-- 3. BLOQUE RESPONSABILIDAD CIVIL (RC) -->
                 <div id="bloque-RC" class="space-y-4 hidden">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría (Modalidad de RC)</label>
                             <select name="categoria_rc" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-kfm-primary">
@@ -275,28 +277,10 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Límite de Cobertura (€)</label>
-                            <select class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
-                                <option>150.000 € (Básica)</option>
-                                <option selected>300.000 € (Estándar)</option>
-                                <option>600.000 € (Ampliada)</option>
-                                <option>1.200.000 € (Total)</option>
-                            </select>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Detalle del Riesgo (Mascota / Actividad / Microchip)</label>
+                            <input type="text" name="detalles_cobertura" placeholder="Ej: Perro Pastor Alemán • Nº Microchip 94100002891 • Cobertura en Base y Territorio Español" 
+                                   class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-kfm-primary">
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Franquicia</label>
-                            <select class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
-                                <option>Sin Franquicia (0 €)</option>
-                                <option>150 €</option>
-                                <option>300 €</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Detalle del Riesgo (Mascota / Actividad / Microchip)</label>
-                        <input type="text" name="detalles_cobertura" placeholder="Ej: Perro Pastor Alemán • Nº Microchip 94100002891 • Cobertura en Base y Territorio Español" 
-                               class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-kfm-primary">
                     </div>
                 </div>
 
@@ -381,13 +365,11 @@
                                class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-emerald-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">Tipo de Pago</label>
-                        <select name="tipo_facturacion" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
-                            <option value="Annual">Annual (Anual)</option>
-                            <option value="Semi-annual">Semi-annual (Semestral)</option>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Pago</label>
+                        <select name="tipo_facturacion" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                            <option value="Anual" selected>Anual</option>
+                            <option value="Semianual">Semianual</option>
                             <option value="Suplemento">Suplemento</option>
-                            <option value="Prima aplicada">Prima aplicada</option>
-                            <option value="Cedido">Cedido</option>
                         </select>
                     </div>
                     <div>
@@ -399,7 +381,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
                     <div>
                         <label class="block text-xs font-medium text-slate-600 mb-1">Fecha de Pago</label>
                         <input type="text" name="fecha_pago" value="{{ old('fecha_pago') }}" placeholder="DD/MM/AAAA" 
@@ -411,11 +393,16 @@
                                class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">Liquidación Cía.</label>
-                        <select name="liquidacion" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
-                            <option value="Liquidado">Liquidado</option>
-                            <option value="Pendiente">Pendiente</option>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Liquidación Cía.</label>
+                        <select name="liquidacion" id="liquidacionSelect" onchange="toggleLiquidacionFecha(this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold">
+                            <option value="Pendiente" {{ old('liquidacion') == 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
+                            <option value="Liquidado" {{ old('liquidacion') == 'Liquidado' ? 'selected' : '' }}>Liquidado</option>
                         </select>
+                    </div>
+                    <div id="fechaLiquidacionCol" class="{{ old('liquidacion') == 'Liquidado' ? '' : 'hidden' }}">
+                        <label class="block text-xs font-semibold text-emerald-700 mb-1">Fecha de Liquidación</label>
+                        <input type="text" name="fecha_liquidacion" id="fechaLiquidacionInput" value="{{ old('fecha_liquidacion') }}" placeholder="DD/MM/AAAA" 
+                               class="w-full px-3 py-2 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-medium text-emerald-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
                 </div>
             </div>
@@ -481,6 +468,24 @@
                 }
             }
         });
+    }
+
+    function toggleLiquidacionFecha(val) {
+        const col = document.getElementById('fechaLiquidacionCol');
+        if (!col) return;
+        if (val === 'Liquidado') {
+            col.classList.remove('hidden');
+            const input = document.getElementById('fechaLiquidacionInput');
+            if (input && !input.value) {
+                const today = new Date();
+                const d = String(today.getDate()).padStart(2, '0');
+                const m = String(today.getMonth() + 1).padStart(2, '0');
+                const y = today.getFullYear();
+                input.value = `${d}/${m}/${y}`;
+            }
+        } else {
+            col.classList.add('hidden');
+        }
     }
 </script>
 @endsection

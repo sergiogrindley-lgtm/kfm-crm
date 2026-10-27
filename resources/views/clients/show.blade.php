@@ -62,8 +62,13 @@
 
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 mt-2">
                     <span class="font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-700 font-semibold border border-slate-200">
-                        DOC: {{ $client->doc_identidad ?: 'NO ESPECIFICADO' }}
+                        DNI/NIE: {{ $client->doc_identidad ?: 'NO ESPECIFICADO' }}
                     </span>
+                    @if($client->ssn)
+                        <span class="font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-semibold border border-blue-200">
+                            SSN: {{ $client->ssn }}
+                        </span>
+                    @endif
                     @if($client->dob)
                         <span>Fecha Nacimiento: <strong class="text-slate-700">{{ $client->dob }}</strong></span>
                     @endif
@@ -465,11 +470,9 @@
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Aseguradora (Código)</label>
-                            <select name="codigo_aseguradora" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                                <option value="81">81 — Patria Hispana</option>
-                                <option value="87">87 — Entidad 87 (Liberty)</option>
-                                <option value="Allianz">Allianz Seguros</option>
-                                <option value="Reale">Reale Seguros</option>
+                            <select name="codigo_aseguradora" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                                <option value="81" selected>Patria 81</option>
+                                <option value="87">GEICO 87</option>
                             </select>
                         </div>
                         <div>
@@ -649,13 +652,11 @@
                                    class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-emerald-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo Facturación</label>
-                            <select name="tipo_facturacion" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
-                                <option value="Annual">Annual</option>
-                                <option value="Semi-annual">Semi-annual</option>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Pago</label>
+                            <select name="tipo_facturacion" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                                <option value="Anual" selected>Anual</option>
+                                <option value="Semianual">Semianual</option>
                                 <option value="Suplemento">Suplemento</option>
-                                <option value="Prima aplicada">Prima aplicada</option>
-                                <option value="Cedido">Cedido</option>
                             </select>
                         </div>
                         <div>
@@ -674,7 +675,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Fecha Vencimiento</label>
                             <input type="text" name="fecha_vencimiento" placeholder="DD/MM/AAAA" 
@@ -682,10 +683,15 @@
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Liquidación Cía</label>
-                            <select name="liquidacion" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
+                            <select name="liquidacion" id="showLiquidacionSelect" onchange="toggleShowLiquidacionFecha(this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold">
+                                <option value="Pendiente" selected>Pendiente</option>
                                 <option value="Liquidado">Liquidado</option>
-                                <option value="Pendiente">Pendiente</option>
                             </select>
+                        </div>
+                        <div id="showFechaLiquidacionCol" class="hidden">
+                            <label class="block text-xs font-semibold text-emerald-700 mb-1">Fecha de Liquidación</label>
+                            <input type="text" name="fecha_liquidacion" id="showFechaLiquidacionInput" placeholder="DD/MM/AAAA" 
+                                   class="w-full px-3 py-2 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-medium text-emerald-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         </div>
                     </div>
 
@@ -736,6 +742,24 @@
                 }
             }
         });
+    }
+
+    function toggleShowLiquidacionFecha(val) {
+        const col = document.getElementById('showFechaLiquidacionCol');
+        if (!col) return;
+        if (val === 'Liquidado') {
+            col.classList.remove('hidden');
+            const input = document.getElementById('showFechaLiquidacionInput');
+            if (input && !input.value) {
+                const today = new Date();
+                const d = String(today.getDate()).padStart(2, '0');
+                const m = String(today.getMonth() + 1).padStart(2, '0');
+                const y = today.getFullYear();
+                input.value = `${d}/${m}/${y}`;
+            }
+        } else {
+            col.classList.add('hidden');
+        }
     }
 
     // Modal de Borrado de Cliente

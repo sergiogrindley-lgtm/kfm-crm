@@ -12,6 +12,7 @@ class Client extends Model
         'sede_id',
         'agente',
         'doc_identidad',
+        'ssn',
         'nombre',
         'apellido',
         'nombre_familiar',

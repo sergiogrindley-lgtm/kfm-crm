@@ -30,6 +30,7 @@ class ClientController extends Controller
                   ->orWhere('apellido', 'like', "%{$search}%")
                   ->orWhere('nombre_familiar', 'like', "%{$search}%")
                   ->orWhere('doc_identidad', 'like', "%{$search}%")
+                  ->orWhere('ssn', 'like', "%{$search}%")
                   ->orWhere('telefono_movil', 'like', "%{$search}%")
                   ->orWhere('telefono_fijo', 'like', "%{$search}%")
                   ->orWhere('email_personal', 'like', "%{$search}%")
@@ -108,6 +109,7 @@ class ClientController extends Controller
             'apellido' => 'required|string|max:100',
             'nombre_familiar' => 'nullable|string|max:150',
             'doc_identidad' => 'nullable|string|max:50',
+            'ssn' => 'nullable|string|max:50',
             'dob' => 'nullable|string|max:50',
             'telefono_movil' => 'nullable|string|max:50',
             'telefono_fijo' => 'nullable|string|max:50',
@@ -139,6 +141,7 @@ class ClientController extends Controller
             'tipo_facturacion' => 'nullable|string|max:50',
             'balance' => 'nullable|string|max:50',
             'liquidacion' => 'nullable|string|max:50',
+            'fecha_liquidacion' => 'nullable|string|max:50',
             'fecha_pago' => 'nullable|string|max:50',
             'fecha_vencimiento' => 'nullable|string|max:50',
         ]);
@@ -150,6 +153,7 @@ class ClientController extends Controller
             'apellido' => strtoupper(trim($validated['apellido'])),
             'nombre_familiar' => !empty($validated['nombre_familiar']) ? trim($validated['nombre_familiar']) : null,
             'doc_identidad' => !empty($validated['doc_identidad']) ? strtoupper(trim($validated['doc_identidad'])) : null,
+            'ssn' => !empty($validated['ssn']) ? trim($validated['ssn']) : null,
             'dob' => $validated['dob'] ?? null,
             'telefono_movil' => $validated['telefono_movil'] ?? null,
             'telefono_fijo' => $validated['telefono_fijo'] ?? null,
@@ -171,14 +175,22 @@ class ClientController extends Controller
 
         // Si se indicó una póliza inicial
         if (!empty($request->input('crear_poliza')) || !empty($validated['matricula']) || !empty($validated['numero_poliza']) || !empty($validated['tipo_vivienda']) || !empty($validated['recibo_numero']) || !empty($validated['prima'])) {
+            $codAseguradora = $validated['codigo_aseguradora'] ?? '81';
+            $nombreAseguradora = match($codAseguradora) {
+                '81' => 'Patria 81',
+                '87' => 'GEICO 87',
+                default => $validated['aseguradora'] ?? 'Patria 81',
+            };
+            $esLiquidado = ($validated['liquidacion'] ?? 'Pendiente') === 'Liquidado';
+
             Policy::create([
                 'client_id' => $client->id,
                 'sede_id' => $client->sede_id,
                 'agente' => $client->agente,
                 'numero_poliza' => $validated['numero_poliza'] ?? 'PENDIENTE-' . time(),
                 'recibo_numero' => $validated['recibo_numero'] ?? null,
-                'codigo_aseguradora' => $validated['codigo_aseguradora'] ?? '81',
-                'aseguradora' => $validated['aseguradora'] ?? 'Patria Hispana',
+                'codigo_aseguradora' => $codAseguradora,
+                'aseguradora' => $nombreAseguradora,
                 'ramo' => $ramo,
                 'categoria' => $categoria,
                 'marca' => !empty($validated['marca']) ? strtoupper(trim($validated['marca'])) : null,
@@ -189,9 +201,10 @@ class ClientController extends Controller
                 'direccion_riesgo' => $validated['direccion_riesgo'] ?? null,
                 'detalles_cobertura' => $validated['detalles_cobertura'] ?? null,
                 'prima' => $validated['prima'] ?? null,
-                'tipo_facturacion' => $validated['tipo_facturacion'] ?? 'Annual',
+                'tipo_facturacion' => $validated['tipo_facturacion'] ?? 'Anual',
                 'balance' => $validated['balance'] ?? 'Paid Full',
-                'liquidacion' => $validated['liquidacion'] ?? 'Liquidado',
+                'liquidacion' => $validated['liquidacion'] ?? 'Pendiente',
+                'fecha_liquidacion' => $esLiquidado ? ($validated['fecha_liquidacion'] ?? null) : null,
                 'fecha_pago' => $validated['fecha_pago'] ?? null,
                 'fecha_vencimiento' => $validated['fecha_vencimiento'] ?? null,
                 'estado' => 'Activo',
@@ -234,6 +247,7 @@ class ClientController extends Controller
             'tipo_facturacion' => 'nullable|string|max:50',
             'balance' => 'nullable|string|max:50',
             'liquidacion' => 'nullable|string|max:50',
+            'fecha_liquidacion' => 'nullable|string|max:50',
             'fecha_pago' => 'nullable|string|max:50',
             'fecha_vencimiento' => 'nullable|string|max:50',
             'estado' => 'required|string|max:50',
@@ -248,12 +262,21 @@ class ClientController extends Controller
             default => $request->input('categoria'),
         };
 
+        $codAseguradora = $validated['codigo_aseguradora'] ?? '81';
+        $nombreAseguradora = match($codAseguradora) {
+            '81' => 'Patria 81',
+            '87' => 'GEICO 87',
+            default => $validated['aseguradora'] ?? 'Patria 81',
+        };
+        $esLiquidado = ($validated['liquidacion'] ?? 'Pendiente') === 'Liquidado';
+
         $validated['categoria'] = $categoria;
         $validated['client_id'] = $client->id;
         $validated['sede_id'] = $client->sede_id;
         $validated['agente'] = $validated['agente'] ?? $client->agente ?? 'Kerry';
-        $validated['codigo_aseguradora'] = $validated['codigo_aseguradora'] ?? '81';
-        $validated['aseguradora'] = $validated['aseguradora'] ?? 'Patria Hispana';
+        $validated['codigo_aseguradora'] = $codAseguradora;
+        $validated['aseguradora'] = $nombreAseguradora;
+        $validated['fecha_liquidacion'] = $esLiquidado ? ($validated['fecha_liquidacion'] ?? null) : null;
         $validated['marca'] = !empty($validated['marca']) ? strtoupper(trim($validated['marca'])) : null;
         $validated['modelo'] = !empty($validated['modelo']) ? strtoupper(trim($validated['modelo'])) : null;
         $validated['matricula'] = !empty($validated['matricula']) ? strtoupper(trim($validated['matricula'])) : null;
