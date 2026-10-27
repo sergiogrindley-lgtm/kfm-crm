@@ -15,7 +15,7 @@
                 <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Clientes Cargados</p>
                 <div class="flex items-baseline space-x-2">
                     <span class="text-2xl font-bold font-display text-slate-900">{{ $totalClients }}</span>
-                    <span class="text-xs text-emerald-600 font-medium">Muestra 20</span>
+                    <span class="text-xs text-emerald-600 font-medium">Últimos 10</span>
                 </div>
             </div>
         </div>
@@ -379,7 +379,7 @@
                 </p>
                 <div>
                     <a href="{{ route('home') }}" class="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 transition">
-                        Ver todos los 20 clientes
+                        Ver listado completo de clientes
                     </a>
                 </div>
             </div>

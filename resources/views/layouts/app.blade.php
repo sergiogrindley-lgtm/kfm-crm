@@ -43,38 +43,32 @@
     <!-- Top Corporate Bar -->
     <header class="bg-gradient-to-r from-kfm-dark via-kfm-navy to-kfm-primary text-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
+            <div class="flex items-center justify-between h-20 gap-4">
                 <!-- Brand / Logo -->
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3 flex-shrink-0">
                     <a href="{{ route('home') }}" class="flex items-center space-x-3 group">
-                        <div class="bg-white p-1.5 rounded-lg shadow-sm group-hover:scale-105 transition-transform flex items-center justify-center">
-                            <img src="{{ asset('img/logo.png') }}" alt="KFM Insurance" class="h-10 w-auto object-contain">
+                        <div class="bg-white p-1.5 rounded-xl shadow-sm group-hover:scale-105 transition-transform flex items-center justify-center">
+                            <img src="{{ asset('img/logo.png') }}" alt="KFM Insurance" class="h-9 w-auto object-contain">
                         </div>
                         <div>
-                            <span class="block text-xl font-bold tracking-tight font-display text-white">KFM INSURANCE</span>
-                            <span class="block text-xs font-medium text-cyan-200 tracking-wider uppercase">CRM Correduría de Seguros & NEX Rota</span>
+                            <span class="block text-lg font-bold tracking-tight font-display text-white whitespace-nowrap">KFM INSURANCE</span>
+                            <span class="block text-[11px] font-medium text-cyan-200 tracking-wider uppercase whitespace-nowrap">CRM Correduría & NEX Rota</span>
                         </div>
                     </a>
                 </div>
 
                 <!-- Navigation Tabs -->
-                <nav class="hidden md:flex items-center space-x-1.5 lg:space-x-2">
+                <nav class="hidden md:flex items-center space-x-1.5 lg:space-x-2.5">
                     <a href="{{ route('home') }}" 
-                       class="px-3 py-2 rounded-lg text-xs lg:text-sm font-semibold transition-colors flex items-center space-x-1.5 {{ request()->routeIs('home') && !request('sede_id') && !request('agente') ? 'bg-white/20 text-white shadow-inner' : 'text-slate-200 hover:bg-white/10 hover:text-white' }}">
-                        <svg class="w-4 h-4 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                       class="px-3.5 py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all flex items-center space-x-2 whitespace-nowrap {{ request()->routeIs('home') && !request('sede_id') && !request('agente') ? 'bg-white/20 text-white shadow-inner ring-1 ring-white/20' : 'text-slate-200 hover:bg-white/10 hover:text-white' }}">
+                        <svg class="w-4 h-4 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                         <span>Clientes</span>
-                    </a>
-
-                    <a href="{{ route('clients.create') }}" 
-                       class="px-2.5 py-2 rounded-lg text-xs lg:text-sm font-semibold transition-colors flex items-center space-x-1.5 {{ request()->routeIs('clients.create') ? 'bg-emerald-500 text-white shadow-md' : 'bg-emerald-600/80 hover:bg-emerald-500 text-white' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        <span>+ Nuevo</span>
                     </a>
 
                     <!-- Módulo Gestoría DGT -->
                     <a href="{{ route('operations.gestoria.index') }}" 
-                       class="px-3 py-2 rounded-lg text-xs lg:text-sm font-semibold transition-colors flex items-center space-x-1.5 {{ request()->routeIs('operations.gestoria.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-200 hover:bg-white/10 hover:text-white' }}">
-                        <span>📋</span>
+                       class="px-3.5 py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all flex items-center space-x-2 whitespace-nowrap {{ request()->routeIs('operations.gestoria.*') ? 'bg-indigo-600 text-white shadow-md ring-1 ring-indigo-400' : 'text-slate-200 hover:bg-white/10 hover:text-white' }}">
+                        <svg class="w-4 h-4 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         <span>Gestoría DGT</span>
                     </a>
 
@@ -82,7 +76,7 @@
                     <div class="relative">
                         <button type="button" 
                                 onclick="toggleOperacionesDropdown(event)" 
-                                class="px-3 py-2 rounded-lg text-xs lg:text-sm font-semibold text-slate-200 hover:bg-white/10 hover:text-white transition-colors flex items-center space-x-1.5 cursor-pointer {{ request()->routeIs('operations.extornos.*') || request()->routeIs('operations.sin-matricula.*') || request()->routeIs('operations.embarque.*') || request()->routeIs('operations.siniestros.*') || request()->routeIs('operations.pagos.*') ? 'bg-white/20 text-white font-bold' : '' }}">
+                                class="px-3.5 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-200 hover:bg-white/10 hover:text-white transition-all flex items-center space-x-2 whitespace-nowrap cursor-pointer {{ request()->routeIs('operations.extornos.*') || request()->routeIs('operations.sin-matricula.*') || request()->routeIs('operations.embarque.*') || request()->routeIs('operations.siniestros.*') || request()->routeIs('operations.pagos.*') ? 'bg-white/20 text-white font-bold ring-1 ring-white/20' : '' }}">
                             <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
                             <span>Operaciones</span>
                             <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -145,7 +139,7 @@
                     <div class="relative">
                         <button type="button" 
                                 onclick="toggleHerramientasDropdown(event)" 
-                                class="px-3 py-2 rounded-lg text-xs lg:text-sm font-semibold text-slate-200 hover:bg-white/10 hover:text-white transition-colors flex items-center space-x-1.5 cursor-pointer">
+                                class="px-3.5 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-200 hover:bg-white/10 hover:text-white transition-all flex items-center space-x-2 whitespace-nowrap cursor-pointer">
                             <span class="w-2 h-2 rounded-full bg-amber-400"></span>
                             <span>Herramientas</span>
                             <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -220,13 +214,14 @@
                     </div>
                 </nav>
 
-                <!-- Team Badge -->
-                <div class="flex items-center space-x-2">
-                    <div class="hidden lg:flex items-center bg-white/10 rounded-full px-3 py-1.5 border border-white/10 text-xs">
-                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
-                        <span class="text-slate-200">Equipo:</span>
-                        <span class="font-bold text-white ml-1">Kerry • Coral • Conchi • Chari</span>
-                    </div>
+                <!-- Primary Action Button: + Nuevo Cliente -->
+                <div class="flex items-center space-x-2 flex-shrink-0">
+                    <a href="{{ route('clients.create') }}" 
+                       class="px-4 py-2.5 rounded-xl text-xs lg:text-sm font-bold transition-all flex items-center space-x-2 whitespace-nowrap shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] cursor-pointer {{ request()->routeIs('clients.create') ? 'bg-emerald-500 text-white ring-2 ring-emerald-300' : 'bg-emerald-600 hover:bg-emerald-500 text-white' }}">
+                        <svg class="w-4 h-4 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        <span class="hidden sm:inline">Nuevo Cliente</span>
+                        <span class="sm:hidden">Nuevo</span>
+                    </a>
                 </div>
             </div>
         </div>

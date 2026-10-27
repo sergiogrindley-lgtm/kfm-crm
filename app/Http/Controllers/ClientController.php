@@ -60,7 +60,7 @@ class ClientController extends Controller
             $query->where('agente', $agente);
         }
 
-        $clients = $query->latest()->paginate(25)->withQueryString();
+        $clients = $query->latest()->paginate(10)->withQueryString();
 
         $sedes = Sede::withCount('clients')->get();
         $totalClients = Client::count();
