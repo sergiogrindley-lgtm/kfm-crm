@@ -354,7 +354,7 @@ class ClientController extends Controller
             'fecha_liquidacion' => 'nullable|string|max:50',
             'fecha_pago' => 'nullable|string|max:50',
             'fecha_vencimiento' => 'nullable|string|max:50',
-            'estado' => 'required|string|max:50',
+            'estado' => 'nullable|string|max:50',
             'observaciones' => 'nullable|string',
         ]);
 
@@ -382,6 +382,7 @@ class ClientController extends Controller
         $validated['aseguradora'] = $nombreAseguradora;
         $validated['numero_poliza'] = !empty(trim($validated['numero_poliza'] ?? '')) ? trim($validated['numero_poliza']) : 'Pendiente';
         $validated['fecha_liquidacion'] = $esLiquidado ? ($validated['fecha_liquidacion'] ?? null) : null;
+        $validated['estado'] = $validated['estado'] ?? 'Activo';
 
         // Limpieza de campos según ramo
         if ($ramo !== 'Hogar') {

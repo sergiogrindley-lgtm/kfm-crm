@@ -48,13 +48,13 @@
 
         <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
             <div class="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xl">
-                🏢
+                🏛️
             </div>
             <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Oficinas</p>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Aseguradoras</p>
                 <div class="flex items-baseline space-x-2">
-                    <span class="text-2xl font-bold font-display text-slate-900">2</span>
-                    <span class="text-xs text-slate-500 font-medium">Central & NEX</span>
+                    <span class="text-xl font-bold font-display text-slate-900">Patria & GEICO</span>
+                    <span class="text-xs text-slate-500 font-medium">81 / 87</span>
                 </div>
             </div>
         </div>
@@ -176,8 +176,7 @@
                 </a>
                 <a href="{{ route('home', ['q' => 'BOLTON']) }}" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md">Bolton (3 pólizas)</a>
                 <a href="{{ route('home', ['q' => '0680 JCL']) }}" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md">Matrícula 0680 JCL</a>
-                <a href="{{ route('home', ['q' => 'Kerry']) }}" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md">Tramitadas por Kerry</a>
-                <a href="{{ route('home', ['q' => 'Esposa']) }}" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md">Con familiar / esposa</a>
+                <a href="{{ route('home', ['q' => 'Esposa']) }}" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md">Con familiar / cónyuge</a>
             </div>
         </form>
     </div>

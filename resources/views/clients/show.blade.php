@@ -21,13 +21,6 @@
                 <svg class="w-3.5 h-3.5 text-kfm-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 <span>✏️ Editar Cliente</span>
             </button>
-            <button type="button" 
-                    onclick="openDeleteClientModal()"
-                    class="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-rose-600 rounded-lg transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
-                    title="Eliminar este cliente">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                <span>Borrar</span>
-            </button>
         </div>
     </div>
 
@@ -165,23 +158,6 @@
                     <p class="text-slate-700 leading-relaxed">{{ $client->observaciones }}</p>
                 </div>
             @endif
-
-            <!-- Zona de Gestión / Baja del Cliente -->
-            <div class="bg-rose-50/60 rounded-2xl border border-rose-200/80 p-5 space-y-3">
-                <span class="font-bold uppercase tracking-wider text-[11px] text-rose-800 flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    <span>Gestión de Ficha</span>
-                </span>
-                <p class="text-[11px] text-slate-600 leading-normal">
-                    Si el cliente se dio de alta por error o ha solicitado la baja total de su expediente en la correduría:
-                </p>
-                <button type="button" 
-                        onclick="openDeleteClientModal()"
-                        class="w-full py-2.5 px-3 bg-white hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 hover:border-rose-600 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    <span>Eliminar Ficha de Cliente</span>
-                </button>
-            </div>
 
         </div>
 
@@ -483,93 +459,94 @@
                 <form method="POST" action="{{ route('clients.policies.store', $client) }}" class="space-y-4">
                     @csrf
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <input type="hidden" name="agente" value="{{ $client->agente ?? 'Kerry' }}">
+                    <input type="hidden" name="estado" value="Activo">
+
+                    <!-- Selector de Ramo, Aseguradora y Nº Póliza -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Contratación (Ramo)</label>
-                            <select name="ramo" id="showRamoSelector" onchange="cambiarShowRamo(this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-kfm-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                                <option value="Vehiculo" selected>🚗 Vehículo (Auto/Moto)</option>
-                                <option value="Hogar">🏠 Hogar / Inquilino</option>
+                            <select name="ramo" id="showRamoSelector" onchange="cambiarShowRamo(this.value)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-kfm-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                                <option value="Vehiculo" selected>🚗 Vehículo (Coche, Moto, POV)</option>
+                                <option value="Hogar">🏠 Hogar / Inquilino (Renters)</option>
                                 <option value="RC">⚖️ Responsabilidad Civil (RC)</option>
                                 <option value="Empresa">🏢 Empresa / Comercio</option>
-                                <option value="Otros">🛡️ Otros Seguros</option>
+                                <option value="Otros">🛡️ Otros Seguros (Salud, Embarcación)</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Aseguradora (Código)</label>
-                            <select name="codigo_aseguradora" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                            <select name="codigo_aseguradora" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
                                 <option value="81" selected>Patria 81</option>
                                 <option value="87">GEICO 87</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Agente Tramitador/a</label>
-                            <select name="agente" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                                @foreach($agentes ?? ['Kerry', 'Coral', 'Conchi', 'Chari'] as $ag)
-                                    <option value="{{ $ag }}" {{ $client->agente == $ag ? 'selected' : '' }}>{{ $ag }}</option>
-                                @endforeach
-                            </select>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Número de Póliza</label>
+                            <input type="text" name="numero_poliza" placeholder="Ej: 1661462" 
+                                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
                         </div>
                     </div>
 
-                    <!-- Pestañas Visuales de Selección Rápida -->
+                    <!-- Pestañas Visuales de Selección Rápida de Ramo -->
                     <div class="flex items-center space-x-2 border-b border-slate-200 pb-2 text-xs overflow-x-auto">
                         <button type="button" onclick="setShowRamo('Vehiculo')" id="show-tab-Vehiculo" class="px-3 py-1.5 rounded-lg font-bold transition flex items-center space-x-1.5 bg-kfm-primary text-white shadow-sm">
                             <span>🚗 Vehículo</span>
                         </button>
                         <button type="button" onclick="setShowRamo('Hogar')" id="show-tab-Hogar" class="px-3 py-1.5 rounded-lg font-semibold transition flex items-center space-x-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200">
-                            <span>🏠 Hogar</span>
+                            <span>🏠 Hogar / Inquilino</span>
                         </button>
                         <button type="button" onclick="setShowRamo('RC')" id="show-tab-RC" class="px-3 py-1.5 rounded-lg font-semibold transition flex items-center space-x-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200">
-                            <span>⚖️ RC</span>
+                            <span>⚖️ Responsabilidad Civil</span>
                         </button>
                         <button type="button" onclick="setShowRamo('Empresa')" id="show-tab-Empresa" class="px-3 py-1.5 rounded-lg font-semibold transition flex items-center space-x-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200">
                             <span>🏢 Empresa</span>
                         </button>
                         <button type="button" onclick="setShowRamo('Otros')" id="show-tab-Otros" class="px-3 py-1.5 rounded-lg font-semibold transition flex items-center space-x-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200">
-                            <span>🛡️ Otros</span>
+                            <span>🛡️ Otros Seguros</span>
                         </button>
                     </div>
 
                     <!-- ============================================== -->
                     <!-- DETALLES DEL BIEN ASEGURADO DINÁMICO (SHOW) -->
                     <!-- ============================================== -->
-                    <div class="bg-slate-50 rounded-xl border border-slate-200 p-4 space-y-3">
-                        <span id="showRamoHeaderTitle" class="text-xs font-bold uppercase tracking-wider text-kfm-navy block">
-                            🚗 Detalles del Vehículo Asegurado
-                        </span>
+                    <div class="bg-slate-50 rounded-2xl border border-slate-200/90 p-5 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span id="showRamoHeaderTitle" class="text-xs font-bold uppercase tracking-wider text-kfm-navy flex items-center space-x-2">
+                                <span>🚗 Detalles del Vehículo Asegurado</span>
+                            </span>
+                            <span class="text-[11px] text-slate-400">Campos adaptados al ramo</span>
+                        </div>
 
-                        <!-- 1. VEHÍCULO -->
-                        <div id="show-bloque-Vehiculo" class="space-y-3">
+                        <!-- 1. BLOQUE VEHÍCULO -->
+                        <div id="show-bloque-Vehiculo" class="space-y-4">
                             <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nº Póliza</label>
-                                    <input type="text" name="numero_poliza" placeholder="Ej: 1689234" 
-                                           class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono">
-                                </div>
-                                <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Marca</label>
-                                    <input type="text" name="marca" placeholder="Ej: TOYOTA" 
-                                           class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs uppercase">
+                                    <input type="text" name="marca" placeholder="Ej: HONDA / BMW" 
+                                           class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs uppercase focus:ring-1 focus:ring-kfm-primary">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Modelo</label>
-                                    <input type="text" name="modelo" placeholder="Ej: RAV4" 
-                                           class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs uppercase">
+                                    <input type="text" name="modelo" placeholder="Ej: CIVIC 1.5 / CR-V" 
+                                           class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs uppercase focus:ring-1 focus:ring-kfm-primary">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Matrícula</label>
-                                    <input type="text" name="matricula" placeholder="Ej: 4159 JBC" 
-                                           class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono uppercase">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Matrícula (Española / TA / US)</label>
+                                    <input type="text" name="matricula" placeholder="Ej: 0680 JCL" 
+                                           class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono uppercase focus:ring-1 focus:ring-kfm-primary">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">VIN (Bastidor Oficial)</label>
+                                    <input type="text" name="vin" placeholder="17 caracteres alfanuméricos" 
+                                           class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono uppercase focus:ring-1 focus:ring-kfm-primary">
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">VIN (Bastidor)</label>
-                                    <input type="text" name="vin" placeholder="17 caracteres" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono uppercase">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría</label>
-                                    <select name="categoria_vehiculo" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría del Vehículo</label>
+                                    <select name="categoria_vehiculo" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-kfm-primary">
                                         <option value="Turismo" selected>Turismo</option>
                                         <option value="Furgoneta">Furgoneta</option>
                                         <option value="Camiones">Camiones</option>
@@ -582,142 +559,185 @@
                             </div>
                         </div>
 
-                        <!-- 2. HOGAR -->
-                        <div id="show-bloque-Hogar" class="space-y-3 hidden">
+                        <!-- 2. BLOQUE HOGAR / INQUILINO -->
+                        <div id="show-bloque-Hogar" class="space-y-4 hidden">
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div class="sm:col-span-2">
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Dirección de la Vivienda</label>
-                                    <input type="text" name="direccion_riesgo" placeholder="Ej: C/ Corbeta 13, Rota" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Dirección de la Vivienda Asegurada</label>
+                                    <input type="text" name="direccion_riesgo" placeholder="Ej: C/ Corbeta 13, Urb. Vistahermosa, El Puerto o Rota Naval Housing" 
+                                           class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-kfm-primary">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Vivienda</label>
                                     <select name="tipo_vivienda" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                                        <option value="">-- Seleccionar --</option>
+                                        <option value="PISO MEDIO">Piso (Planta Intermedia)</option>
+                                        <option value="PISO BAJO">Piso (Bajo / Con Jardín)</option>
+                                        <option value="ATICO">Ático</option>
                                         <option value="UNIF ADOSADA">Unifamiliar Adosada</option>
-                                        <option value="PISO MEDIO">Piso Intermedio</option>
-                                        <option value="UNIF NO ADOSADA">Chalet Aislado</option>
+                                        <option value="UNIF NO ADOSADA">Chalet / Vivienda Aislada</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría (Régimen)</label>
-                                    <select name="categoria_hogar" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800">
+                                    <select name="categoria_hogar" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-kfm-primary">
                                         <option value="Owner" selected>Owner</option>
                                         <option value="Renter">Renter</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Capital Continente (€)</label>
+                                    <input type="text" name="capital_continente" placeholder="Ej: 120.000 €" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Capital Contenido (€)</label>
+                                    <input type="text" name="capital_contenido" placeholder="Ej: 30.000 €" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                                </div>
                             </div>
                         </div>
 
-                        <!-- 3. RC -->
-                        <div id="show-bloque-RC" class="space-y-3 hidden">
+                        <!-- 3. BLOQUE RESPONSABILIDAD CIVIL (RC) -->
+                        <div id="show-bloque-RC" class="space-y-4 hidden">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Modalidad RC</label>
-                                    <select name="categoria_rc" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría (Modalidad de RC)</label>
+                                    <select name="categoria_rc" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-kfm-primary">
                                         <option value="Animales de compañía/perros" selected>Animales de compañía/perros</option>
                                         <option value="Profesional/autónomo">Profesional/autónomo</option>
                                         <option value="Otros">Otros</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Detalle del Riesgo (Mascota / Microchip)</label>
-                                    <input type="text" name="detalles_cobertura" placeholder="Ej: Perro Pastor Alemán • Chip 94100..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Detalle del Riesgo (Mascota / Actividad / Microchip)</label>
+                                    <input type="text" name="detalles_cobertura" placeholder="Ej: Perro Pastor Alemán • Nº Microchip 94100002891 • Cobertura en Base y Territorio Español" 
+                                           class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-kfm-primary">
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 4. EMPRESA -->
-                        <div id="show-bloque-Empresa" class="space-y-3 hidden">
+                        <!-- 4. BLOQUE EMPRESA / COMERCIO -->
+                        <div id="show-bloque-Empresa" class="space-y-4 hidden">
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre Comercial</label>
-                                    <input type="text" placeholder="Ej: Rota Naval Services" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs uppercase">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre Comercial / Razón Social</label>
+                                    <input type="text" placeholder="Ej: Rota Naval Services S.L." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs uppercase">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">CIF / NIF</label>
-                                    <input type="text" placeholder="Ej: B-11223344" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono uppercase">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">CIF / NIF Empresa</label>
+                                    <input type="text" placeholder="Ej: B-11223344" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs uppercase font-mono">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Actividad</label>
-                                    <input type="text" placeholder="Ej: Comercio / Hostelería" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Actividad / Epígrafe</label>
+                                    <input type="text" placeholder="Ej: Hostelería, Taller naval, Comercio" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Dirección del Local o Nave</label>
+                                    <input type="text" placeholder="Ej: Polígono Industrial La Marina, Rota" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Capital Continente / Local (€)</label>
+                                    <input type="text" placeholder="Ej: 200.000 €" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Existencias y Mobiliario (€)</label>
+                                    <input type="text" placeholder="Ej: 60.000 €" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 5. OTROS -->
-                        <div id="show-bloque-Otros" class="space-y-3 hidden">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- 5. BLOQUE OTROS SEGUROS -->
+                        <div id="show-bloque-Otros" class="space-y-4 hidden">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Seguro</label>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Seguro Especial</label>
                                     <select class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
-                                        <option>Salud Privada Bilingüe</option>
-                                        <option>Embarcación / Moto de Agua</option>
+                                        <option>Salud Privada Bilingüe (Cobertura Internacional)</option>
+                                        <option>Embarcación de Recreo / Moto de Agua</option>
                                         <option>Vida y Protección Familiar</option>
+                                        <option>Accidentes Personales</option>
+                                        <option>Decesos y Repatriación Militar</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Descripción / Cláusulas</label>
-                                    <input type="text" placeholder="Ej: Cobertura médica sin copago" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Compañía Especializada</label>
+                                    <input type="text" placeholder="Ej: Sanitas / Adeslas / DKV" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
                                 </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nº Asegurados / Beneficiarios</label>
+                                    <input type="text" placeholder="Ej: Titular + 2 beneficiarios" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Descripción del Riesgo y Cláusulas</label>
+                                <input type="text" placeholder="Ej: Cobertura médica completa sin copago + repatriación aérea a EE.UU." 
+                                       class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
                             </div>
                         </div>
 
                     </div>
 
-                    <!-- Facturación y Estados -->
-                    <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nº Recibo</label>
-                            <input type="text" name="recibo_numero" placeholder="Ej: 2026-0814" 
-                                   class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    <!-- Facturación -->
+                    <div class="pt-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-600 block mb-2">Información de Facturación</span>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Nº de Recibo</label>
+                                <input type="text" name="recibo_numero" placeholder="Ej: 2026-0814" 
+                                       class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Prima (€)</label>
+                                <input type="text" name="prima" placeholder="Ej: 406,05 €" 
+                                       class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-emerald-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Pago</label>
+                                <select name="tipo_facturacion" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                                    <option value="Anual" selected>Anual</option>
+                                    <option value="Semianual">Semianual</option>
+                                    <option value="Suplemento">Suplemento</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Balance</label>
+                                <select name="balance" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold">
+                                    <option value="Paid Full">Paid Full (Pagado Completo)</option>
+                                    <option value="Partial">Partial (Pago Parcial)</option>
+                                </select>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Prima (€)</label>
-                            <input type="text" name="prima" placeholder="Ej: 587,16 €" 
-                                   class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-emerald-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Pago</label>
-                            <select name="tipo_facturacion" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                                <option value="Anual" selected>Anual</option>
-                                <option value="Semianual">Semianual</option>
-                                <option value="Suplemento">Suplemento</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Balance</label>
-                            <select name="balance" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
-                                <option value="Paid Full">Paid Full</option>
-                                <option value="Partial">Partial</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Estado</label>
-                            <select name="estado" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
-                                <option value="Activo">Activo</option>
-                                <option value="Cancelado">Cancelado</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Fecha Vencimiento</label>
-                            <input type="text" name="fecha_vencimiento" placeholder="DD/MM/AAAA" 
-                                   class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Liquidación Cía</label>
-                            <select name="liquidacion" id="showLiquidacionSelect" onchange="toggleShowLiquidacionFecha(this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold">
-                                <option value="Pendiente" selected>Pendiente</option>
-                                <option value="Liquidado">Liquidado</option>
-                            </select>
-                        </div>
-                        <div id="showFechaLiquidacionCol" class="hidden">
-                            <label class="block text-xs font-semibold text-emerald-700 mb-1">Fecha de Liquidación</label>
-                            <input type="text" name="fecha_liquidacion" id="showFechaLiquidacionInput" placeholder="DD/MM/AAAA" 
-                                   class="w-full px-3 py-2 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-medium text-emerald-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Fecha de Pago</label>
+                                <input type="text" name="fecha_pago" placeholder="DD/MM/AAAA" 
+                                       class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Fecha de Vencimiento</label>
+                                <input type="text" name="fecha_vencimiento" placeholder="DD/MM/AAAA" 
+                                       class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Liquidación Cía.</label>
+                                <select name="liquidacion" id="showLiquidacionSelect" onchange="toggleShowLiquidacionFecha(this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold">
+                                    <option value="Pendiente" selected>Pendiente</option>
+                                    <option value="Liquidado">Liquidado</option>
+                                </select>
+                            </div>
+                            <div id="showFechaLiquidacionCol" class="hidden">
+                                <label class="block text-xs font-semibold text-emerald-700 mb-1">Fecha de Liquidación</label>
+                                <input type="text" name="fecha_liquidacion" id="showFechaLiquidacionInput" placeholder="DD/MM/AAAA" 
+                                       class="w-full px-3 py-2 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-medium text-emerald-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
                         </div>
                     </div>
 
@@ -786,14 +806,6 @@
         } else {
             col.classList.add('hidden');
         }
-    }
-
-    // Modal de Borrado de Cliente
-    function openDeleteClientModal() {
-        document.getElementById('deleteClientModal').classList.remove('hidden');
-    }
-    function closeDeleteClientModal() {
-        document.getElementById('deleteClientModal').classList.add('hidden');
     }
 
     // Modal Unificado de Traspaso a Gestoría
@@ -1074,63 +1086,6 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
         }
     });
 </script>
-
-<!-- Modal de Confirmación de Borrado con Advertencia -->
-<div id="deleteClientModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <!-- Backdrop oscuro con desenfoque -->
-    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeDeleteClientModal()"></div>
-
-    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200">
-            <div class="bg-white px-6 pb-6 pt-6 sm:p-7">
-                <div class="sm:flex sm:items-start">
-                    <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 sm:mx-0 sm:h-12 sm:w-12">
-                        <svg class="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                        </svg>
-                    </div>
-                    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left flex-1">
-                        <h3 class="text-lg font-bold leading-6 text-slate-900 font-display" id="modal-title">
-                            ¿Eliminar permanentemente este cliente?
-                        </h3>
-                        <div class="mt-2 text-sm text-slate-600 space-y-3">
-                            <p>
-                                Vas a eliminar la ficha completa de:
-                                <strong class="text-slate-900 block mt-1 font-display text-base font-bold text-kfm-navy">
-                                    {{ $client->full_name }}
-                                </strong>
-                            </p>
-                            <div class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 text-xs text-rose-900 space-y-1">
-                                <p class="font-bold flex items-center gap-1.5 text-rose-800">
-                                    <span>⚠️</span> Advertencia de borrado irreversible:
-                                </p>
-                                <p class="text-rose-700 leading-relaxed">
-                                    Se borrará todo el historial del cliente, incluyendo sus <strong>{{ $client->policies->count() }} póliza(s) vinculada(s)</strong>, datos de vehículos, coberturas y registros de cobro. Esta acción no se puede deshacer.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-slate-50 px-6 py-4 sm:flex sm:flex-row-reverse sm:px-6 gap-2 border-t border-slate-100">
-                <form action="{{ route('clients.destroy', $client) }}" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" 
-                            class="inline-flex w-full justify-center items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-rose-700 sm:w-auto transition-colors cursor-pointer">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        <span>Sí, Eliminar Definitivamente</span>
-                    </button>
-                </form>
-                <button type="button" 
-                        onclick="closeDeleteClientModal()"
-                        class="mt-2 sm:mt-0 inline-flex w-full justify-center rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-100 sm:w-auto transition-colors cursor-pointer">
-                    Cancelar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Modal de WhatsApp para Gestoría Bahía & Naval -->
 <div id="whatsappGestoriaModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">

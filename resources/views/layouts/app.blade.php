@@ -225,43 +225,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Filter Subbar: Oficinas & Agentes -->
-        <div class="bg-kfm-dark/60 border-t border-white/10 backdrop-blur-sm">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center justify-between text-xs gap-y-2">
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-slate-400 uppercase tracking-wider font-semibold mr-1">Oficina:</span>
-                    <a href="{{ route('home') }}" 
-                       class="px-2.5 py-1 rounded-md font-medium transition {{ !request('sede_id') ? 'bg-cyan-500 text-white' : 'text-slate-300 hover:text-white hover:bg-white/5' }}">
-                        Todas
-                    </a>
-                    <a href="{{ route('home', ['sede_id' => 1]) }}" 
-                       class="px-2.5 py-1 rounded-md font-medium transition flex items-center space-x-1.5 {{ request('sede_id') == 1 ? 'bg-cyan-500 text-white' : 'text-slate-300 hover:text-white hover:bg-white/5' }}">
-                        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-                        <span>Central (Pueblo)</span>
-                    </a>
-                    <a href="{{ route('home', ['sede_id' => 2]) }}" 
-                       class="px-2.5 py-1 rounded-md font-medium transition flex items-center space-x-1.5 {{ request('sede_id') == 2 ? 'bg-cyan-500 text-white' : 'text-slate-300 hover:text-white hover:bg-white/5' }}">
-                        <span class="w-2 h-2 rounded-full bg-sky-400"></span>
-                        <span>NEX (Base Naval)</span>
-                    </a>
-
-                    <span class="text-slate-500 mx-2">|</span>
-
-                    <span class="text-slate-400 uppercase tracking-wider font-semibold mr-1">Agente:</span>
-                    @foreach(['Kerry', 'Coral', 'Conchi', 'Chari'] as $ag)
-                        <a href="{{ route('home', array_merge(request()->only('sede_id'), ['agente' => $ag])) }}" 
-                            class="px-2 py-0.5 rounded font-medium transition {{ request('agente') === $ag ? 'bg-white/20 text-white font-bold' : 'text-slate-400 hover:text-slate-200' }}">
-                            {{ $ag }}
-                        </a>
-                    @endforeach
-                </div>
-
-                <div class="hidden sm:block text-slate-400 text-right">
-                    <span>Correos: <strong>info@</strong> • <strong>patria@</strong></span>
-                </div>
-            </div>
-        </div>
     </header>
 
     <!-- Main Content Area -->
