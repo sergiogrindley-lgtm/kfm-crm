@@ -40,24 +40,6 @@
             <div>
                 <div class="flex flex-wrap items-center gap-2">
                     <h1 class="text-2xl font-bold font-display text-slate-900">{{ $client->apellido }}, {{ $client->nombre }}</h1>
-                    @if($client->sede)
-                        @if($client->sede->slug === 'nex')
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 border border-sky-200">
-                                <span class="w-1.5 h-1.5 rounded-full bg-sky-500 mr-1.5"></span>
-                                Oficina NEX (Base Naval)
-                            </span>
-                        @else
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
-                                Central (Pueblo)
-                            </span>
-                        @endif
-                    @endif
-                    @if($client->agente)
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-                            👤 Agente: {{ $client->agente }}
-                        </span>
-                    @endif
                 </div>
 
                 @if($client->nombre_familiar)
