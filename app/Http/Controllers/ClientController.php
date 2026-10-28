@@ -510,7 +510,7 @@ class ClientController extends Controller
         $nuevaObservacion = $observacionesActuales . $registroBaja;
 
         $policy->update([
-            'estado' => 'Cancelada',
+            'estado' => 'Cancelado',
             'balance' => 'Cancelled',
             'observaciones' => $nuevaObservacion,
         ]);
@@ -566,8 +566,9 @@ class ClientController extends Controller
     /**
      * Vista de Impresión Oficial y Elegante para Cesión de Póliza KFM
      */
-    public function cesionPoliza(Client $client, Policy $policy, Request $request)
+    public function cesionPoliza(Client $client, Policy $policy, ?Request $request = null)
     {
+        $request = $request ?: request();
         $buyer = [
             'nombre' => strtoupper(trim($request->input('buyer_nombre') ?: 'EMILY SARAH')),
             'apellido' => strtoupper(trim($request->input('buyer_apellido') ?: 'JOHNSON')),
@@ -618,8 +619,9 @@ class ClientController extends Controller
     /**
      * Formulario Oficial de Declaración y Emisión GEICO Military Overseas
      */
-    public function geicoForm(Client $client, Policy $policy, Request $request)
+    public function geicoForm(Client $client, Policy $policy, ?Request $request = null)
     {
+        $request = $request ?: request();
         $militaryInfo = [
             'rank' => 'PO1 / E-6 (Petty Officer First Class)',
             'branch' => 'US Navy (Naval Station Rota)',
@@ -645,8 +647,9 @@ class ClientController extends Controller
     /**
      * Mandato Oficial de Representación de Gestoría Colegiada (DGT)
      */
-    public function mandatoGestoria(Client $client, Policy $policy, Request $request)
+    public function mandatoGestoria(Client $client, Policy $policy, ?Request $request = null)
     {
+        $request = $request ?: request();
         $gestor = [
             'nombre' => 'FERNANDO SÁNCHEZ NAVAL',
             'colegiado' => '1271',
@@ -681,7 +684,15 @@ class ClientController extends Controller
      */
     public function calculatePcsRefund(Request $request)
     {
-        $primaTotal = (float) str_replace(['€', ' ', '.', ','], ['', '', '', '.'], $request->input('prima', '642.50'));
+        $rawPrima = (string) $request->input('prima', '642.50');
+        $clean = preg_replace('/[^\d.,]/', '', $rawPrima);
+        if (str_contains($clean, ',') && str_contains($clean, '.')) {
+            $clean = str_replace('.', '', $clean);
+            $clean = str_replace(',', '.', $clean);
+        } elseif (str_contains($clean, ',')) {
+            $clean = str_replace(',', '.', $clean);
+        }
+        $primaTotal = (float) $clean;
         if ($primaTotal <= 0) $primaTotal = 642.50;
 
         $diasTotales = 365;
@@ -699,6 +710,7 @@ class ClientController extends Controller
             'dias_restantes' => $diasRestantes,
             'porcentaje_devolucion' => $porcentajeDevolucion,
             'importe_reembolso' => $importeDevolucion,
+            'reembolso_estimado' => $importeDevolucion,
             'formato_moneda' => number_format($importeDevolucion, 2, ',', '.') . ' €',
         ]);
     }
