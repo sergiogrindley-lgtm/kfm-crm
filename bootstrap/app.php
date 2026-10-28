@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Trust all proxies so Laravel resolves client IP correctly behind Dokploy Traefik
         $middleware->trustProxies(at: '*');
 
+        // Exempt public API endpoints from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+        ]);
+
         // Apply Office IP Whitelist restriction
         $middleware->web(append: [
             \App\Http\Middleware\RestrictOfficeIp::class,
