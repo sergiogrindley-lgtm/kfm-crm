@@ -266,9 +266,6 @@
                                                 • Categoría: <span class="font-semibold text-kfm-primary">{{ $policy->categoria }}</span>
                                             @endif
                                             • Cía: <strong class="text-kfm-primary">{{ $policy->codigo_aseguradora }} ({{ $policy->aseguradora }})</strong>
-                                            @if($policy->agente)
-                                                • Tramitado por: <strong>{{ $policy->agente }}</strong>
-                                            @endif
                                         </div>
                                     </div>
                                 </div>
