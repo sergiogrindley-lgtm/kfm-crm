@@ -316,13 +316,25 @@
                                                             @if($policy->matricula)
                                                                 <span class="font-mono bg-white px-1.5 py-0.5 rounded border border-slate-300 text-slate-900 mr-1">{{ $policy->matricula }}</span>
                                                             @endif
-                                                            <span>{{ $policy->marca }} {{ $policy->modelo }}</span>
-                                                            @if($policy->tipo_vivienda)
-                                                                <span class="text-slate-600 font-normal">{{ $policy->tipo_vivienda }}</span>
+                                                            @if(strtolower($policy->ramo) === 'hogar')
+                                                                <span>{{ $policy->tipo_vivienda ?: 'Hogar' }}</span>
+                                                                @if($policy->direccion_riesgo)
+                                                                    <span class="text-slate-500 font-normal text-xs">— {{ $policy->direccion_riesgo }}</span>
+                                                                @endif
+                                                            @elseif(strtolower($policy->ramo) === 'rc')
+                                                                <span>RC {{ $policy->categoria ?: 'Responsabilidad Civil' }}</span>
+                                                            @else
+                                                                <span>{{ $policy->marca }} {{ $policy->modelo }}</span>
                                                             @endif
                                                         </div>
                                                         <div class="text-[11px] text-slate-500 flex flex-wrap items-center gap-1.5 mt-0.5">
-                                                            <span>Póliza: <strong class="font-mono">{{ $policy->numero_poliza }}</strong></span>
+                                                            <span>Póliza: 
+                                                                @if(!$policy->numero_poliza || str_starts_with(strtoupper($policy->numero_poliza), 'PENDIENTE'))
+                                                                    <strong class="text-amber-700 font-semibold bg-amber-50 px-1 py-0.5 rounded border border-amber-200 text-[10px]">Pendiente</strong>
+                                                                @else
+                                                                    <strong class="font-mono">{{ $policy->numero_poliza }}</strong>
+                                                                @endif
+                                                            </span>
                                                             <span>•</span>
                                                             <span class="text-slate-600 font-semibold">Cía: {{ $policy->codigo_aseguradora }} ({{ $policy->aseguradora }})</span>
                                                             @if($policy->prima)

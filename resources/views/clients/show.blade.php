@@ -12,14 +12,21 @@
             <span>Volver al Buscador de Clientes</span>
         </a>
 
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2 sm:space-x-3">
             <span class="text-xs text-slate-400">ID Cliente: #{{ $client->id }}</span>
+            <button type="button" 
+                    onclick="openEditClientModal()"
+                    class="px-3 py-1.5 text-xs font-semibold text-kfm-navy hover:text-white bg-slate-100 hover:bg-kfm-navy border border-slate-300 rounded-lg transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                    title="Editar los datos personales y de contacto de este cliente">
+                <svg class="w-3.5 h-3.5 text-kfm-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                <span>✏️ Editar Cliente</span>
+            </button>
             <button type="button" 
                     onclick="openDeleteClientModal()"
                     class="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-rose-600 rounded-lg transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
                     title="Eliminar este cliente">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                <span>Borrar Cliente</span>
+                <span>Borrar</span>
             </button>
         </div>
     </div>
@@ -230,12 +237,21 @@
                                     <div>
                                         <div class="flex items-center space-x-2">
                                             <span class="text-base font-bold text-slate-900 font-display">
-                                                {{ $policy->marca }} {{ $policy->modelo }}
-                                                @if($policy->tipo_vivienda)
-                                                    {{ $policy->tipo_vivienda }}
-                                                @endif
-                                                @if($policy->detalles_cobertura)
-                                                    <span class="text-xs font-normal text-slate-600">({{ $policy->detalles_cobertura }})</span>
+                                                @if(strtolower($policy->ramo) === 'hogar')
+                                                    <span>🏠 {{ $policy->tipo_vivienda ?: 'Seguro de Hogar' }}</span>
+                                                    @if($policy->direccion_riesgo)
+                                                        <span class="text-xs font-normal text-slate-600 block sm:inline"> — {{ $policy->direccion_riesgo }}</span>
+                                                    @endif
+                                                @elseif(strtolower($policy->ramo) === 'rc')
+                                                    <span>⚖️ RC {{ $policy->categoria ?: 'Responsabilidad Civil' }}</span>
+                                                    @if($policy->detalles_cobertura)
+                                                        <span class="text-xs font-normal text-slate-600">({{ $policy->detalles_cobertura }})</span>
+                                                    @endif
+                                                @else
+                                                    <span>{{ $policy->marca }} {{ $policy->modelo }}</span>
+                                                    @if($policy->detalles_cobertura)
+                                                        <span class="text-xs font-normal text-slate-600">({{ $policy->detalles_cobertura }})</span>
+                                                    @endif
                                                 @endif
                                             </span>
                                             @if($policy->matricula)
@@ -271,7 +287,13 @@
                             <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-3 border-t border-slate-100 text-xs">
                                 <div>
                                     <span class="block text-slate-400 font-medium">Nº Póliza:</span>
-                                    <span class="font-mono font-bold text-slate-800">{{ $policy->numero_poliza ?: '—' }}</span>
+                                    @if(!$policy->numero_poliza || str_starts_with(strtoupper($policy->numero_poliza), 'PENDIENTE'))
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                            ⏳ Pendiente de Nº
+                                        </span>
+                                    @else
+                                        <span class="font-mono font-bold text-slate-800">{{ $policy->numero_poliza }}</span>
+                                    @endif
                                 </div>
                                 <div>
                                     <span class="block text-slate-400 font-medium">Nº Recibo:</span>
@@ -293,13 +315,24 @@
 
                             <!-- Liquidación & VIN -->
                             <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                                <div>
-                                    Liquidación Cía: 
-                                    <span class="font-bold {{ $policy->liquidacion === 'Liquidado' ? 'text-emerald-700' : 'text-amber-700' }}">
-                                        {{ $policy->liquidacion ?: 'Liquidado' }}
-                                    </span>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span>Liquidación Cía:</span>
+                                    @if($policy->liquidacion === 'Liquidado')
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                            ✓ Liquidado
+                                        </span>
+                                        @if($policy->fecha_liquidacion)
+                                            <span class="font-semibold text-emerald-800">(Fecha Liq: {{ $policy->fecha_liquidacion }})</span>
+                                        @endif
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                            ⏳ Pendiente
+                                        </span>
+                                    @endif
+
                                     @if($policy->fecha_pago)
-                                        (Pagado: {{ $policy->fecha_pago }})
+                                        <span class="text-slate-400">•</span>
+                                        <span>Fecha Pago: <strong class="text-slate-700">{{ $policy->fecha_pago }}</strong></span>
                                     @endif
                                 </div>
                                 @if($policy->vin)
@@ -350,6 +383,14 @@
 
                                 <div class="flex flex-wrap items-center gap-2">
                                     @if(strtolower($policy->estado) === 'activo')
+                                        <!-- 0. Editar Póliza -->
+                                        <button type="button" 
+                                                onclick="openEditPolicyModal({{ json_encode($policy) }})"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 shadow-sm transition cursor-pointer">
+                                            <svg class="w-3.5 h-3.5 text-kfm-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                            <span>✏️ Editar Póliza</span>
+                                        </button>
+
                                         @if($policy->matricula || strtolower($policy->ramo) === 'vehiculo')
                                             <!-- 1. Traspaso Gestoría -->
                                             <button type="button" 
@@ -409,6 +450,12 @@
                                                 </span>
                                             </div>
                                             <div class="flex flex-wrap items-center gap-2">
+                                                <button type="button" 
+                                                        onclick="openEditPolicyModal({{ json_encode($policy) }})"
+                                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-xs transition cursor-pointer">
+                                                    <span>✏️ Editar Póliza</span>
+                                                </button>
+
                                                 <button type="button" 
                                                         onclick="openPcsRefundModal('{{ addslashes($client->full_name) }}', '{{ $policy->numero_poliza }}', '{{ addslashes($policy->matricula ?: ($policy->marca . ' ' . $policy->modelo)) }}', '{{ $policy->prima ?: '642,50 €' }}', '{{ $policy->fecha_pago ?: '15/11/2025' }}', '{{ $policy->fecha_vencimiento ?: '15/11/2026' }}')"
                                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-xs transition cursor-pointer">
@@ -953,6 +1000,89 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
         document.getElementById('cancelPolicyModal').classList.add('hidden');
     }
 
+    // Modal de Edición de Cliente
+    function openEditClientModal() {
+        document.getElementById('editClientModal').classList.remove('hidden');
+    }
+    function closeEditClientModal() {
+        document.getElementById('editClientModal').classList.add('hidden');
+    }
+
+    // Modal de Edición de Póliza
+    function openEditPolicyModal(policy) {
+        document.getElementById('editPolicyForm').action = `/clients/{{ $client->id }}/policies/${policy.id}`;
+        document.getElementById('edit_policy_title_sub').innerText = `Póliza #${policy.numero_poliza || 'Pendiente'} · ID #${policy.id}`;
+        
+        document.getElementById('edit_ramo').value = policy.ramo || 'Vehiculo';
+        document.getElementById('edit_numero_poliza').value = policy.numero_poliza || '';
+        document.getElementById('edit_codigo_aseguradora').value = policy.codigo_aseguradora || '81';
+        
+        document.getElementById('edit_marca').value = policy.marca || '';
+        document.getElementById('edit_modelo').value = policy.modelo || '';
+        document.getElementById('edit_matricula').value = policy.matricula || '';
+        document.getElementById('edit_vin').value = policy.vin || '';
+        
+        document.getElementById('edit_direccion_riesgo').value = policy.direccion_riesgo || '';
+        document.getElementById('edit_tipo_vivienda').value = policy.tipo_vivienda || '';
+        document.getElementById('edit_detalles_cobertura').value = policy.detalles_cobertura || '';
+        
+        document.getElementById('edit_recibo_numero').value = policy.recibo_numero || '';
+        document.getElementById('edit_prima').value = policy.prima || '';
+        document.getElementById('edit_tipo_facturacion').value = policy.tipo_facturacion || 'Anual';
+        document.getElementById('edit_balance').value = policy.balance || 'Paid Full';
+        
+        document.getElementById('edit_fecha_pago').value = policy.fecha_pago || '';
+        document.getElementById('edit_fecha_vencimiento').value = policy.fecha_vencimiento || '';
+        document.getElementById('edit_liquidacion').value = policy.liquidacion || 'Pendiente';
+        document.getElementById('edit_fecha_liquidacion').value = policy.fecha_liquidacion || '';
+        document.getElementById('edit_estado').value = policy.estado || 'Activo';
+        
+        cambiarEditRamo(policy.ramo || 'Vehiculo');
+        toggleEditLiquidacionFecha(policy.liquidacion || 'Pendiente');
+        
+        document.getElementById('editPolicyModal').classList.remove('hidden');
+    }
+
+    function closeEditPolicyModal() {
+        document.getElementById('editPolicyModal').classList.add('hidden');
+    }
+
+    function cambiarEditRamo(ramo) {
+        const bloqueVehiculo = document.getElementById('editBloqueVehiculo');
+        const bloqueHogar = document.getElementById('editBloqueHogar');
+        const bloqueRC = document.getElementById('editBloqueRC');
+        
+        if (bloqueVehiculo) bloqueVehiculo.classList.add('hidden');
+        if (bloqueHogar) bloqueHogar.classList.add('hidden');
+        if (bloqueRC) bloqueRC.classList.add('hidden');
+        
+        if (ramo === 'Vehiculo') {
+            if (bloqueVehiculo) bloqueVehiculo.classList.remove('hidden');
+        } else if (ramo === 'Hogar') {
+            if (bloqueHogar) bloqueHogar.classList.remove('hidden');
+        } else if (ramo === 'RC') {
+            if (bloqueRC) bloqueRC.classList.remove('hidden');
+        }
+    }
+
+    function toggleEditLiquidacionFecha(val) {
+        const col = document.getElementById('editFechaLiquidacionCol');
+        if (!col) return;
+        if (val === 'Liquidado') {
+            col.classList.remove('hidden');
+            const input = document.getElementById('edit_fecha_liquidacion');
+            if (input && !input.value) {
+                const today = new Date();
+                const d = String(today.getDate()).padStart(2, '0');
+                const m = String(today.getMonth() + 1).padStart(2, '0');
+                const y = today.getFullYear();
+                input.value = `${d}/${m}/${y}`;
+            }
+        } else {
+            col.classList.add('hidden');
+        }
+    }
+
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeDeleteClientModal();
@@ -960,6 +1090,8 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
             closeWhatsAppModal();
             closePcsRefundModal();
             closeCancelPolicyModal();
+            closeEditClientModal();
+            closeEditPolicyModal();
         }
     });
 </script>
@@ -1445,6 +1577,311 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
                 </div>
             </form>
 
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edición de Cliente -->
+<div id="editClientModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeEditClientModal()"></div>
+
+    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-3xl border border-slate-200">
+            
+            <div class="bg-gradient-to-r from-kfm-navy via-[#0c3547] to-[#145a78] text-white p-5 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-xl">
+                        ✏️
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base font-display">Editar Datos del Cliente</h3>
+                        <p class="text-xs text-cyan-200">Ficha #{{ $client->id }} · {{ $client->full_name }}</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeEditClientModal()" class="text-white/80 hover:text-white cursor-pointer text-xl leading-none">✕</button>
+            </div>
+
+            <form method="POST" action="{{ route('clients.update', $client) }}" class="p-6 space-y-4 text-xs">
+                @csrf
+                @method('PUT')
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Sede de KFM *</label>
+                        <select name="sede_id" required class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                            @foreach($sedes as $s)
+                                <option value="{{ $s->id }}" {{ $client->sede_id == $s->id ? 'selected' : '' }}>{{ $s->nombre }} ({{ $s->slug }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Agente Asignado</label>
+                        <select name="agente" class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                            @foreach($agentes as $ag)
+                                <option value="{{ $ag }}" {{ $client->agente == $ag ? 'selected' : '' }}>{{ $ag }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Nombre *</label>
+                        <input type="text" name="nombre" value="{{ $client->nombre }}" required class="w-full text-xs uppercase px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Apellidos *</label>
+                        <input type="text" name="apellido" value="{{ $client->apellido }}" required class="w-full text-xs uppercase px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">DNI / NIE / CIF</label>
+                        <input type="text" name="doc_identidad" value="{{ $client->doc_identidad }}" class="w-full text-xs uppercase font-mono px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">SSN (Social Security)</label>
+                        <input type="text" name="ssn" value="{{ $client->ssn }}" class="w-full text-xs font-mono px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div>
+                        <label class="block text-purple-900 font-bold mb-1">👥 Nombre Familiar / Cónyuge</label>
+                        <input type="text" name="nombre_familiar" value="{{ $client->nombre_familiar }}" placeholder="ej: Mary Ferguson (Esposa)" class="w-full text-xs px-3 py-2 bg-purple-50/50 border border-purple-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Fecha de Nacimiento (DOB)</label>
+                        <input type="text" name="dob" value="{{ $client->dob }}" placeholder="DD/MM/AAAA" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Teléfono Móvil (Número 1)</label>
+                        <input type="text" name="telefono_movil" value="{{ $client->telefono_movil }}" class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Teléfono Fijo / Base (Número 2)</label>
+                        <input type="text" name="telefono_fijo" value="{{ $client->telefono_fijo }}" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Email Personal</label>
+                        <input type="email" name="email_personal" value="{{ $client->email_personal }}" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Email Trabajo (Militar / Oficial)</label>
+                        <input type="text" name="email_trabajo" value="{{ $client->email_trabajo }}" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Dirección Base (NEX / PSC Box / Buque USS)</label>
+                        <input type="text" name="direccion_base" value="{{ $client->direccion_base }}" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Dirección Local (España)</label>
+                        <input type="text" name="direccion_local" value="{{ $client->direccion_local }}" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
+                </div>
+
+                <div class="pt-1">
+                    <label class="block text-slate-700 font-bold mb-1">Observaciones / Notas Internas</label>
+                    <textarea name="observaciones" rows="2" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">{{ $client->observaciones }}</textarea>
+                </div>
+
+                <div class="bg-slate-50 -mx-6 -mb-6 px-6 py-4 flex items-center justify-between border-t border-slate-200 mt-4 rounded-b-2xl">
+                    <button type="button" onclick="closeEditClientModal()" class="px-4 py-2 text-slate-600 hover:text-slate-800 font-semibold cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-kfm-primary hover:bg-kfm-cerulean text-white font-bold shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span>Guardar Cambios del Cliente</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edición de Póliza -->
+<div id="editPolicyModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeEditPolicyModal()"></div>
+
+    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200">
+            
+            <div class="bg-gradient-to-r from-emerald-700 via-teal-800 to-slate-900 text-white p-5 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-xl">
+                        ✏️
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base font-display">Editar Contratación / Póliza</h3>
+                        <p class="text-xs text-emerald-200" id="edit_policy_title_sub">Actualiza número de póliza, ramo, liquidación y datos del bien</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeEditPolicyModal()" class="text-white/80 hover:text-white cursor-pointer text-xl leading-none">✕</button>
+            </div>
+
+            <form id="editPolicyForm" method="POST" action="" class="p-6 space-y-4 text-xs">
+                @csrf
+                @method('PUT')
+
+                <!-- Ramo y Aseguradora -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Contratación (Ramo) *</label>
+                        <select name="ramo" id="edit_ramo" onchange="cambiarEditRamo(this.value)" required class="w-full text-xs font-bold text-kfm-primary px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                            <option value="Vehiculo">🚗 Vehículo (Auto / Moto / POV)</option>
+                            <option value="Hogar">🏠 Hogar / Inquilino</option>
+                            <option value="RC">⚖️ Responsabilidad Civil (RC)</option>
+                            <option value="Empresa">🏢 Empresa / Comercio</option>
+                            <option value="Otros">🛡️ Otros Seguros</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Número de Póliza</label>
+                        <input type="text" name="numero_poliza" id="edit_numero_poliza" placeholder="Ej: 1661462" class="w-full text-xs font-mono font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Aseguradora</label>
+                        <select name="codigo_aseguradora" id="edit_codigo_aseguradora" class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                            <option value="81">Patria 81</option>
+                            <option value="87">GEICO 87</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bloque Dinámico según Ramo -->
+                <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                    <!-- Vehículo -->
+                    <div id="editBloqueVehiculo" class="space-y-3">
+                        <span class="block text-[11px] font-bold text-slate-600 uppercase">Datos del Vehículo</span>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <div>
+                                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Marca</label>
+                                <input type="text" name="marca" id="edit_marca" placeholder="HONDA / BMW" class="w-full text-xs uppercase px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Modelo</label>
+                                <input type="text" name="modelo" id="edit_modelo" placeholder="CIVIC" class="w-full text-xs uppercase px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Matrícula</label>
+                                <input type="text" name="matricula" id="edit_matricula" placeholder="0680 JCL" class="w-full text-xs font-mono uppercase px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">VIN (Bastidor)</label>
+                                <input type="text" name="vin" id="edit_vin" placeholder="17 caracteres" class="w-full text-xs font-mono uppercase px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hogar -->
+                    <div id="editBloqueHogar" class="space-y-3 hidden">
+                        <span class="block text-[11px] font-bold text-slate-600 uppercase">Datos del Inmueble Asegurado</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <div class="sm:col-span-2">
+                                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Dirección de la Vivienda</label>
+                                <input type="text" name="direccion_riesgo" id="edit_direccion_riesgo" placeholder="C/ Corbeta 13..." class="w-full text-xs px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Tipo de Vivienda</label>
+                                <select name="tipo_vivienda" id="edit_tipo_vivienda" class="w-full text-xs px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg">
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="PISO MEDIO">Piso (Planta Intermedia)</option>
+                                    <option value="PISO BAJO">Piso (Bajo / Con Jardín)</option>
+                                    <option value="ATICO">Ático</option>
+                                    <option value="UNIF ADOSADA">Unifamiliar Adosada</option>
+                                    <option value="UNIF NO ADOSADA">Chalet / Vivienda Aislada</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RC -->
+                    <div id="editBloqueRC" class="space-y-3 hidden">
+                        <span class="block text-[11px] font-bold text-slate-600 uppercase">Datos de Responsabilidad Civil</span>
+                        <div>
+                            <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Detalles del Riesgo / Cobertura</label>
+                            <input type="text" name="detalles_cobertura" id="edit_detalles_cobertura" placeholder="Perro Pastor Alemán..." class="w-full text-xs px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facturación, Prima y Liquidación -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                    <div>
+                        <label class="block text-slate-700 font-semibold mb-1">Nº Recibo</label>
+                        <input type="text" name="recibo_numero" id="edit_recibo_numero" placeholder="2026-0814" class="w-full text-xs font-mono font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-semibold mb-1">Prima (€)</label>
+                        <input type="text" name="prima" id="edit_prima" placeholder="406,05 €" class="w-full text-xs font-bold text-emerald-700 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-semibold mb-1">Tipo de Pago</label>
+                        <select name="tipo_facturacion" id="edit_tipo_facturacion" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                            <option value="Anual">Anual</option>
+                            <option value="Semianual">Semianual</option>
+                            <option value="Suplemento">Suplemento</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-semibold mb-1">Balance</label>
+                        <select name="balance" id="edit_balance" class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                            <option value="Paid Full">Paid Full</option>
+                            <option value="Partial">Partial</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                    <div>
+                        <label class="block text-slate-700 font-semibold mb-1">Fecha de Pago</label>
+                        <input type="text" name="fecha_pago" id="edit_fecha_pago" placeholder="DD/MM/AAAA" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-semibold mb-1">Fecha Vencimiento</label>
+                        <input type="text" name="fecha_vencimiento" id="edit_fecha_vencimiento" placeholder="DD/MM/AAAA" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Liquidación Cía.</label>
+                        <select name="liquidacion" id="edit_liquidacion" onchange="toggleEditLiquidacionFecha(this.value)" class="w-full text-xs font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Liquidado">Liquidado</option>
+                        </select>
+                    </div>
+                    <div id="editFechaLiquidacionCol">
+                        <label class="block text-emerald-800 font-bold mb-1">Fecha Liquidación</label>
+                        <input type="text" name="fecha_liquidacion" id="edit_fecha_liquidacion" placeholder="DD/MM/AAAA" class="w-full text-xs font-semibold bg-emerald-50 border border-emerald-300 text-emerald-900 px-3 py-2 rounded-xl">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Estado de la Póliza</label>
+                        <select name="estado" id="edit_estado" class="w-full text-xs font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl">
+                            <option value="Activo">Activo</option>
+                            <option value="Cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 -mx-6 -mb-6 px-6 py-4 flex items-center justify-between border-t border-slate-200 mt-4 rounded-b-2xl">
+                    <button type="button" onclick="closeEditPolicyModal()" class="px-4 py-2 text-slate-600 hover:text-slate-800 font-semibold cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span>Actualizar Póliza</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

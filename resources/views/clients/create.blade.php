@@ -16,7 +16,7 @@
         </div>
     </div>
 
-    @if ($errors->any())
+    @if (isset($errors) && $errors->any())
         <div class="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-lg text-sm text-rose-800">
             <p class="font-bold mb-1">Por favor corrige los siguientes errores:</p>
             <ul class="list-disc list-inside space-y-0.5">
@@ -27,7 +27,38 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('clients.store') }}" class="space-y-6">
+    @if (session('error_duplicado'))
+        @php $dup = session('error_duplicado'); @endphp
+        <div class="bg-amber-50 border-2 border-amber-400 p-5 rounded-2xl shadow-sm text-sm text-amber-950 space-y-3">
+            <div class="flex items-start space-x-3">
+                <span class="text-2xl flex-shrink-0">⚠️</span>
+                <div class="flex-1">
+                    <h3 class="font-bold text-base text-amber-900">¡Atención! Posible cliente duplicado en el sistema</h3>
+                    <p class="text-xs text-amber-800 mt-0.5">
+                        Se ha detectado una coincidencia exacta por <strong>{{ $dup['coincidencia'] ?? 'documento / nombre' }}</strong> con un cliente ya existente en la base de datos:
+                    </p>
+                    <div class="mt-2 p-3 bg-white/90 rounded-xl border border-amber-200 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <strong class="font-bold text-slate-900 text-sm">{{ $dup['nombre_completo'] ?? '' }}</strong>
+                            <span class="text-xs text-slate-500 font-mono ml-2">({{ $dup['doc'] ?? '' }})</span>
+                        </div>
+                        <a href="{{ $dup['url'] ?? route('clients.show', $dup['cliente_id'] ?? 1) }}" target="_blank" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm">
+                            <span>Ver Ficha Existente (#{{ $dup['cliente_id'] ?? '' }})</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </a>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        <span class="text-xs text-amber-800">Si estás seguro de que es una persona distinta o deseas crear la ficha igualmente:</span>
+                        <button type="submit" name="forzar_duplicado" value="1" form="nuevoClienteForm" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold transition cursor-pointer">
+                            Confirmar y Crear Duplicado
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <form id="nuevoClienteForm" method="POST" action="{{ route('clients.store') }}" class="space-y-6">
         @csrf
 
         <!-- Sede y Agente por defecto KFM -->
@@ -123,11 +154,22 @@
         <!-- 2. Contratación & Facturación (Opcional Inicial) -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-5">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center space-x-2">
-                    <span>🛡️ 2. Contratación y Facturación</span>
-                </h2>
-                <span class="text-xs text-slate-400">Puedes dejarlo en blanco o darlo de alta ahora</span>
+                <label class="flex items-start sm:items-center space-x-3 cursor-pointer select-none">
+                    <input type="checkbox" id="checkCrearPoliza" name="crear_poliza" value="1" onchange="toggleSeccionPoliza(this.checked)" {{ old('crear_poliza') ? 'checked' : '' }} 
+                           class="w-5 h-5 mt-0.5 sm:mt-0 text-kfm-primary rounded border-slate-300 focus:ring-kfm-primary cursor-pointer">
+                    <div>
+                        <span class="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center space-x-2">
+                            <span>🛡️ 2. Añadir Póliza / Contratación Inicial Ahora (Opcional)</span>
+                        </span>
+                        <span class="text-xs text-slate-500 font-normal">Marca aquí sólo si el cliente va a contratar una póliza ahora. Si sólo estás dando de alta al cliente, déjalo desmarcado.</span>
+                    </div>
+                </label>
+                <span id="badgePolizaEstado" class="text-xs font-semibold px-2.5 py-1 rounded-full {{ old('crear_poliza') ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600' }}">
+                    {{ old('crear_poliza') ? 'Póliza Activa' : 'Sin póliza inicial' }}
+                </span>
             </div>
+
+            <div id="contenedorPolizaCampos" class="{{ old('crear_poliza') ? '' : 'hidden' }} space-y-5">
 
             <!-- Selector de Ramo & Aseguradora -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -237,10 +279,11 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Vivienda</label>
                             <select name="tipo_vivienda" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
+                                <option value="">-- Seleccionar --</option>
                                 <option value="PISO MEDIO">Piso (Planta Intermedia)</option>
                                 <option value="PISO BAJO">Piso (Bajo / Con Jardín)</option>
                                 <option value="ATICO">Ático</option>
-                                <option value="UNIF ADOSADA" selected>Unifamiliar Adosada</option>
+                                <option value="UNIF ADOSADA">Unifamiliar Adosada</option>
                                 <option value="UNIF NO ADOSADA">Chalet / Vivienda Aislada</option>
                             </select>
                         </div>
@@ -406,6 +449,7 @@
                     </div>
                 </div>
             </div>
+            </div> <!-- /contenedorPolizaCampos -->
         </div>
 
         <!-- 3. Observaciones -->
@@ -431,6 +475,20 @@
 
 <!-- JavaScript para alternar visualmente entre los ramos -->
 <script>
+    function toggleSeccionPoliza(activada) {
+        const contenedor = document.getElementById('contenedorPolizaCampos');
+        const badge = document.getElementById('badgePolizaEstado');
+        if (activada) {
+            contenedor.classList.remove('hidden');
+            badge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800';
+            badge.textContent = 'Póliza Activa';
+        } else {
+            contenedor.classList.add('hidden');
+            badge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600';
+            badge.textContent = 'Sin póliza inicial';
+        }
+    }
+
     const ramos = ['Vehiculo', 'Hogar', 'RC', 'Empresa', 'Otros'];
     const titulos = {
         'Vehiculo': '🚗 Detalles del Vehículo Asegurado (Auto / Moto / POV)',

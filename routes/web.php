@@ -9,6 +9,7 @@ Route::get('/', [ClientController::class, 'index'])->name('home');
 
 Route::resource('clients', ClientController::class);
 Route::post('clients/{client}/policies', [ClientController::class, 'storePolicy'])->name('clients.policies.store');
+Route::put('clients/{client}/policies/{policy}', [ClientController::class, 'updatePolicy'])->name('clients.policies.update');
 Route::post('clients/{client}/policies/{policy}/cancel', [ClientController::class, 'cancelPolicy'])->name('clients.policies.cancel');
 Route::post('clients/{client}/policies/{policy}/reactivate', [ClientController::class, 'reactivatePolicy'])->name('clients.policies.reactivate');
 Route::delete('clients/{client}/policies/{policy}', [ClientController::class, 'destroyPolicy'])->name('clients.policies.destroy');

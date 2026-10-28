@@ -146,14 +146,48 @@ class ClientController extends Controller
             'fecha_vencimiento' => 'nullable|string|max:50',
         ]);
 
+        $nombre = strtoupper(trim($validated['nombre']));
+        $apellido = strtoupper(trim($validated['apellido']));
+        $docIdentidad = !empty($validated['doc_identidad']) ? strtoupper(trim($validated['doc_identidad'])) : null;
+        $ssn = !empty($validated['ssn']) ? trim($validated['ssn']) : null;
+
+        // Detección de posible cliente duplicado
+        $duplicado = null;
+        $duplicadoCoincidencia = '';
+        if ($docIdentidad) {
+            $duplicado = Client::where('doc_identidad', $docIdentidad)->first();
+            if ($duplicado) $duplicadoCoincidencia = "DNI / NIE ({$docIdentidad})";
+        }
+        if (!$duplicado && $ssn) {
+            $duplicado = Client::where('ssn', $ssn)->first();
+            if ($duplicado) $duplicadoCoincidencia = "SSN ({$ssn})";
+        }
+        if (!$duplicado && $nombre && $apellido) {
+            $duplicado = Client::where('nombre', $nombre)
+                ->where('apellido', $apellido)
+                ->first();
+            if ($duplicado) $duplicadoCoincidencia = "Nombre y Apellidos ({$nombre} {$apellido})";
+        }
+
+        if ($duplicado && !$request->boolean('forzar_duplicado')) {
+            return back()->withInput()->with('error_duplicado', [
+                'mensaje' => "El cliente {$duplicado->apellido}, {$duplicado->nombre} ya está registrado en el CRM.",
+                'cliente_id' => $duplicado->id,
+                'nombre_completo' => "{$duplicado->apellido}, {$duplicado->nombre}",
+                'doc' => $duplicado->doc_identidad ?: ($duplicado->ssn ? "SSN: {$duplicado->ssn}" : 'Sin doc'),
+                'coincidencia' => $duplicadoCoincidencia,
+                'url' => route('clients.show', $duplicado),
+            ]);
+        }
+
         $client = Client::create([
             'sede_id' => $validated['sede_id'],
             'agente' => $validated['agente'] ?? 'Kerry',
-            'nombre' => strtoupper(trim($validated['nombre'])),
-            'apellido' => strtoupper(trim($validated['apellido'])),
+            'nombre' => $nombre,
+            'apellido' => $apellido,
             'nombre_familiar' => !empty($validated['nombre_familiar']) ? trim($validated['nombre_familiar']) : null,
-            'doc_identidad' => !empty($validated['doc_identidad']) ? strtoupper(trim($validated['doc_identidad'])) : null,
-            'ssn' => !empty($validated['ssn']) ? trim($validated['ssn']) : null,
+            'doc_identidad' => $docIdentidad,
+            'ssn' => $ssn,
             'dob' => $validated['dob'] ?? null,
             'telefono_movil' => $validated['telefono_movil'] ?? null,
             'telefono_fijo' => $validated['telefono_fijo'] ?? null,
@@ -164,17 +198,29 @@ class ClientController extends Controller
             'observaciones' => $validated['observaciones'] ?? null,
         ]);
 
-        // Determinar categoría según el ramo activo
-        $ramo = $validated['ramo'] ?? 'Vehiculo';
-        $categoria = match($ramo) {
-            'Vehiculo' => $request->input('categoria_vehiculo') ?? $request->input('categoria'),
-            'Hogar' => $request->input('categoria_hogar') ?? $request->input('categoria'),
-            'RC' => $request->input('categoria_rc') ?? $request->input('categoria'),
-            default => $request->input('categoria'),
-        };
+        // Determinar si el usuario indicó datos REALES de una póliza inicial
+        $crearPolizaChecked = $request->boolean('crear_poliza');
+        $matricula = !empty(trim($request->input('matricula') ?? '')) ? strtoupper(trim($request->input('matricula'))) : null;
+        $numPoliza = !empty(trim($request->input('numero_poliza') ?? '')) ? trim($request->input('numero_poliza')) : null;
+        $marca = !empty(trim($request->input('marca') ?? '')) ? strtoupper(trim($request->input('marca'))) : null;
+        $modelo = !empty(trim($request->input('modelo') ?? '')) ? strtoupper(trim($request->input('modelo'))) : null;
+        $vin = !empty(trim($request->input('vin') ?? '')) ? strtoupper(trim($request->input('vin'))) : null;
+        $direccionRiesgo = !empty(trim($request->input('direccion_riesgo') ?? '')) ? trim($request->input('direccion_riesgo')) : null;
+        $detallesCobertura = !empty(trim($request->input('detalles_cobertura') ?? '')) ? trim($request->input('detalles_cobertura')) : null;
+        $reciboNumero = !empty(trim($request->input('recibo_numero') ?? '')) ? trim($request->input('recibo_numero')) : null;
+        $prima = !empty(trim($request->input('prima') ?? '')) ? trim($request->input('prima')) : null;
 
-        // Si se indicó una póliza inicial
-        if (!empty($request->input('crear_poliza')) || !empty($validated['matricula']) || !empty($validated['numero_poliza']) || !empty($validated['tipo_vivienda']) || !empty($validated['recibo_numero']) || !empty($validated['prima'])) {
+        $tieneDatosReales = ($crearPolizaChecked || $matricula || $numPoliza || $marca || $modelo || $vin || $direccionRiesgo || $detallesCobertura || $reciboNumero || $prima);
+
+        if ($tieneDatosReales) {
+            $ramo = $validated['ramo'] ?? 'Vehiculo';
+            $categoria = match($ramo) {
+                'Vehiculo' => $request->input('categoria_vehiculo') ?? $request->input('categoria'),
+                'Hogar' => $request->input('categoria_hogar') ?? $request->input('categoria'),
+                'RC' => $request->input('categoria_rc') ?? $request->input('categoria'),
+                default => $request->input('categoria'),
+            };
+
             $codAseguradora = $validated['codigo_aseguradora'] ?? '81';
             $nombreAseguradora = match($codAseguradora) {
                 '81' => 'Patria 81',
@@ -183,24 +229,33 @@ class ClientController extends Controller
             };
             $esLiquidado = ($validated['liquidacion'] ?? 'Pendiente') === 'Liquidado';
 
+            // Limpieza estricta según ramo: no mezclar datos de hogar con vehículo
+            $marcaPoliza = ($ramo === 'Vehiculo') ? $marca : null;
+            $modeloPoliza = ($ramo === 'Vehiculo') ? $modelo : null;
+            $matriculaPoliza = ($ramo === 'Vehiculo') ? $matricula : null;
+            $vinPoliza = ($ramo === 'Vehiculo') ? $vin : null;
+            $tipoViviendaPoliza = ($ramo === 'Hogar') ? ($validated['tipo_vivienda'] ?? null) : null;
+            $direccionRiesgoPoliza = ($ramo === 'Hogar') ? $direccionRiesgo : null;
+            $detallesCoberturaPoliza = ($ramo === 'RC') ? $detallesCobertura : null;
+
             Policy::create([
                 'client_id' => $client->id,
                 'sede_id' => $client->sede_id,
                 'agente' => $client->agente,
-                'numero_poliza' => $validated['numero_poliza'] ?? 'PENDIENTE-' . time(),
-                'recibo_numero' => $validated['recibo_numero'] ?? null,
+                'numero_poliza' => $numPoliza ?: 'Pendiente',
+                'recibo_numero' => $reciboNumero,
                 'codigo_aseguradora' => $codAseguradora,
                 'aseguradora' => $nombreAseguradora,
                 'ramo' => $ramo,
                 'categoria' => $categoria,
-                'marca' => !empty($validated['marca']) ? strtoupper(trim($validated['marca'])) : null,
-                'modelo' => !empty($validated['modelo']) ? strtoupper(trim($validated['modelo'])) : null,
-                'matricula' => !empty($validated['matricula']) ? strtoupper(trim($validated['matricula'])) : null,
-                'vin' => !empty($validated['vin']) ? strtoupper(trim($validated['vin'])) : null,
-                'tipo_vivienda' => $validated['tipo_vivienda'] ?? null,
-                'direccion_riesgo' => $validated['direccion_riesgo'] ?? null,
-                'detalles_cobertura' => $validated['detalles_cobertura'] ?? null,
-                'prima' => $validated['prima'] ?? null,
+                'marca' => $marcaPoliza,
+                'modelo' => $modeloPoliza,
+                'matricula' => $matriculaPoliza,
+                'vin' => $vinPoliza,
+                'tipo_vivienda' => $tipoViviendaPoliza,
+                'direccion_riesgo' => $direccionRiesgoPoliza,
+                'detalles_cobertura' => $detallesCoberturaPoliza,
+                'prima' => $prima,
                 'tipo_facturacion' => $validated['tipo_facturacion'] ?? 'Anual',
                 'balance' => $validated['balance'] ?? 'Paid Full',
                 'liquidacion' => $validated['liquidacion'] ?? 'Pendiente',
@@ -221,6 +276,55 @@ class ClientController extends Controller
         $sedes = Sede::all();
         $agentes = $this->agentesDisponibles;
         return view('clients.show', compact('client', 'sedes', 'agentes'));
+    }
+
+    public function edit(Client $client)
+    {
+        $sedes = Sede::all();
+        $agentes = $this->agentesDisponibles;
+        return view('clients.edit', compact('client', 'sedes', 'agentes'));
+    }
+
+    public function update(Request $request, Client $client)
+    {
+        $validated = $request->validate([
+            'sede_id' => 'required|exists:sedes,id',
+            'agente' => 'nullable|string|max:50',
+            'nombre' => 'required|string|max:100',
+            'apellido' => 'required|string|max:100',
+            'nombre_familiar' => 'nullable|string|max:150',
+            'doc_identidad' => 'nullable|string|max:50',
+            'ssn' => 'nullable|string|max:50',
+            'dob' => 'nullable|string|max:50',
+            'telefono_movil' => 'nullable|string|max:50',
+            'telefono_fijo' => 'nullable|string|max:50',
+            'email_personal' => 'nullable|email|max:100',
+            'email_trabajo' => 'nullable|string|max:100',
+            'direccion_local' => 'nullable|string|max:255',
+            'direccion_base' => 'nullable|string|max:255',
+            'observaciones' => 'nullable|string',
+        ]);
+
+        $client->update([
+            'sede_id' => $validated['sede_id'],
+            'agente' => $validated['agente'] ?? $client->agente,
+            'nombre' => strtoupper(trim($validated['nombre'])),
+            'apellido' => strtoupper(trim($validated['apellido'])),
+            'nombre_familiar' => !empty($validated['nombre_familiar']) ? trim($validated['nombre_familiar']) : null,
+            'doc_identidad' => !empty($validated['doc_identidad']) ? strtoupper(trim($validated['doc_identidad'])) : null,
+            'ssn' => !empty($validated['ssn']) ? trim($validated['ssn']) : null,
+            'dob' => $validated['dob'] ?? null,
+            'telefono_movil' => $validated['telefono_movil'] ?? null,
+            'telefono_fijo' => $validated['telefono_fijo'] ?? null,
+            'email_personal' => $validated['email_personal'] ?? null,
+            'email_trabajo' => $validated['email_trabajo'] ?? null,
+            'direccion_local' => $validated['direccion_local'] ?? null,
+            'direccion_base' => $validated['direccion_base'] ?? null,
+            'observaciones' => $validated['observaciones'] ?? null,
+        ]);
+
+        return redirect()->route('clients.show', $client)
+            ->with('success', "Datos de {$client->full_name} actualizados correctamente.");
     }
 
     public function storePolicy(Request $request, Client $client)
@@ -276,11 +380,28 @@ class ClientController extends Controller
         $validated['agente'] = $validated['agente'] ?? $client->agente ?? 'Kerry';
         $validated['codigo_aseguradora'] = $codAseguradora;
         $validated['aseguradora'] = $nombreAseguradora;
+        $validated['numero_poliza'] = !empty(trim($validated['numero_poliza'] ?? '')) ? trim($validated['numero_poliza']) : 'Pendiente';
         $validated['fecha_liquidacion'] = $esLiquidado ? ($validated['fecha_liquidacion'] ?? null) : null;
-        $validated['marca'] = !empty($validated['marca']) ? strtoupper(trim($validated['marca'])) : null;
-        $validated['modelo'] = !empty($validated['modelo']) ? strtoupper(trim($validated['modelo'])) : null;
-        $validated['matricula'] = !empty($validated['matricula']) ? strtoupper(trim($validated['matricula'])) : null;
-        $validated['vin'] = !empty($validated['vin']) ? strtoupper(trim($validated['vin'])) : null;
+
+        // Limpieza de campos según ramo
+        if ($ramo !== 'Hogar') {
+            $validated['tipo_vivienda'] = null;
+            $validated['direccion_riesgo'] = null;
+        }
+        if ($ramo !== 'Vehiculo') {
+            $validated['marca'] = null;
+            $validated['modelo'] = null;
+            $validated['matricula'] = null;
+            $validated['vin'] = null;
+        } else {
+            $validated['marca'] = !empty($validated['marca']) ? strtoupper(trim($validated['marca'])) : null;
+            $validated['modelo'] = !empty($validated['modelo']) ? strtoupper(trim($validated['modelo'])) : null;
+            $validated['matricula'] = !empty($validated['matricula']) ? strtoupper(trim($validated['matricula'])) : null;
+            $validated['vin'] = !empty($validated['vin']) ? strtoupper(trim($validated['vin'])) : null;
+        }
+        if ($ramo !== 'RC') {
+            $validated['detalles_cobertura'] = null;
+        }
 
         unset($validated['categoria_vehiculo'], $validated['categoria_hogar'], $validated['categoria_rc']);
 
@@ -288,6 +409,80 @@ class ClientController extends Controller
 
         return redirect()->route('clients.show', $client)
             ->with('success', 'Nueva póliza añadida al cliente.');
+    }
+
+    public function updatePolicy(Request $request, Client $client, Policy $policy)
+    {
+        $validated = $request->validate([
+            'ramo' => 'required|string|max:50',
+            'categoria' => 'nullable|string|max:100',
+            'codigo_aseguradora' => 'nullable|string|max:20',
+            'aseguradora' => 'nullable|string|max:100',
+            'numero_poliza' => 'nullable|string|max:50',
+            'recibo_numero' => 'nullable|string|max:50',
+            'marca' => 'nullable|string|max:100',
+            'modelo' => 'nullable|string|max:100',
+            'matricula' => 'nullable|string|max:50',
+            'vin' => 'nullable|string|max:50',
+            'tipo_vivienda' => 'nullable|string|max:100',
+            'direccion_riesgo' => 'nullable|string|max:255',
+            'detalles_cobertura' => 'nullable|string',
+            'prima' => 'nullable|string|max:50',
+            'tipo_facturacion' => 'nullable|string|max:50',
+            'balance' => 'nullable|string|max:50',
+            'liquidacion' => 'nullable|string|max:50',
+            'fecha_liquidacion' => 'nullable|string|max:50',
+            'fecha_pago' => 'nullable|string|max:50',
+            'fecha_vencimiento' => 'nullable|string|max:50',
+            'estado' => 'required|string|max:50',
+        ]);
+
+        $ramo = $validated['ramo'] ?? $policy->ramo ?? 'Vehiculo';
+        $codAseguradora = $validated['codigo_aseguradora'] ?? '81';
+        $nombreAseguradora = match($codAseguradora) {
+            '81' => 'Patria 81',
+            '87' => 'GEICO 87',
+            default => $validated['aseguradora'] ?? 'Patria 81',
+        };
+        $esLiquidado = ($validated['liquidacion'] ?? 'Pendiente') === 'Liquidado';
+
+        $numPoliza = !empty(trim($validated['numero_poliza'] ?? '')) ? trim($validated['numero_poliza']) : ($policy->numero_poliza ?: 'Pendiente');
+
+        // Limpiar campos según ramo
+        $marca = ($ramo === 'Vehiculo') && !empty($validated['marca']) ? strtoupper(trim($validated['marca'])) : null;
+        $modelo = ($ramo === 'Vehiculo') && !empty($validated['modelo']) ? strtoupper(trim($validated['modelo'])) : null;
+        $matricula = ($ramo === 'Vehiculo') && !empty($validated['matricula']) ? strtoupper(trim($validated['matricula'])) : null;
+        $vin = ($ramo === 'Vehiculo') && !empty($validated['vin']) ? strtoupper(trim($validated['vin'])) : null;
+        $tipoVivienda = ($ramo === 'Hogar') ? ($validated['tipo_vivienda'] ?? null) : null;
+        $direccionRiesgo = ($ramo === 'Hogar') ? ($validated['direccion_riesgo'] ?? null) : null;
+        $detallesCobertura = ($ramo === 'RC') ? ($validated['detalles_cobertura'] ?? null) : null;
+
+        $policy->update([
+            'ramo' => $ramo,
+            'categoria' => $validated['categoria'] ?? $policy->categoria,
+            'numero_poliza' => $numPoliza,
+            'recibo_numero' => $validated['recibo_numero'] ?? null,
+            'codigo_aseguradora' => $codAseguradora,
+            'aseguradora' => $nombreAseguradora,
+            'marca' => $marca,
+            'modelo' => $modelo,
+            'matricula' => $matricula,
+            'vin' => $vin,
+            'tipo_vivienda' => $tipoVivienda,
+            'direccion_riesgo' => $direccionRiesgo,
+            'detalles_cobertura' => $detallesCobertura,
+            'prima' => $validated['prima'] ?? null,
+            'tipo_facturacion' => $validated['tipo_facturacion'] ?? 'Anual',
+            'balance' => $validated['balance'] ?? 'Paid Full',
+            'liquidacion' => $validated['liquidacion'] ?? 'Pendiente',
+            'fecha_liquidacion' => $esLiquidado ? ($validated['fecha_liquidacion'] ?? null) : null,
+            'fecha_pago' => $validated['fecha_pago'] ?? null,
+            'fecha_vencimiento' => $validated['fecha_vencimiento'] ?? null,
+            'estado' => $validated['estado'] ?? 'Activo',
+        ]);
+
+        return redirect()->route('clients.show', $client)
+            ->with('success', "Póliza {$policy->numero_poliza} actualizada correctamente.");
     }
 
     /**
