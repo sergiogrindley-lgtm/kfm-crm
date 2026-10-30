@@ -411,26 +411,11 @@
                                                     <span>✏️ Editar Póliza</span>
                                                 </button>
 
-                                                <button type="button" 
-                                                        onclick="openPcsRefundModal('{{ addslashes($client->full_name) }}', '{{ $policy->numero_poliza }}', '{{ addslashes($policy->matricula ?: ($policy->marca . ' ' . $policy->modelo)) }}', '{{ $policy->prima ?: '642,50 €' }}', '{{ $policy->fecha_pago ?: '15/11/2025' }}', '{{ $policy->fecha_vencimiento ?: '15/11/2026' }}')"
-                                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-xs transition cursor-pointer">
-                                                    <span>🛫 Ver Liquidación PCS</span>
-                                                </button>
-
                                                 <form action="{{ route('clients.policies.reactivate', [$client, $policy]) }}" method="POST" onsubmit="return confirm('¿Reactivar la póliza #{{ $policy->numero_poliza }} a estado Activo?');">
                                                     @csrf
                                                     <button type="submit" 
                                                             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition cursor-pointer">
                                                         <span>🔄 Reactivar a Activo</span>
-                                                    </button>
-                                                </form>
-
-                                                <form action="{{ route('clients.policies.destroy', [$client, $policy]) }}" method="POST" onsubmit="return confirm('¿Eliminar definitivamente el registro de la póliza #{{ $policy->numero_poliza }}? Esta acción no se puede deshacer.');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" 
-                                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-rose-700 border border-rose-300 hover:bg-rose-50 transition cursor-pointer">
-                                                        <span>🗑️ Eliminar</span>
                                                     </button>
                                                 </form>
                                             </div>
