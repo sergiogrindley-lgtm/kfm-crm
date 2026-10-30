@@ -247,6 +247,13 @@
                                             <span class="truncate max-w-xs">{{ $client->direccion_local }}</span>
                                         </div>
                                     @endif
+
+                                    @if($client->observaciones)
+                                        <div class="mt-2 text-xs bg-amber-50 text-amber-950 border border-amber-200/90 rounded-lg px-2.5 py-1.5 flex items-start gap-1.5 shadow-2xs">
+                                            <span class="text-amber-700 font-bold flex-shrink-0">📝 Obs:</span>
+                                            <span class="text-slate-800 leading-snug">{{ $client->observaciones }}</span>
+                                        </div>
+                                    @endif
                                 </td>
 
                                 <!-- Columna Contacto -->
@@ -315,16 +322,24 @@
                                                                 <span class="text-emerald-700 font-bold">{{ $policy->prima }}</span>
                                                             @endif
                                                         </div>
+                                                        @if($policy->observaciones)
+                                                            <div class="mt-1 text-[11px] bg-amber-50/90 text-amber-950 border border-amber-200 rounded px-2 py-0.5 flex items-start gap-1">
+                                                                <span class="font-bold text-amber-800 flex-shrink-0">📝</span>
+                                                                <span class="text-slate-700 leading-snug">{{ $policy->observaciones }}</span>
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                 </div>
 
                                                 <div class="text-right flex flex-col items-end space-y-1">
-                                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $policy->estado === 'Activo' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
+                                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ strtolower($policy->estado) === 'activo' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
                                                         {{ $policy->estado }}
                                                     </span>
-                                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase {{ $policy->balance === 'Paid Full' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800' }}">
-                                                        {{ $policy->balance }}
-                                                    </span>
+                                                    @if(strtolower($policy->estado) === 'activo' || (strtolower($policy->balance) !== 'cancelled' && strtolower($policy->balance) !== 'cancelado'))
+                                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase {{ $policy->balance === 'Paid Full' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800' }}">
+                                                            {{ $policy->balance }}
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             </div>
                                         @empty

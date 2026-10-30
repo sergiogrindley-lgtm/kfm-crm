@@ -454,6 +454,7 @@ class ClientController extends Controller
             'fecha_pago' => 'nullable|string|max:50',
             'fecha_vencimiento' => 'nullable|string|max:50',
             'estado' => 'required|string|max:50',
+            'observaciones' => 'nullable|string',
         ]);
 
         $ramo = $validated['ramo'] ?? $policy->ramo ?? 'Vehiculo';
@@ -498,6 +499,7 @@ class ClientController extends Controller
             'fecha_pago' => $validated['fecha_pago'] ?? null,
             'fecha_vencimiento' => $validated['fecha_vencimiento'] ?? null,
             'estado' => $validated['estado'] ?? 'Activo',
+            'observaciones' => $validated['observaciones'] ?? null,
         ]);
 
         return redirect()->route('clients.show', $client)

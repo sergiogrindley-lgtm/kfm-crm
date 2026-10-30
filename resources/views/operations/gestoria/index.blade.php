@@ -260,6 +260,12 @@
                                         </span>
                                     @endif
                                 </div>
+                                @if($tramite->observaciones)
+                                    <div class="mt-2 text-xs bg-amber-50 text-amber-950 border border-amber-200 rounded-lg p-2 flex items-start gap-1.5 shadow-2xs">
+                                        <span class="text-amber-700 font-bold flex-shrink-0">📝 Obs:</span>
+                                        <span class="text-slate-800 leading-snug">{{ $tramite->observaciones }}</span>
+                                    </div>
+                                @endif
                             </td>
 
                             <!-- Comprador -->

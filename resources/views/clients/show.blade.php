@@ -232,9 +232,11 @@
                                     <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ strtolower($policy->estado) === 'activo' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200' }}">
                                         {{ strtolower($policy->estado) === 'activo' ? '● ' . $policy->estado : '🛑 ' . $policy->estado }}
                                     </span>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase {{ $policy->balance === 'Paid Full' ? 'bg-blue-100 text-blue-800' : ($policy->balance === 'Cancelled' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800') }}">
-                                        Balance: {{ $policy->balance }}
-                                    </span>
+                                    @if(strtolower($policy->estado) === 'activo' || (strtolower($policy->balance) !== 'cancelled' && strtolower($policy->balance) !== 'cancelado'))
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase {{ $policy->balance === 'Paid Full' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800' }}">
+                                            Balance: {{ $policy->balance }}
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
 
@@ -322,8 +324,9 @@
                             </div>
 
                             @if($policy->observaciones)
-                                <div class="text-xs text-slate-600 bg-amber-50/50 p-2.5 rounded-lg border border-amber-100">
-                                    <strong class="text-amber-800">Nota:</strong> {{ $policy->observaciones }}
+                                <div class="text-xs bg-amber-50 text-amber-950 p-2.5 rounded-lg border border-amber-200/90 flex items-start gap-1.5 shadow-2xs">
+                                    <span class="text-amber-800 font-bold flex-shrink-0">📝 Obs:</span>
+                                    <span class="text-slate-800 leading-snug">{{ $policy->observaciones }}</span>
                                 </div>
                             @endif
 
@@ -354,27 +357,6 @@
                                                 <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                                                 <span>⚡ Traspaso Gestoría</span>
                                             </button>
-
-                                            <!-- 2. Formulario GEICO Military -->
-                                            <a href="{{ route('clients.geico', [$client, $policy]) }}" target="_blank"
-                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#002868] hover:bg-[#001b44] text-white shadow-sm transition">
-                                                <span>🇺🇸</span>
-                                                <span>Formulario GEICO</span>
-                                            </a>
-
-                                            <!-- 3. Mandato DGT Colegiado -->
-                                            <a href="{{ route('clients.mandato', [$client, $policy]) }}" target="_blank"
-                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white shadow-sm transition">
-                                                <span>⚖️</span>
-                                                <span>Mandato DGT</span>
-                                            </a>
-
-                                            <!-- 4. Carta Verde (CIS) -->
-                                            <a href="{{ route('clients.carta-verde', [$client, $policy]) }}" target="_blank"
-                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm transition">
-                                                <span>🟢</span>
-                                                <span>Carta Verde (CIS)</span>
-                                            </a>
                                         @endif
 
                                         <!-- 5. Baja PCS / Reembolso Prorrateado -->
@@ -726,6 +708,13 @@
                         </div>
                     </div>
 
+                    <!-- Observaciones de la Póliza -->
+                    <div class="pt-2">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Observaciones / Notas de la Póliza</label>
+                        <textarea name="observaciones" rows="2" placeholder="Notas internas de contratación, número anterior, condiciones especiales..." 
+                                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary"></textarea>
+                    </div>
+
                     <div class="flex justify-end pt-2">
                         <button type="submit" class="px-5 py-2.5 bg-kfm-primary hover:bg-kfm-cerulean text-white font-semibold text-xs rounded-xl shadow transition">
                             Guardar Contratación en la Ficha
@@ -855,7 +844,7 @@
         window.open(url, '_blank');
     }
 
-    // Modal & Calculadora de Devolución PCS (Permanent Change of Station)
+    // Modal de Devolución / Reembolso PCS (Modificación manual de dinero)
     let currentPcsData = {};
 
     function openPcsRefundModal(clientName, poliza, vehiculo, primaStr, fechaEfecto, fechaVencimiento) {
@@ -866,12 +855,15 @@
         document.getElementById('pcs_vehiculo').innerText = vehiculo;
         
         // Extraer número de prima limpia
-        let rawNum = String(primaStr).replace(/[^\d.,]/g, '').replace(',', '.');
-        let numPrima = parseFloat(rawNum) || 642.50;
-        document.getElementById('pcs_prima_input').value = numPrima.toFixed(2);
-        document.getElementById('pcs_dias_consumidos').value = 142; // preset típico ~4.5 meses
+        let rawNum = String(primaStr).replace(/[^\d.,]/g, '').trim();
+        let numPrima = parseFloat(rawNum.replace(',', '.')) || 0;
+        document.getElementById('pcs_prima_input').value = numPrima > 0 ? numPrima.toFixed(2) : '0.00';
         
-        recalcularPcsRefund();
+        // Sugerir importe inicial si no está fijado para que el usuario pueda editarlo directamente
+        let reembolsoInicial = numPrima > 0 ? (numPrima * 0.5).toFixed(2) : '0.00';
+        document.getElementById('pcs_reembolso_input').value = reembolsoInicial;
+        actualizarPcsResultado(reembolsoInicial);
+        
         document.getElementById('pcsRefundModal').classList.remove('hidden');
     }
 
@@ -879,45 +871,28 @@
         document.getElementById('pcsRefundModal').classList.add('hidden');
     }
 
-    function setPcsDias(dias) {
-        document.getElementById('pcs_dias_consumidos').value = dias;
-        recalcularPcsRefund();
-    }
-
-    function recalcularPcsRefund() {
-        const primaTotal = parseFloat(document.getElementById('pcs_prima_input').value) || 0;
-        const diasConsumidos = parseInt(document.getElementById('pcs_dias_consumidos').value) || 0;
-        const diasTotales = 365;
-        const diasRestantes = Math.max(0, diasTotales - diasConsumidos);
-        
-        const pctDevolucion = diasTotales > 0 ? ((diasRestantes / diasTotales) * 100).toFixed(1) : 0;
-        const importeReembolso = diasTotales > 0 ? ((primaTotal / diasTotales) * diasRestantes).toFixed(2) : 0;
-        const importeConsumido = (primaTotal - importeReembolso).toFixed(2);
-
-        document.getElementById('pcs_dias_restantes').innerText = diasRestantes + ' días';
-        document.getElementById('pcs_pct_devolucion').innerText = pctDevolucion + '%';
-        document.getElementById('pcs_reembolso_resultado').innerText = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(importeReembolso);
-        document.getElementById('pcs_consumido_resultado').innerText = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(importeConsumido);
+    function actualizarPcsResultado(val) {
+        let limpio = String(val).replace(/[^\d.,]/g, '').replace(',', '.');
+        let num = parseFloat(limpio) || 0;
+        document.getElementById('pcs_reembolso_resultado').innerText = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(num);
     }
 
     function copiarLiquidacionPcs() {
         const motivo = document.getElementById('pcs_motivo').value;
         const primaTotal = document.getElementById('pcs_prima_input').value;
-        const diasConsumidos = document.getElementById('pcs_dias_consumidos').value;
-        const diasRestantes = document.getElementById('pcs_dias_restantes').innerText;
         const reembolso = document.getElementById('pcs_reembolso_resultado').innerText;
+        const canal = document.getElementById('pcs_canal_devolucion').value;
+        const obs = document.getElementById('pcs_observaciones').value;
         
-        const texto = `🛫 LIQUIDACIÓN DEVOLUCIÓN DE PRIMA NO CONSUMIDA (PCS MOVE)
+        const texto = `🛫 LIQUIDACIÓN DEVOLUCIÓN DE PRIMA (PCS MOVE)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 👤 Titular: ${currentPcsData.clientName}
-📄 Póliza: ${currentPcsData.poliza} (${currentPcsData.vehiculo})
+📄 Póliza: #${currentPcsData.poliza} (${currentPcsData.vehiculo})
 📋 Motivo: ${motivo}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💳 Canal de Devolución: ${canal}
+${obs ? `📝 Observaciones: ${obs}\n` : ''}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 💵 Prima Anual Pagada: ${primaTotal} €
-⏱️ Período Consumido: ${diasConsumidos} días
-⏳ Días No Consumidos: ${diasRestantes}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💰 IMPORTE A REEMBOLSAR AL MILITAR: ${reembolso}
+💰 IMPORTE A REEMBOLSAR: ${reembolso}
 Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 
@@ -1012,6 +987,7 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
         document.getElementById('edit_liquidacion').value = policy.liquidacion || 'Pendiente';
         document.getElementById('edit_fecha_liquidacion').value = policy.fecha_liquidacion || '';
         document.getElementById('edit_estado').value = policy.estado || 'Activo';
+        document.getElementById('edit_policy_observaciones').value = policy.observaciones || '';
         
         cambiarEditRamo(policy.ramo || 'Vehiculo');
         toggleEditLiquidacionFecha(policy.liquidacion || 'Pendiente');
@@ -1305,77 +1281,84 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
                     </div>
                 </div>
 
-                <!-- Parámetros de la Liquidación -->
+                <!-- Parámetros de la Liquidación (Edición Directa del Reembolso) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Prima Anual Pagada (€)</label>
                         <div class="relative">
-                            <input type="number" step="0.01" id="pcs_prima_input" oninput="recalcularPcsRefund()"
-                                   class="w-full text-sm font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 pr-8">
+                            <input type="text" id="pcs_prima_input" 
+                                   class="w-full text-sm font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 pr-8"
+                                   placeholder="0,00">
                             <span class="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">€</span>
                         </div>
                         <span class="text-[10px] text-slate-400 mt-0.5 block">Importe íntegro anual abonado por el militar</span>
                     </div>
 
                     <div>
-                        <label class="block text-slate-700 font-bold mb-1">Días de Cobertura Consumidos (1 a 365)</label>
-                        <input type="number" id="pcs_dias_consumidos" min="1" max="365" oninput="recalcularPcsRefund()"
-                               class="w-full text-sm font-mono font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
-                        <!-- Presets de días rápidos -->
-                        <div class="flex items-center gap-1.5 mt-1.5">
-                            <button type="button" onclick="setPcsDias(90)" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded cursor-pointer">3 meses (90d)</button>
-                            <button type="button" onclick="setPcsDias(120)" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded cursor-pointer">4 meses (120d)</button>
-                            <button type="button" onclick="setPcsDias(142)" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded cursor-pointer">142d (Media)</button>
-                            <button type="button" onclick="setPcsDias(180)" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded cursor-pointer">6 meses (180d)</button>
+                        <label class="block text-emerald-800 font-bold mb-1">
+                            💰 Importe a Devolver al Militar (€) *
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="pcs_reembolso_input" oninput="actualizarPcsResultado(this.value)"
+                                   class="w-full text-base font-black px-3.5 py-2 bg-emerald-50 border-2 border-emerald-400 text-emerald-900 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-8 shadow-xs"
+                                   placeholder="Introduce el importe a devolver...">
+                            <span class="absolute right-3.5 top-2.5 text-emerald-700 font-black text-sm">€</span>
                         </div>
+                        <span class="text-[10px] text-emerald-700 font-medium mt-0.5 block">✍️ Puedes modificar libremente este importe en cualquier momento</span>
                     </div>
+                </div>
 
-                    <div class="sm:col-span-2">
+                <!-- Motivo y Canal de Devolución -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
                         <label class="block text-slate-700 font-bold mb-1">Motivo de Baja / Justificante DoD</label>
-                        <select id="pcs_motivo" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <select id="pcs_motivo" class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
                             <option value="Órdenes de Traslado PCS (Permanent Change of Station - US Navy)">🛫 Órdenes de Traslado PCS (Permanent Change of Station - US Navy)</option>
                             <option value="Embarque de Vehículo en VPC (Vehicle Processing Center - Rota Port)">🚢 Embarque de Vehículo en VPC (Vehicle Processing Center - Rota Port)</option>
                             <option value="Venta / Cesión a otro Militar en Base Naval">🤝 Venta / Cesión a otro Militar en Base Naval</option>
                             <option value="Baja Definitiva y Repatriación a EE.UU.">🇺🇸 Baja Definitiva y Repatriación a EE.UU.</option>
+                            <option value="Cancelación Anticipada">📋 Cancelación Anticipada</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Canal de Devolución / Forma de Pago</label>
+                        <select id="pcs_canal_devolucion" onchange="document.getElementById('pcs_canal_resultado').innerText = this.value" class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <option value="Transferencia Bancaria" selected>🏦 Transferencia Bancaria</option>
+                            <option value="Tarjeta de Crédito / Débito">💳 Tarjeta de Crédito / Débito</option>
+                            <option value="Efectivo (Oficina NEX Base Naval)">💵 Efectivo (Oficina NEX Base Naval)</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- Panel de Resultado Dinámico -->
+                <!-- Observaciones de la Devolución -->
+                <div>
+                    <label class="block text-slate-700 font-bold mb-1">Observaciones / Notas de la Liquidación</label>
+                    <textarea id="pcs_observaciones" rows="2" placeholder="Notas internas sobre la devolución, cuenta bancaria, justificante..." 
+                              class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                </div>
+
+                <!-- Panel de Resultado -->
                 <div class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 border-2 border-emerald-300 rounded-2xl p-5 shadow-inner">
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
-                            <span class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 block">IMPORTE CALCULADO A REEMBOLSAR AL MILITAR:</span>
+                            <span class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 block">IMPORTE TOTAL ACORDADO A REEMBOLSAR:</span>
                             <div class="text-3xl font-black text-emerald-950 font-display mt-0.5" id="pcs_reembolso_resultado">
                                 0,00 €
                             </div>
-                            <div class="text-[11px] text-emerald-800 mt-1 flex items-center gap-2">
-                                <span>⏳ Días no consumidos: <strong id="pcs_dias_restantes">0 días</strong></span>
-                                <span>•</span>
-                                <span>Porcentaje restante: <strong id="pcs_pct_devolucion">0%</strong></span>
-                            </div>
                         </div>
 
-                        <div class="bg-white/80 backdrop-blur-sm border border-emerald-200 rounded-xl p-3 text-[11px] space-y-1 text-slate-700 w-full sm:w-auto">
-                            <div class="flex justify-between sm:justify-start sm:gap-4">
-                                <span class="text-slate-400">Prima Devengada:</span>
-                                <strong id="pcs_consumido_resultado" class="text-slate-900 font-mono">0,00 €</strong>
+                        <div class="bg-white/80 backdrop-blur-sm border border-emerald-200 rounded-xl p-3 text-[11px] space-y-1 text-slate-700 min-w-[200px]">
+                            <div class="flex justify-between gap-3">
+                                <span class="text-slate-400">Canal:</span>
+                                <strong id="pcs_canal_resultado" class="text-slate-900 font-semibold">Transferencia Bancaria</strong>
                             </div>
-                            <div class="flex justify-between sm:justify-start sm:gap-4">
-                                <span class="text-slate-400">Retención de Emisión:</span>
-                                <strong class="text-emerald-700 font-mono">0,00 € (Exenta DoD)</strong>
-                            </div>
-                            <div class="flex justify-between sm:justify-start sm:gap-4">
-                                <span class="text-slate-400">Canal de Devolución:</span>
-                                <strong class="text-slate-900">Transferencia / Tarjeta</strong>
+                            <div class="flex justify-between gap-3">
+                                <span class="text-slate-400">Estado:</span>
+                                <strong class="text-emerald-700 font-bold">✓ Aprobado para Liquidar</strong>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-900 text-[11px] flex items-center gap-2">
-                    <span>💡</span>
-                    <span><strong>Ahorro Operativo para KFM:</strong> Evita cálculos a mano y disputas con el asegurado. El importe se calcula de forma fehaciente por días naturales para tramitar con Patria Hispana / Allianz.</span>
                 </div>
 
             </div>
@@ -1789,6 +1772,11 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
                             <option value="Cancelado">Cancelado</option>
                         </select>
                     </div>
+                </div>
+
+                <div class="pt-1">
+                    <label class="block text-slate-700 font-bold mb-1">Observaciones / Notas de la Póliza</label>
+                    <textarea name="observaciones" id="edit_policy_observaciones" rows="2" placeholder="Notas internas de la póliza..." class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
                 </div>
 
                 <div class="bg-slate-50 -mx-6 -mb-6 px-6 py-4 flex items-center justify-between border-t border-slate-200 mt-4 rounded-b-2xl">

@@ -98,6 +98,12 @@
                                 @if($extorno->recibo_numero)
                                     <span class="text-[10px] font-mono text-slate-400 block">Recibo: {{ $extorno->recibo_numero }}</span>
                                 @endif
+                                @if($extorno->observaciones)
+                                    <div class="mt-1 text-[11px] bg-amber-50 text-amber-950 border border-amber-200 rounded px-2 py-0.5 flex items-start gap-1">
+                                        <span class="font-bold text-amber-800 flex-shrink-0">📝</span>
+                                        <span class="text-slate-700 leading-snug">{{ $extorno->observaciones }}</span>
+                                    </div>
+                                @endif
                             </td>
                             <td class="py-3.5 px-4">
                                 <span class="text-rose-700 font-semibold block">{{ $extorno->projected_departure ?: 'No indicada' }}</span>

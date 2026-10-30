@@ -112,7 +112,14 @@
                             @endif
 
                             <td class="py-3.5 px-4">
-                                <span class="text-slate-600 text-xs block max-w-xs">{{ $item->observaciones ?: '-' }}</span>
+                                @if($item->observaciones)
+                                    <div class="text-xs bg-amber-50 text-amber-950 border border-amber-200 rounded px-2.5 py-1 flex items-start gap-1">
+                                        <span class="font-bold text-amber-800 flex-shrink-0">📝</span>
+                                        <span class="text-slate-800 leading-snug">{{ $item->observaciones }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-slate-400 text-xs">—</span>
+                                @endif
                             </td>
 
                             <td class="py-3.5 px-4 text-right">

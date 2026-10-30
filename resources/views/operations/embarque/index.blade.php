@@ -77,7 +77,12 @@
                             </td>
                             <td class="py-3.5 px-4">
                                 <strong class="text-slate-900 block">{{ $item->client_name }}</strong>
-                                <span class="text-[10px] text-slate-400 block max-w-xs truncate">{{ $item->comments ?: '-' }}</span>
+                                @if($item->comments)
+                                    <div class="mt-1 text-[11px] bg-amber-50 text-amber-950 border border-amber-200 rounded px-2 py-0.5 flex items-start gap-1">
+                                        <span class="font-bold text-amber-800 flex-shrink-0">📝</span>
+                                        <span class="text-slate-700 leading-snug">{{ $item->comments }}</span>
+                                    </div>
+                                @endif
                             </td>
                             <td class="py-3.5 px-4">
                                 <div class="text-[11px] text-slate-600">

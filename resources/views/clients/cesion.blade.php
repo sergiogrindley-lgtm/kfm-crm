@@ -85,12 +85,6 @@
                 <span class="inline-block px-3 py-1 bg-slate-100 text-slate-800 border border-slate-200 rounded-lg text-[11px] font-mono font-bold uppercase">
                     Ref: KFM-CES-{{ date('Y') }}-{{ str_pad($policy->id, 5, '0', STR_PAD_LEFT) }}
                 </span>
-                <p class="text-xs text-slate-500 mt-2 font-medium">
-                    Oficina Emisora: <strong class="text-slate-800">{{ $client->sede?->name ?: 'NEX (Base Naval)' }}</strong>
-                </p>
-                <p class="text-xs text-slate-500 font-medium">
-                    Agente Gestor: <strong class="text-slate-800">{{ $policy->agente ?: 'Chari' }}</strong>
-                </p>
             </div>
         </div>
 
@@ -173,10 +167,10 @@
             </p>
         </div>
 
-        <!-- Signatures Blocks (3 Columns: Cedente, Cesionario, Sello KFM) -->
-        <div class="grid grid-cols-3 gap-6 pt-6 border-t-2 border-slate-200 text-center">
+        <!-- Signatures Blocks (2 Columns: Cedente y Cesionario) -->
+        <div class="grid grid-cols-2 gap-8 pt-6 border-t-2 border-slate-200 text-center max-w-2xl mx-auto">
             <!-- Firma Cedente -->
-            <div class="flex flex-col justify-between h-36 border border-dashed border-slate-300 rounded-xl p-3 bg-slate-50/50">
+            <div class="flex flex-col justify-between h-36 border border-dashed border-slate-300 rounded-xl p-4 bg-slate-50/50">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-slate-700">El Cedente (Titular Saliente)</span>
                 <div class="h-14"></div>
                 <div class="border-t border-slate-400 pt-1 text-[11px]">
@@ -186,26 +180,12 @@
             </div>
 
             <!-- Firma Cesionario -->
-            <div class="flex flex-col justify-between h-36 border border-dashed border-slate-300 rounded-xl p-3 bg-slate-50/50">
+            <div class="flex flex-col justify-between h-36 border border-dashed border-slate-300 rounded-xl p-4 bg-slate-50/50">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-slate-700">El Cesionario (Nuevo Titular)</span>
                 <div class="h-14"></div>
                 <div class="border-t border-slate-400 pt-1 text-[11px]">
                     <strong class="block text-slate-900 font-bold uppercase">{{ $buyer['nombre'] }} {{ $buyer['apellido'] }}</strong>
                     <span class="text-slate-500 font-mono text-[10px]">{{ $buyer['doc_identidad'] }}</span>
-                </div>
-            </div>
-
-            <!-- Sello Correduría KFM -->
-            <div class="flex flex-col justify-between h-36 border border-slate-200 rounded-xl p-3 bg-cyan-50/30">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-[#0c3547]">Sello & Validación KFM</span>
-                <div class="flex items-center justify-center h-14">
-                    <span class="text-[10px] font-mono text-cyan-800 uppercase px-2 py-1 border border-cyan-300 rounded bg-white/80">
-                        ✓ TRAMITADO EN {{ strtoupper($client->sede?->slug === 'central' ? 'PUEBLO' : 'NEX ROTA') }}
-                    </span>
-                </div>
-                <div class="border-t border-cyan-300 pt-1 text-[11px]">
-                    <strong class="block text-[#0c3547]">KFM INSURANCE & PATRIA</strong>
-                    <span class="text-slate-500 text-[10px]">Agente: {{ $policy->agente ?: 'Chari' }}</span>
                 </div>
             </div>
         </div>

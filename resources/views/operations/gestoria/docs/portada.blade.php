@@ -198,6 +198,13 @@
             </div>
         </div>
 
+        @if($tramite->observaciones)
+            <div class="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-xs">
+                <span class="font-bold text-amber-900 uppercase text-[10px] tracking-wider block mb-1">📝 Observaciones / Notas del Expediente:</span>
+                <p class="text-slate-800 leading-relaxed">{{ $tramite->observaciones }}</p>
+            </div>
+        @endif
+
         <!-- Financial Summary -->
         <div class="bg-slate-900 text-white p-4 rounded-xl flex flex-wrap items-center justify-between text-xs gap-3">
             <div>
