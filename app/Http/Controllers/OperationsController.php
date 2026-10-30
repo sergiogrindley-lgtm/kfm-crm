@@ -482,6 +482,48 @@ class OperationsController extends Controller
         return view('operations.extornos.index', compact('extornos', 'stats'));
     }
 
+    public function lookupPolicy(Request $request)
+    {
+        $num = trim($request->input('numero_poliza') ?? $request->input('q') ?? '');
+        if (empty($num)) {
+            return response()->json(['found' => false]);
+        }
+
+        // Buscar por numero_poliza exacto o coincidencia, o por matrícula
+        $policy = Policy::with(['client.sede'])
+            ->where(function ($q) use ($num) {
+                $q->where('numero_poliza', $num)
+                  ->orWhere('numero_poliza', 'LIKE', "%{$num}%")
+                  ->orWhere('matricula', $num)
+                  ->orWhere('matricula', 'LIKE', "%{$num}%");
+            })
+            ->latest()
+            ->first();
+
+        if (!$policy) {
+            return response()->json(['found' => false]);
+        }
+
+        $client = $policy->client;
+        $office = ($client && $client->sede && $client->sede->slug === 'central') ? 'Central' : 'NEX';
+        $cartera = ($policy->codigo_aseguradora == '87' || str_contains($policy->aseguradora ?? '', 'GEICO')) ? 'GEICO' : 'Patria Hispana';
+
+        return response()->json([
+            'found' => true,
+            'policy_id' => $policy->id,
+            'numero_poliza' => $policy->numero_poliza,
+            'client_id' => $client?->id,
+            'client_name' => $client ? strtoupper($client->full_name) : '',
+            'office' => $office,
+            'cartera' => $cartera,
+            'patria_amount' => $policy->prima ?: '',
+            'estado' => $policy->estado,
+            'ramo' => $policy->ramo,
+            'matricula' => $policy->matricula,
+            'vehiculo' => trim("{$policy->marca} {$policy->modelo}"),
+        ]);
+    }
+
     public function storeExtorno(Request $request)
     {
         $validated = $request->validate([
@@ -496,11 +538,47 @@ class OperationsController extends Controller
             'status' => 'required|string|max:50',
             'stateside_geico_form' => 'nullable|boolean',
             'observaciones' => 'nullable|string',
+            'client_id' => 'nullable|integer',
+            'policy_id' => 'nullable|integer',
+            'cancelar_poliza' => 'nullable',
+            'redirect_to' => 'nullable|string',
         ]);
 
         $validated['stateside_geico_form'] = $request->has('stateside_geico_form');
 
-        Extorno::create($validated);
+        // Asociar client_id y policy_id si no vienen pero existen por numero_poliza
+        if (empty($validated['policy_id']) && !empty($validated['numero_poliza'])) {
+            $foundPolicy = Policy::where('numero_poliza', $validated['numero_poliza'])->first();
+            if ($foundPolicy) {
+                $validated['policy_id'] = $foundPolicy->id;
+                $validated['client_id'] = $foundPolicy->client_id;
+            }
+        }
+
+        $cancelarPoliza = $request->boolean('cancelar_poliza');
+        $redirectTo = $validated['redirect_to'] ?? null;
+        unset($validated['cancelar_poliza'], $validated['redirect_to']);
+
+        $extorno = Extorno::create($validated);
+
+        // Si se solicita cancelar la póliza asociada (o viene de Baja PCS)
+        if (!empty($validated['policy_id']) && $cancelarPoliza) {
+            $pol = Policy::find($validated['policy_id']);
+            if ($pol && $pol->estado !== 'Cancelado') {
+                $fecha = date('d/m/Y');
+                $obsAct = $pol->observaciones ? trim($pol->observaciones) . "\n" : '';
+                $pol->update([
+                    'estado' => 'Cancelado',
+                    'balance' => 'Cancelled',
+                    'observaciones' => $obsAct . "● BAJA POR EXTORNO PCS ({$fecha}): Reembolso {$validated['amount_reimbursed']} (Destino: {$validated['projected_departure']})",
+                ]);
+            }
+        }
+
+        if ($redirectTo) {
+            return redirect($redirectTo)
+                ->with('success', "Extorno y devolución para la póliza #{$validated['numero_poliza']} registrado correctamente en Operaciones.");
+        }
 
         return redirect()->route('operations.extornos.index')
             ->with('success', "Extorno para la póliza #{$validated['numero_poliza']} registrado correctamente.");

@@ -352,7 +352,7 @@
                                         @if($policy->matricula || strtolower($policy->ramo) === 'vehiculo')
                                             <!-- 1. Traspaso Gestoría -->
                                             <button type="button" 
-                                                    onclick="openTraspasoModal('{{ $client->id }}', '{{ $policy->id }}', '{{ addslashes($client->full_name) }}', '{{ addslashes($policy->matricula) }}', '{{ addslashes($policy->marca . ' ' . $policy->modelo) }}', '{{ substr($policy->vin ?: '8491', -4) }}', '{{ $policy->numero_poliza }}')"
+                                                    onclick="openTraspasoModal('{{ $client->id }}', '{{ $policy->id }}', '{{ addslashes($client->full_name) }}', '{{ addslashes($client->doc_identidad ?: ($client->ssn ? 'SSN: ' . $client->ssn : '')) }}', '{{ addslashes($client->direccion_base ?: ($client->direccion_local ?: 'LU BASE NAVAL DE ROTA 999, 11520 ROTA, Cádiz')) }}', '{{ addslashes($policy->matricula) }}', '{{ addslashes($policy->marca) }}', '{{ addslashes($policy->modelo) }}', '{{ substr($policy->vin ?: '8491', -4) }}', '{{ $policy->numero_poliza }}', '{{ $policy->recibo_numero ?: '' }}')"
                                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#9b1c31] hover:bg-[#7f1627] text-white shadow-sm transition cursor-pointer">
                                                 <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                                                 <span>⚡ Traspaso Gestoría</span>
@@ -361,7 +361,7 @@
 
                                         <!-- 5. Baja PCS / Reembolso Prorrateado -->
                                         <button type="button" 
-                                                onclick="openPcsRefundModal('{{ addslashes($client->full_name) }}', '{{ $policy->numero_poliza }}', '{{ addslashes($policy->matricula ?: ($policy->marca . ' ' . $policy->modelo)) }}', '{{ $policy->prima ?: '642,50 €' }}', '{{ $policy->fecha_pago ?: '15/11/2025' }}', '{{ $policy->fecha_vencimiento ?: '15/11/2026' }}')"
+                                                onclick="openNuevoExtornoDesdePoliza('{{ $policy->numero_poliza }}', '{{ ($client->sede && $client->sede->slug === 'central') ? 'Central' : 'NEX' }}', '{{ addslashes(strtoupper($client->full_name)) }}', '{{ ($policy->codigo_aseguradora == '87' || str_contains($policy->aseguradora ?? '', 'GEICO')) ? 'GEICO' : 'Patria Hispana' }}', '{{ $policy->prima }}', '{{ $policy->id }}')"
                                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition cursor-pointer">
                                             <span>🛫</span>
                                             <span>Baja PCS / Devolución</span>
@@ -785,13 +785,13 @@
     // Modal Unificado de Traspaso a Gestoría
     let currentTraspaso = {};
 
-    function openTraspasoModal(clientId, policyId, clientName, matricula, vehiculo, bastidor, poliza) {
-        currentTraspaso = { clientId, policyId, clientName, matricula, vehiculo, bastidor, poliza };
+    function openTraspasoModal(clientId, policyId, clientName, clientDoc, clientDir, matricula, marca, modelo, bastidor, poliza, recibo) {
+        currentTraspaso = { clientId, policyId, clientName, clientDoc, clientDir, matricula, marca, modelo, bastidor, poliza, recibo };
 
         document.getElementById('traspaso_client_id').value = clientId;
         document.getElementById('traspaso_policy_id').value = policyId;
         document.getElementById('traspaso_client_name').innerText = clientName;
-        document.getElementById('traspaso_vehiculo').innerText = vehiculo;
+        document.getElementById('traspaso_vehiculo').innerText = `${marca} ${modelo}`.trim();
         document.getElementById('traspaso_matricula').innerText = matricula;
         document.getElementById('traspaso_bastidor').innerText = '...' + bastidor;
         document.getElementById('traspaso_poliza').innerText = poliza || '1842910';
@@ -802,7 +802,7 @@
         document.getElementById('input_buyer_doc').value = '';
         document.getElementById('input_buyer_telefono').value = '';
         document.getElementById('input_buyer_dob').value = '';
-        document.getElementById('input_buyer_direccion').value = '';
+        document.getElementById('input_buyer_direccion').value = 'LU BASE NAVAL DE ROTA 999, 11520 ROTA, Cádiz';
         document.getElementById('input_buyer_precio').value = '1.000,00 €';
 
         document.getElementById('traspasoModal').classList.remove('hidden');
@@ -844,73 +844,82 @@
         window.open(url, '_blank');
     }
 
-    // Modal de Devolución / Reembolso PCS (Modificación manual de dinero)
-    let currentPcsData = {};
-
-    function openPcsRefundModal(clientName, poliza, vehiculo, primaStr, fechaEfecto, fechaVencimiento) {
-        currentPcsData = { clientName, poliza, vehiculo, primaStr, fechaEfecto, fechaVencimiento };
-        
-        document.getElementById('pcs_client_name').innerText = clientName;
-        document.getElementById('pcs_poliza').innerText = poliza || '1842910';
-        document.getElementById('pcs_vehiculo').innerText = vehiculo;
-        
-        // Extraer número de prima limpia
-        let rawNum = String(primaStr).replace(/[^\d.,]/g, '').trim();
-        let numPrima = parseFloat(rawNum.replace(',', '.')) || 0;
-        document.getElementById('pcs_prima_input').value = numPrima > 0 ? numPrima.toFixed(2) : '0.00';
-        
-        // Sugerir importe inicial si no está fijado para que el usuario pueda editarlo directamente
-        let reembolsoInicial = numPrima > 0 ? (numPrima * 0.5).toFixed(2) : '0.00';
-        document.getElementById('pcs_reembolso_input').value = reembolsoInicial;
-        actualizarPcsResultado(reembolsoInicial);
-        
-        document.getElementById('pcsRefundModal').classList.remove('hidden');
+    // Modal de Extorno PCS (Captura 3 Directa)
+    function openNuevoExtornoDesdePoliza(poliza, office, clientName, cartera, prima, policyId) {
+        document.getElementById('modal_extorno_numero_poliza').value = poliza || '';
+        document.getElementById('modal_extorno_office').value = office || 'NEX';
+        document.getElementById('modal_extorno_client_name').value = clientName || '';
+        document.getElementById('modal_extorno_cartera').value = cartera || 'Patria Hispana';
+        document.getElementById('modal_extorno_patria_amount').value = prima || '';
+        document.getElementById('modal_extorno_policy_id').value = policyId || '';
+        document.getElementById('modal_extorno_amount_reimbursed').value = prima || '';
+        document.getElementById('modal_extorno_status').value = 'Pendiente';
+        document.getElementById('modal_extorno_projected_departure').value = 'Órdenes de Traslado PCS (US Navy)';
+        document.getElementById('modal_extorno_observaciones').value = 'Baja PCS y liquidación de prima no consumida.';
+        document.getElementById('nuevoExtornoModal').classList.remove('hidden');
     }
 
-    function closePcsRefundModal() {
-        document.getElementById('pcsRefundModal').classList.add('hidden');
+    function closeNuevoExtornoModal() {
+        document.getElementById('nuevoExtornoModal').classList.add('hidden');
     }
 
-    function actualizarPcsResultado(val) {
-        let limpio = String(val).replace(/[^\d.,]/g, '').replace(',', '.');
-        let num = parseFloat(limpio) || 0;
-        document.getElementById('pcs_reembolso_resultado').innerText = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(num);
-    }
-
-    function copiarLiquidacionPcs() {
-        const motivo = document.getElementById('pcs_motivo').value;
-        const primaTotal = document.getElementById('pcs_prima_input').value;
-        const reembolso = document.getElementById('pcs_reembolso_resultado').innerText;
-        const canal = document.getElementById('pcs_canal_devolucion').value;
-        const obs = document.getElementById('pcs_observaciones').value;
-        
-        const texto = `🛫 LIQUIDACIÓN DEVOLUCIÓN DE PRIMA (PCS MOVE)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-👤 Titular: ${currentPcsData.clientName}
-📄 Póliza: #${currentPcsData.poliza} (${currentPcsData.vehiculo})
-📋 Motivo: ${motivo}
-💳 Canal de Devolución: ${canal}
-${obs ? `📝 Observaciones: ${obs}\n` : ''}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💵 Prima Anual Pagada: ${primaTotal} €
-💰 IMPORTE A REEMBOLSAR: ${reembolso}
-Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
-
-        navigator.clipboard.writeText(texto).then(() => {
-            const btnLabel = document.getElementById('copyPcsBtnLabel');
-            btnLabel.innerText = '✓ ¡Copiado!';
-            setTimeout(() => { btnLabel.innerText = '📋 Copiar Liquidación'; }, 2000);
-        });
+    let lookupExtornoTimer = null;
+    function lookupPolicyForExtornoModal(val) {
+        clearTimeout(lookupExtornoTimer);
+        if (!val || val.trim().length < 3) return;
+        lookupExtornoTimer = setTimeout(() => {
+            fetch(`/api/lookup-policy?numero_poliza=${encodeURIComponent(val.trim())}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.found) {
+                        if (data.client_name) document.getElementById('modal_extorno_client_name').value = data.client_name;
+                        if (data.office) document.getElementById('modal_extorno_office').value = data.office;
+                        if (data.cartera) document.getElementById('modal_extorno_cartera').value = data.cartera;
+                        if (data.patria_amount) document.getElementById('modal_extorno_patria_amount').value = data.patria_amount;
+                        if (data.policy_id) document.getElementById('modal_extorno_policy_id').value = data.policy_id;
+                    }
+                })
+                .catch(err => console.error(err));
+        }, 300);
     }
 
     function enviarWhatsAppConComprador() {
-        const buyerName = (document.getElementById('input_buyer_nombre').value + ' ' + document.getElementById('input_buyer_apellido').value).trim() || 'Emily Sarah Johnson';
-        const doc = document.getElementById('input_buyer_doc').value || 'Z4192048E';
-        const tel = document.getElementById('input_buyer_telefono').value || '671-998877';
+        const fecha = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const lugar = 'ROTA';
         const precio = document.getElementById('input_buyer_precio').value || '1.000,00 €';
-        const dir = document.getElementById('input_buyer_direccion').value || 'LG PSC 819 BOX 999 - NAVSTA ROTA';
+        const recibo = currentTraspaso.recibo ? (currentTraspaso.recibo.trim() + ' ') : '';
+        const provision = `${recibo}120.00 EUROS`;
 
-        const text = `🚗 *NUEVO EXPEDIENTE DE TRASPASO · KFM INSURANCE*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📍 *Oficina Emisora:* NAVSTA Rota (NEX) · Chari\n\n👤 *TITULAR SALIENTE (VENDEDOR)*\n• Nombre: ${currentTraspaso.clientName}\n• Póliza KFM: #${currentTraspaso.poliza || '1842910'}\n\n🚘 *DATOS DEL VEHÍCULO*\n• Modelo: ${currentTraspaso.vehiculo}\n• Matrícula: ${currentTraspaso.matricula}\n• Bastidor VIN: ${currentTraspaso.bastidor}\n\n🤝 *DATOS DEL COMPRADOR (CESIONARIO)*\n• Nombre: ${buyerName}\n• DNI / NIE / DOD ID: ${doc}\n• Teléfono: ${tel}\n• Domicilio: ${dir}\n• Precio Declarado: ${precio}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✅ *Expediente sincronizado con Gestoría Bahía & Naval*\n📄 *Mandato Colegiado DGT y Hoja de Cesión Oficial emitidos en el CRM.*`;
+        const matricula = currentTraspaso.matricula || '';
+        const marca = (currentTraspaso.marca || '').toUpperCase();
+        const modelo = (currentTraspaso.modelo || '').toUpperCase();
+        const bastidor = currentTraspaso.bastidor || '';
+
+        const sellerDoc = currentTraspaso.clientDoc || '';
+        const sellerName = (currentTraspaso.clientName || '').toUpperCase();
+        const sellerDir = currentTraspaso.clientDir || 'LU BASE NAVAL DE ROTA 999, 11520 ROTA, Cádiz';
+
+        const buyerNombreVal = document.getElementById('input_buyer_nombre').value || '';
+        const buyerApellidoVal = document.getElementById('input_buyer_apellido').value || '';
+        const buyerName = (buyerNombreVal + ' ' + buyerApellidoVal).trim().toUpperCase() || 'EMILY SARAH JOHNSON';
+        const buyerDoc = (document.getElementById('input_buyer_doc').value || 'Z4192048E').toUpperCase();
+        const buyerDir = document.getElementById('input_buyer_direccion').value || 'LU BASE NAVAL DE ROTA 999, 11520 ROTA, Cádiz';
+
+        const text = `Fecha: ${fecha}\n`
+            + `Lugar: ${lugar}\n`
+            + `Precio: ${precio}\n`
+            + `Provisión de fondos: ${provision}\n\n`
+            + `Vehículo\n`
+            + `Matrícula: ${matricula}\n`
+            + `Marca: ${marca}\n`
+            + `Modelo: ${modelo}\n`
+            + `Bastidor: ${bastidor}\n\n`
+            + `Vendedor\n`
+            + `${sellerDoc ? (sellerDoc + ' — ') : ''}${sellerName}\n`
+            + `${sellerDir}\n\n`
+            + `Comprador\n`
+            + `${buyerDoc ? (buyerDoc + ' — ') : ''}${buyerName}\n`
+            + `${buyerDir}`;
         
         document.getElementById('waMessageText').value = text;
         document.getElementById('whatsappGestoriaModal').classList.remove('hidden');
@@ -1037,10 +1046,9 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            closeDeleteClientModal();
             closeTraspasoModal();
             closeWhatsAppModal();
-            closePcsRefundModal();
+            closeNuevoExtornoModal();
             closeCancelPolicyModal();
             closeEditClientModal();
             closeEditPolicyModal();
@@ -1238,152 +1246,99 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
     </div>
 </div>
 
-<!-- Modal de Liquidación y Reembolso por Traslado Militar PCS (Permanent Change of Station) -->
-<div id="pcsRefundModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closePcsRefundModal()"></div>
-
-    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200">
-            
-            <!-- Header Modal -->
-            <div class="bg-gradient-to-r from-amber-600 via-amber-700 to-[#0c3547] text-white p-5 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-xl">
-                        🛫
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h3 class="font-bold text-base font-display">Liquidación y Reembolso por Traslado PCS</h3>
-                            <span class="bg-amber-400 text-amber-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">DoD Move</span>
-                        </div>
-                        <p class="text-xs text-amber-100">Cálculo en vivo de prima no consumida por cambio de destino o entrega en VPC</p>
-                    </div>
-                </div>
-                <button type="button" onclick="closePcsRefundModal()" class="text-white/80 hover:text-white cursor-pointer text-xl leading-none">✕</button>
-            </div>
-
-            <!-- Body -->
-            <div class="p-6 space-y-5 text-xs">
-                
-                <!-- Datos del Militar y Póliza -->
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div>
-                        <span class="block text-slate-400 font-semibold text-[10px] uppercase">Militar / Titular:</span>
-                        <strong id="pcs_client_name" class="text-slate-900 block truncate"></strong>
-                    </div>
-                    <div>
-                        <span class="block text-slate-400 font-semibold text-[10px] uppercase">Póliza / Ramo:</span>
-                        <span class="font-mono text-slate-800 font-bold">#<span id="pcs_poliza"></span></span>
-                    </div>
-                    <div>
-                        <span class="block text-slate-400 font-semibold text-[10px] uppercase">Vehículo / Riesgo:</span>
-                        <strong id="pcs_vehiculo" class="text-slate-900 block truncate"></strong>
-                    </div>
-                </div>
-
-                <!-- Parámetros de la Liquidación (Edición Directa del Reembolso) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-slate-700 font-bold mb-1">Prima Anual Pagada (€)</label>
-                        <div class="relative">
-                            <input type="text" id="pcs_prima_input" 
-                                   class="w-full text-sm font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 pr-8"
-                                   placeholder="0,00">
-                            <span class="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">€</span>
-                        </div>
-                        <span class="text-[10px] text-slate-400 mt-0.5 block">Importe íntegro anual abonado por el militar</span>
-                    </div>
-
-                    <div>
-                        <label class="block text-emerald-800 font-bold mb-1">
-                            💰 Importe a Devolver al Militar (€) *
-                        </label>
-                        <div class="relative">
-                            <input type="text" id="pcs_reembolso_input" oninput="actualizarPcsResultado(this.value)"
-                                   class="w-full text-base font-black px-3.5 py-2 bg-emerald-50 border-2 border-emerald-400 text-emerald-900 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-8 shadow-xs"
-                                   placeholder="Introduce el importe a devolver...">
-                            <span class="absolute right-3.5 top-2.5 text-emerald-700 font-black text-sm">€</span>
-                        </div>
-                        <span class="text-[10px] text-emerald-700 font-medium mt-0.5 block">✍️ Puedes modificar libremente este importe en cualquier momento</span>
-                    </div>
-                </div>
-
-                <!-- Motivo y Canal de Devolución -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-slate-700 font-bold mb-1">Motivo de Baja / Justificante DoD</label>
-                        <select id="pcs_motivo" class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <option value="Órdenes de Traslado PCS (Permanent Change of Station - US Navy)">🛫 Órdenes de Traslado PCS (Permanent Change of Station - US Navy)</option>
-                            <option value="Embarque de Vehículo en VPC (Vehicle Processing Center - Rota Port)">🚢 Embarque de Vehículo en VPC (Vehicle Processing Center - Rota Port)</option>
-                            <option value="Venta / Cesión a otro Militar en Base Naval">🤝 Venta / Cesión a otro Militar en Base Naval</option>
-                            <option value="Baja Definitiva y Repatriación a EE.UU.">🇺🇸 Baja Definitiva y Repatriación a EE.UU.</option>
-                            <option value="Cancelación Anticipada">📋 Cancelación Anticipada</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-slate-700 font-bold mb-1">Canal de Devolución / Forma de Pago</label>
-                        <select id="pcs_canal_devolucion" onchange="document.getElementById('pcs_canal_resultado').innerText = this.value" class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <option value="Transferencia Bancaria" selected>🏦 Transferencia Bancaria</option>
-                            <option value="Tarjeta de Crédito / Débito">💳 Tarjeta de Crédito / Débito</option>
-                            <option value="Efectivo (solo en Rota)">💵 Efectivo (solo en Rota)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Observaciones de la Devolución -->
+<!-- Modal: + Nuevo Extorno PCS (Captura 3 Directa desde Baja PCS) -->
+<div id="nuevoExtornoModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeNuevoExtornoModal()"></div>
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-rose-700 to-slate-900 text-white p-5 flex items-center justify-between">
                 <div>
-                    <label class="block text-slate-700 font-bold mb-1">Observaciones / Notas de la Liquidación</label>
-                    <textarea id="pcs_observaciones" rows="2" placeholder="Notas internas sobre la devolución, cuenta bancaria, justificante..." 
-                              class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                    <h3 class="font-bold text-base">Nuevo Registro de Extorno PCS</h3>
+                    <p class="text-xs text-rose-100">Baja militar, traslado DoD y devolución de prima no consumida</p>
                 </div>
+                <button type="button" onclick="closeNuevoExtornoModal()" class="text-white/80 hover:text-white cursor-pointer text-xl leading-none">✕</button>
+            </div>
+            <form method="POST" action="{{ route('operations.extornos.store') }}">
+                @csrf
+                <input type="hidden" name="client_id" value="{{ $client->id }}">
+                <input type="hidden" name="policy_id" id="modal_extorno_policy_id" value="">
+                <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
 
-                <!-- Panel de Resultado -->
-                <div class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 border-2 border-emerald-300 rounded-2xl p-5 shadow-inner">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="p-6 space-y-3 text-xs">
+                    <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <span class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-800 block">IMPORTE TOTAL ACORDADO A REEMBOLSAR:</span>
-                            <div class="text-3xl font-black text-emerald-950 font-display mt-0.5" id="pcs_reembolso_resultado">
-                                0,00 €
-                            </div>
+                            <label class="block text-slate-700 font-bold mb-1">Nº Póliza *</label>
+                            <input type="text" name="numero_poliza" id="modal_extorno_numero_poliza" required oninput="lookupPolicyForExtornoModal(this.value)" placeholder="Ej: 1849102" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
-
-                        <div class="bg-white/80 backdrop-blur-sm border border-emerald-200 rounded-xl p-3 text-[11px] space-y-1 text-slate-700 min-w-[200px]">
-                            <div class="flex justify-between gap-3">
-                                <span class="text-slate-400">Canal:</span>
-                                <strong id="pcs_canal_resultado" class="text-slate-900 font-semibold">Transferencia Bancaria</strong>
-                            </div>
-                            <div class="flex justify-between gap-3">
-                                <span class="text-slate-400">Estado:</span>
-                                <strong class="text-emerald-700 font-bold">✓ Aprobado para Liquidar</strong>
-                            </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Oficina KFM *</label>
+                            <select name="office" id="modal_extorno_office" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-semibold">
+                                <option value="NEX">NEX (Base Naval)</option>
+                                <option value="Central">Central (Pueblo)</option>
+                            </select>
                         </div>
                     </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Nombre Completo Asegurado (Militar) *</label>
+                        <input type="text" name="client_name" id="modal_extorno_client_name" required placeholder="PO1 ROBERT DAVIS" class="w-full uppercase font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Cartera / Aseguradora</label>
+                            <select name="cartera" id="modal_extorno_cartera" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                                <option value="Patria Hispana">Patria Hispana</option>
+                                <option value="GEICO">GEICO Overseas</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Prima Original (€)</label>
+                            <input type="text" name="patria_amount" id="modal_extorno_patria_amount" placeholder="642,50 €" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Fecha Salida / Destino PCS</label>
+                            <input type="text" name="projected_departure" id="modal_extorno_projected_departure" placeholder="Órdenes de Traslado PCS (US Navy)" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Email enviado a Patria (Fecha)</label>
+                            <input type="text" name="email_sent_patria_date" id="modal_extorno_email_sent_patria_date" value="{{ date('d/m/Y') }}" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Importe Reembolso (€)</label>
+                            <input type="text" name="amount_reimbursed" id="modal_extorno_amount_reimbursed" placeholder="Importe a devolver (€)" class="w-full font-bold text-emerald-700 px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Estado Inicial</label>
+                            <select name="status" id="modal_extorno_status" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
+                                <option value="Pendiente" selected>Pendiente</option>
+                                <option value="Tramitado">Tramitado</option>
+                                <option value="Reembolsado">Reembolsado</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="pt-1 flex flex-col gap-2">
+                        <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
+                            <input type="checkbox" name="stateside_geico_form" value="1" class="w-4 h-4 text-rose-600 rounded">
+                            <span>¿Formulario GEICO Stateside cumplimentado?</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer font-bold text-rose-800 bg-rose-50 p-2 rounded-lg border border-rose-200">
+                            <input type="checkbox" name="cancelar_poliza" value="1" checked class="w-4 h-4 text-rose-600 rounded">
+                            <span>Dar de baja / cancelar la póliza simultáneamente en la ficha del cliente</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Observaciones</label>
+                        <textarea name="observaciones" id="modal_extorno_observaciones" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg" placeholder="Entregado recibo VPC, devuelto por transferencia..."></textarea>
+                    </div>
                 </div>
-
-            </div>
-
-            <!-- Footer Actions -->
-            <div class="bg-slate-50 px-6 py-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 text-xs font-bold">
-                <button type="button" onclick="closePcsRefundModal()"
-                        class="text-slate-500 hover:text-slate-700 px-3 py-2.5 transition cursor-pointer">
-                    Cerrar
-                </button>
-                
-                <div class="flex items-center gap-2">
-                    <button type="button" onclick="copiarLiquidacionPcs()"
-                            class="px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 shadow-sm transition flex items-center gap-1.5 cursor-pointer">
-                        <span id="copyPcsBtnLabel">📋 Copiar Liquidación</span>
-                    </button>
-
-                    <button type="button" onclick="window.print()"
-                            class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white shadow-md transition flex items-center gap-1.5 cursor-pointer">
-                        <svg class="w-4 h-4 text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                        <span>🖨️ Imprimir Liquidación</span>
-                    </button>
+                <div class="bg-slate-50 px-6 py-4 flex justify-between border-t border-slate-200">
+                    <button type="button" onclick="closeNuevoExtornoModal()" class="text-slate-500 font-bold cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl cursor-pointer">Guardar Extorno</button>
                 </div>
-            </div>
-
+            </form>
         </div>
     </div>
 </div>
@@ -1507,24 +1462,8 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
                 @csrf
                 @method('PUT')
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-slate-700 font-bold mb-1">Sede de KFM *</label>
-                        <select name="sede_id" required class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                            @foreach($sedes as $s)
-                                <option value="{{ $s->id }}" {{ $client->sede_id == $s->id ? 'selected' : '' }}>{{ $s->nombre }} ({{ $s->slug }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-slate-700 font-bold mb-1">Agente Asignado</label>
-                        <select name="agente" class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                            @foreach($agentes as $ag)
-                                <option value="{{ $ag }}" {{ $client->agente == $ag ? 'selected' : '' }}>{{ $ag }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+                <input type="hidden" name="sede_id" value="{{ $client->sede_id ?? 2 }}">
+                <input type="hidden" name="agente" value="{{ $client->agente ?? 'Kerry' }}">
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
                     <div>

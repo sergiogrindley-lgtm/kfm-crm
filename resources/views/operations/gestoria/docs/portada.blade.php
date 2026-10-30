@@ -30,16 +30,33 @@
                 <span>🖨️ Imprimir</span>
             </button>
             @php
-                $waText = "Hola, os enviamos nuevo expediente de Gestoría DGT desde KFM Insurance:\n\n"
-                    . "📋 Matrícula: " . $tramite->matricula . " (" . $tramite->marca . " " . $tramite->modelo . ")\n"
-                    . "🔹 Trámite: " . $tramite->tipo . "\n"
-                    . "👤 Comprador: " . $tramite->buyer_nombre . " (" . ($tramite->buyer_dni ?: 'DOD ID: ' . $tramite->buyer_fa) . ")\n"
-                    . "🚗 Vendedor: " . $tramite->seller_nombre . " (" . ($tramite->seller_dni ?: 'DOD ID: ' . $tramite->seller_fa) . ")\n"
-                    . ($tramite->recibo_numero ? ("🧾 Nº Recibo: " . $tramite->recibo_numero . "\n") : "")
-                    . ($tramite->tiene_cesion ? "🛡️ Incluye Cesión de Póliza KFM\n" : "")
-                    . "📍 Oficina: " . ($tramite->sede ? $tramite->sede->name : 'KFM Rota') . "\n"
-                    . "👤 Agente KFM: " . ($tramite->agente ?: 'KFM') . "\n\n"
-                    . "Toda la documentación y mandatos están preparados en oficina.";
+                $fechaDoc = $tramite->fecha_tramite ? \Carbon\Carbon::parse($tramite->fecha_tramite)->format('d/m/Y') : date('d/m/Y');
+                $lugar = 'ROTA';
+                $precioVal = $tramite->precio_venta ? number_format((float)$tramite->precio_venta, 2, ',', '.') . ' €' : '0,00 €';
+                $reciboPart = $tramite->recibo_numero ? trim($tramite->recibo_numero) . ' ' : '';
+                $provision = "{$reciboPart}120.00 EUROS";
+
+                $sellerDoc = $tramite->seller_dni ?: ($tramite->seller_fa ? 'DOD ID: ' . $tramite->seller_fa : 'SIN DOC');
+                $sellerDir = $tramite->seller_direccion ?: 'LU BASE NAVAL DE ROTA 999, 11520 ROTA, Cádiz';
+                $buyerDoc = $tramite->buyer_dni ?: ($tramite->buyer_fa ? 'DOD ID: ' . $tramite->buyer_fa : 'SIN DOC');
+                $buyerDir = $tramite->buyer_direccion ?: 'LU BASE NAVAL DE ROTA 999, 11520 ROTA, Cádiz';
+                $bastidorClean = $tramite->bastidor ? (strlen($tramite->bastidor) > 8 ? substr($tramite->bastidor, -4) : $tramite->bastidor) : '';
+
+                $waText = "Fecha: {$fechaDoc}\n"
+                    . "Lugar: {$lugar}\n"
+                    . "Precio: {$precioVal}\n"
+                    . "Provisión de fondos: {$provision}\n\n"
+                    . "Vehículo\n"
+                    . "Matrícula: {$tramite->matricula}\n"
+                    . "Marca: " . strtoupper($tramite->marca) . "\n"
+                    . "Modelo: " . strtoupper($tramite->modelo) . "\n"
+                    . "Bastidor: {$bastidorClean}\n\n"
+                    . "Vendedor\n"
+                    . "{$sellerDoc} — " . strtoupper($tramite->seller_nombre) . "\n"
+                    . "{$sellerDir}\n\n"
+                    . "Comprador\n"
+                    . "{$buyerDoc} — " . strtoupper($tramite->buyer_nombre) . "\n"
+                    . "{$buyerDir}";
                 $waUrl = "https://api.whatsapp.com/send?text=" . urlencode($waText);
             @endphp
             <a href="{{ $waUrl }}" target="_blank" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-md cursor-pointer">

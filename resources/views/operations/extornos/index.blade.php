@@ -173,31 +173,32 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Nº Póliza *</label>
-                            <input type="text" name="numero_poliza" required placeholder="Ej: 1849102" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                            <input type="text" name="numero_poliza" id="extorno_numero_poliza" required oninput="lookupPolicyForExtorno(this.value)" placeholder="Ej: 1849102" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Oficina KFM *</label>
-                            <select name="office" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-semibold">
+                            <select name="office" id="extorno_office" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-semibold">
                                 <option value="NEX">NEX (Base Naval)</option>
                                 <option value="Central">Central (Pueblo)</option>
                             </select>
                         </div>
                     </div>
+                    <div id="extorno_lookup_pill" class="hidden text-xs bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-lg px-3 py-1.5 font-medium"></div>
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Nombre Completo Asegurado (Militar) *</label>
-                        <input type="text" name="client_name" required placeholder="PO1 ROBERT DAVIS" class="w-full uppercase font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                        <input type="text" name="client_name" id="extorno_client_name" required placeholder="PO1 ROBERT DAVIS" class="w-full uppercase font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Cartera / Aseguradora</label>
-                            <select name="cartera" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                            <select name="cartera" id="extorno_cartera" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
                                 <option value="Patria Hispana">Patria Hispana</option>
                                 <option value="GEICO">GEICO Overseas</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Prima Original (€)</label>
-                            <input type="text" name="patria_amount" placeholder="642,50 €" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                            <input type="text" name="patria_amount" id="extorno_patria_amount" placeholder="642,50 €" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
@@ -300,6 +301,36 @@
     function closeNuevoExtornoModal() {
         document.getElementById('nuevoExtornoModal').classList.add('hidden');
     }
+
+    let lookupExtornoTimer = null;
+    function lookupPolicyForExtorno(val) {
+        clearTimeout(lookupExtornoTimer);
+        const pill = document.getElementById('extorno_lookup_pill');
+        if (!val || val.trim().length < 3) {
+            if (pill) pill.classList.add('hidden');
+            return;
+        }
+        lookupExtornoTimer = setTimeout(() => {
+            fetch(`/api/lookup-policy?numero_poliza=${encodeURIComponent(val.trim())}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.found) {
+                        if (data.client_name) document.getElementById('extorno_client_name').value = data.client_name;
+                        if (data.office) document.getElementById('extorno_office').value = data.office;
+                        if (data.cartera) document.getElementById('extorno_cartera').value = data.cartera;
+                        if (data.patria_amount) document.getElementById('extorno_patria_amount').value = data.patria_amount;
+                        if (pill) {
+                            pill.innerHTML = `✓ Cliente activo: <strong>${data.client_name}</strong> · ${data.ramo} ${data.vehiculo ? `(${data.vehiculo})` : ''} · Prima: ${data.patria_amount || '—'}`;
+                            pill.classList.remove('hidden');
+                        }
+                    } else {
+                        if (pill) pill.classList.add('hidden');
+                    }
+                })
+                .catch(err => console.error(err));
+        }, 300);
+    }
+
     function openEditarExtornoModal(id, status, amount, recibo, geico, obs) {
         document.getElementById('editarExtornoForm').action = "/operations/extornos/" + id;
         document.getElementById('edit_status').value = status;

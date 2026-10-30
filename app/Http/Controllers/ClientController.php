@@ -536,8 +536,24 @@ class ClientController extends Controller
             'observaciones' => $nuevaObservacion,
         ]);
 
+        // Registrar automáticamente en Extornos & Cancelaciones
+        Extorno::updateOrCreate(
+            ['policy_id' => $policy->id],
+            [
+                'client_id' => $client->id,
+                'office' => ($client->sede && $client->sede->slug === 'central') ? 'Central' : 'NEX',
+                'cartera' => ($policy->codigo_aseguradora == '87' || str_contains($policy->aseguradora ?? '', 'GEICO')) ? 'GEICO' : 'Patria Hispana',
+                'numero_poliza' => $policy->numero_poliza ?: 'Pendiente',
+                'client_name' => strtoupper($client->full_name),
+                'patria_amount' => $policy->prima,
+                'projected_departure' => $motivo,
+                'status' => 'Pendiente',
+                'observaciones' => $notas ? "Cancelación: {$motivo} — {$notas}" : "Cancelación registrada desde ficha de cliente: {$motivo}",
+            ]
+        );
+
         return redirect()->route('clients.show', $client)
-            ->with('success', "Póliza #{$policy->numero_poliza} dada de baja correctamente (Motivo: {$motivo}).");
+            ->with('success', "Póliza #{$policy->numero_poliza} dada de baja y registrada en Extornos & Cancelaciones.");
     }
 
     /**
@@ -554,6 +570,12 @@ class ClientController extends Controller
             'balance' => 'Paid Full',
             'observaciones' => $nuevaObservacion,
         ]);
+
+        Extorno::where('policy_id', $policy->id)
+            ->where('status', 'Pendiente')
+            ->update([
+                'status' => 'Cancelado',
+            ]);
 
         return redirect()->route('clients.show', $client)
             ->with('success', "Póliza #{$policy->numero_poliza} reactivada a estado Activo con éxito.");

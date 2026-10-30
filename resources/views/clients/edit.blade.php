@@ -31,35 +31,9 @@
         @csrf
         @method('PUT')
 
-        <!-- Datos de Gestión KFM -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center space-x-2">
-                <span>🏢 Asignación KFM</span>
-            </h2>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Sede de KFM <span class="text-rose-500">*</span></label>
-                    <select name="sede_id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                        @foreach($sedes as $s)
-                            <option value="{{ $s->id }}" {{ old('sede_id', $client->sede_id) == $s->id ? 'selected' : '' }}>
-                                {{ $s->nombre }} ({{ $s->slug }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Agente Responsable</label>
-                    <select name="agente" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                        @foreach($agentes as $ag)
-                            <option value="{{ $ag }}" {{ old('agente', $client->agente) == $ag ? 'selected' : '' }}>
-                                {{ $ag }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-        </div>
+        <!-- Datos de Gestión KFM (Automático) -->
+        <input type="hidden" name="sede_id" value="{{ old('sede_id', $client->sede_id ?? 2) }}">
+        <input type="hidden" name="agente" value="{{ old('agente', $client->agente ?? 'Kerry') }}">
 
         <!-- 1. Datos Personales -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
