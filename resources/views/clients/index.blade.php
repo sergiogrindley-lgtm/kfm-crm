@@ -200,7 +200,6 @@
                     <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
                         <tr>
                             <th scope="col" class="px-6 py-3.5">Cliente / Documento</th>
-                            <th scope="col" class="px-6 py-3.5">Oficina & Agente</th>
                             <th scope="col" class="px-6 py-3.5">Contacto</th>
                             <th scope="col" class="px-6 py-3.5">Contrataciones / Pólizas</th>
                             <th scope="col" class="px-6 py-3.5 text-right">Acción</th>
@@ -246,31 +245,6 @@
                                         <div class="text-xs text-slate-500 mt-1 flex items-center space-x-1">
                                             <span class="text-amber-600 font-medium">📍</span>
                                             <span class="truncate max-w-xs">{{ $client->direccion_local }}</span>
-                                        </div>
-                                    @endif
-                                </td>
-
-                                <!-- Columna Oficina & Agente -->
-                                <td class="px-6 py-4 align-top space-y-1.5">
-                                    @if($client->sede)
-                                        @if($client->sede->slug === 'nex')
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 border border-sky-200">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-sky-500 mr-1.5"></span>
-                                                Oficina NEX
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
-                                                Central (Pueblo)
-                                            </span>
-                                        @endif
-                                    @endif
-
-                                    @if($client->agente)
-                                        <div>
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-                                                👤 Agente: {{ $client->agente }}
-                                            </span>
                                         </div>
                                     @endif
                                 </td>

@@ -74,23 +74,56 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre <span class="text-rose-500">*</span></label>
-                    <input type="text" name="nombre" value="{{ old('nombre') }}" required placeholder="Ej: JONATHAN" 
+                    <input type="text" id="inputNombre" name="nombre" value="{{ old('nombre') }}" required placeholder="Ej: JONATHAN" 
                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Apellidos <span class="text-rose-500">*</span></label>
-                    <input type="text" name="apellido" value="{{ old('apellido') }}" required placeholder="Ej: NEGRON" 
+                    <input type="text" id="inputApellido" name="apellido" value="{{ old('apellido') }}" required placeholder="Ej: NEGRON" 
                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">DNI / NIE / CIF</label>
-                    <input type="text" name="doc_identidad" value="{{ old('doc_identidad') }}" placeholder="Ej: 48991448R o Y1979608N" 
+                    <input type="text" id="inputDoc" name="doc_identidad" value="{{ old('doc_identidad') }}" placeholder="Ej: 48991448R o Y1979608N" 
                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm uppercase focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">SSN (Social Security)</label>
-                    <input type="text" name="ssn" value="{{ old('ssn') }}" placeholder="Ej: 582-81-1386" 
+                    <input type="text" id="inputSsn" name="ssn" value="{{ old('ssn') }}" placeholder="Ej: 582-81-1386" 
                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
+                </div>
+            </div>
+
+            <!-- Banner Alerta de Duplicado en Tiempo Real -->
+            <div id="liveDuplicateContainer" class="hidden transition-all duration-300">
+                <div class="bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg shadow-sm flex-shrink-0">
+                                ⚠️
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-sm text-amber-950 font-display">
+                                    ¡Esta persona ya es cliente en el CRM!
+                                </h3>
+                                <p id="liveDuplicateReason" class="text-xs text-amber-800 font-medium mt-0.5"></p>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-200 text-amber-900 border border-amber-300 flex-shrink-0">
+                            Cliente Existente
+                        </span>
+                    </div>
+
+                    <div id="liveDuplicateList" class="space-y-2 pt-1">
+                        <!-- Clientes existentes inyectados dinámicamente -->
+                    </div>
+
+                    <div class="text-[11px] text-amber-900 bg-amber-100/70 p-2.5 rounded-xl border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span>💡 <strong>Consejo para no duplicar:</strong> Pulsa en <em>"Abrir Ficha Existente"</em> para añadirle la nueva póliza o modificar sus datos en su expediente ya creado.</span>
+                        <button type="button" onclick="cerrarLiveDuplicate()" class="text-xs font-semibold text-amber-800 hover:text-amber-950 underline self-end sm:self-auto cursor-pointer">
+                            Ocultar aviso y continuar igualmente
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -545,5 +578,103 @@
             col.classList.add('hidden');
         }
     }
+
+    // ========================================================
+    // DETECCIÓN INTERACTIVA DE DUPLICADOS EN TIEMPO REAL
+    // ========================================================
+    let checkTimeout = null;
+    let lastQuery = '';
+
+    function setupLiveDuplicateCheck() {
+        const inputs = ['inputNombre', 'inputApellido', 'inputDoc', 'inputSsn'];
+        inputs.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', () => {
+                clearTimeout(checkTimeout);
+                checkTimeout = setTimeout(checkDuplicateLive, 350);
+            });
+        });
+
+        // Comprobación inicial por si hay valores recuperados (old)
+        checkDuplicateLive();
+    }
+
+    function checkDuplicateLive() {
+        const nombre = document.getElementById('inputNombre')?.value.trim() || '';
+        const apellido = document.getElementById('inputApellido')?.value.trim() || '';
+        const doc = document.getElementById('inputDoc')?.value.trim() || '';
+        const ssn = document.getElementById('inputSsn')?.value.trim() || '';
+
+        // Si todos están vacíos o muy cortos, ocultamos
+        if (!nombre && !apellido && !doc && !ssn) {
+            document.getElementById('liveDuplicateContainer')?.classList.add('hidden');
+            return;
+        }
+
+        const currentQuery = `${nombre}|${apellido}|${doc}|${ssn}`;
+        if (currentQuery === lastQuery) return;
+        lastQuery = currentQuery;
+
+        const params = new URLSearchParams({
+            nombre: nombre,
+            apellido: apellido,
+            doc_identidad: doc,
+            ssn: ssn
+        });
+
+        fetch(`/api/check-duplicate-client?${params.toString()}`)
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('liveDuplicateContainer');
+                const reasonEl = document.getElementById('liveDuplicateReason');
+                const listEl = document.getElementById('liveDuplicateList');
+                if (!container || !reasonEl || !listEl) return;
+
+                if (data.exists && data.clients && data.clients.length > 0) {
+                    reasonEl.textContent = data.reason;
+                    listEl.innerHTML = '';
+
+                    data.clients.forEach(c => {
+                        const card = document.createElement('div');
+                        card.className = 'p-3.5 bg-white rounded-xl border border-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs';
+                        card.innerHTML = `
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <strong class="text-sm font-bold text-slate-900 font-display">${c.nombre_completo}</strong>
+                                    <span class="text-xs text-slate-500 font-mono">ID: #${c.id}</span>
+                                </div>
+                                <div class="text-xs text-slate-600 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                    ${c.doc_identidad && c.doc_identidad !== 'Sin DNI' ? `<span>DNI/NIE: <strong>${c.doc_identidad}</strong></span>` : ''}
+                                    ${c.ssn ? `<span>SSN: <strong class="text-blue-700">${c.ssn}</strong></span>` : ''}
+                                    ${c.telefono ? `<span>Tel: <strong>${c.telefono}</strong></span>` : ''}
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${c.policies_count > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
+                                        ${c.policies_count} Póliza(s)
+                                    </span>
+                                </div>
+                            </div>
+                            <a href="${c.url}" target="_blank" class="inline-flex items-center justify-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex-shrink-0 gap-1.5 cursor-pointer">
+                                <span>Abrir Ficha Existente (#${c.id})</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            </a>
+                        `;
+                        listEl.appendChild(card);
+                    });
+
+                    container.classList.remove('hidden');
+                } else {
+                    container.classList.add('hidden');
+                }
+            })
+            .catch(err => {
+                console.error('Error comprobando duplicados:', err);
+            });
+    }
+
+    function cerrarLiveDuplicate() {
+        document.getElementById('liveDuplicateContainer')?.classList.add('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', setupLiveDuplicateCheck);
 </script>
 @endsection

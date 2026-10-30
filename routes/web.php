@@ -22,6 +22,7 @@ Route::get('api/decode-vin', [ClientController::class, 'decodeVin'])->name('api.
 Route::match(['get', 'post'], 'api/calculate-itp', [ClientController::class, 'calculateItp'])->name('api.calculate-itp');
 Route::match(['get', 'post'], 'api/translate', [ClientController::class, 'translateText'])->name('api.translate');
 Route::match(['get', 'post'], 'api/calculate-pcs-refund', [ClientController::class, 'calculatePcsRefund'])->name('api.calculate-pcs-refund');
+Route::get('api/check-duplicate-client', [ClientController::class, 'checkDuplicateClient'])->name('api.check-duplicate-client');
 
 // =========================================================================
 // MÓDULOS OPERATIVOS KFM (DATABASE25 EXCEL MIGRATION)

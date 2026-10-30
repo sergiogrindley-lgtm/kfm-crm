@@ -155,18 +155,36 @@ class ClientController extends Controller
         $duplicado = null;
         $duplicadoCoincidencia = '';
         if ($docIdentidad) {
-            $duplicado = Client::where('doc_identidad', $docIdentidad)->first();
+            $cleanDoc = preg_replace('/[^0-9A-Za-z]/', '', $docIdentidad);
+            $duplicado = Client::where('doc_identidad', $docIdentidad)
+                ->orWhere('doc_identidad', 'like', "%{$cleanDoc}%")
+                ->first();
             if ($duplicado) $duplicadoCoincidencia = "DNI / NIE ({$docIdentidad})";
         }
         if (!$duplicado && $ssn) {
-            $duplicado = Client::where('ssn', $ssn)->first();
+            $cleanSsn = preg_replace('/[^0-9A-Za-z]/', '', $ssn);
+            $duplicado = Client::where('ssn', $ssn)
+                ->orWhere('ssn', 'like', "%{$cleanSsn}%")
+                ->first();
             if ($duplicado) $duplicadoCoincidencia = "SSN ({$ssn})";
         }
         if (!$duplicado && $nombre && $apellido) {
-            $duplicado = Client::where('nombre', $nombre)
-                ->where('apellido', $apellido)
-                ->first();
-            if ($duplicado) $duplicadoCoincidencia = "Nombre y Apellidos ({$nombre} {$apellido})";
+            $duplicado = Client::where(function($q) use ($nombre, $apellido) {
+                $q->where(fn($sq) => $sq->whereRaw('UPPER(nombre) = ?', [$nombre])->whereRaw('UPPER(apellido) = ?', [$apellido]))
+                  ->orWhere(fn($sq) => $sq->whereRaw('UPPER(nombre) = ?', [$apellido])->whereRaw('UPPER(apellido) = ?', [$nombre]));
+            })->first();
+            if ($duplicado) $duplicadoCoincidencia = "Nombre y Apellidos ({$duplicado->apellido}, {$duplicado->nombre})";
+        }
+        if (!$duplicado && !empty($nombre) && empty($apellido)) {
+            $parts = preg_split('/\s+/', $nombre);
+            if (count($parts) >= 2) {
+                $p1 = $parts[0];
+                $p2 = $parts[1];
+                $duplicado = Client::where(function($q) use ($p1, $p2) {
+                    $q->where('nombre', 'like', "%{$p1}%")->where('apellido', 'like', "%{$p2}%");
+                })->first();
+                if ($duplicado) $duplicadoCoincidencia = "Nombre ({$nombre})";
+            }
         }
 
         if ($duplicado && !$request->boolean('forzar_duplicado')) {
@@ -915,6 +933,147 @@ class ClientController extends Controller
             'success' => false,
             'message' => 'No se pudo conectar con el servicio de traducción rápida.'
         ], 500);
+    }
+
+    /**
+     * Comprobación en tiempo real de duplicados (por Nombre, Apellido, SSN o DNI)
+     */
+    public function checkDuplicateClient(Request $request)
+    {
+        $ssn = trim($request->input('ssn', ''));
+        $doc = strtoupper(trim($request->input('doc_identidad', '')));
+        $nombre = strtoupper(trim($request->input('nombre', '')));
+        $apellido = strtoupper(trim($request->input('apellido', '')));
+
+        if (empty($ssn) && empty($doc) && empty($nombre) && empty($apellido)) {
+            return response()->json(['exists' => false, 'clients' => []]);
+        }
+
+        $clients = collect();
+        $reason = '';
+        $matchedField = '';
+
+        // 1. Coincidencia por SSN (exacto o parcial si >= 4 caracteres)
+        if (!empty($ssn) && strlen($ssn) >= 4) {
+            $cleanSsn = preg_replace('/[^0-9A-Za-z]/', '', $ssn);
+            $matches = Client::where(function($q) use ($ssn, $cleanSsn) {
+                $q->where('ssn', $ssn)
+                  ->orWhere('ssn', 'like', "%{$ssn}%");
+                if (strlen($cleanSsn) >= 4) {
+                    $q->orWhere('ssn', 'like', "%{$cleanSsn}%");
+                }
+            })->withCount('policies')->limit(5)->get();
+
+            if ($matches->isNotEmpty()) {
+                $clients = $matches;
+                $reason = "Coincidencia por Número de Seguridad Social (SSN): '{$ssn}'";
+                $matchedField = 'ssn';
+            }
+        }
+
+        // 2. Coincidencia por DNI / NIE / CIF
+        if ($clients->isEmpty() && !empty($doc) && strlen($doc) >= 4) {
+            $cleanDoc = preg_replace('/[^0-9A-Za-z]/', '', $doc);
+            $matches = Client::where(function($q) use ($doc, $cleanDoc) {
+                $q->where('doc_identidad', $doc)
+                  ->orWhere('doc_identidad', 'like', "%{$doc}%");
+                if (strlen($cleanDoc) >= 4) {
+                    $q->orWhere('doc_identidad', 'like', "%{$cleanDoc}%");
+                }
+            })->withCount('policies')->limit(5)->get();
+
+            if ($matches->isNotEmpty()) {
+                $clients = $matches;
+                $reason = "Coincidencia por Documento (DNI/NIE): '{$doc}'";
+                $matchedField = 'doc_identidad';
+            }
+        }
+
+        // 3. Coincidencia por Nombre Y Apellidos juntos
+        if ($clients->isEmpty() && !empty($nombre) && !empty($apellido)) {
+            $matches = Client::where(function($q) use ($nombre, $apellido) {
+                $q->where(function($sub) use ($nombre, $apellido) {
+                    $sub->where('nombre', 'like', "%{$nombre}%")
+                        ->where('apellido', 'like', "%{$apellido}%");
+                })->orWhere(function($sub) use ($nombre, $apellido) {
+                    $sub->where('nombre', 'like', "%{$apellido}%")
+                        ->where('apellido', 'like', "%{$nombre}%");
+                });
+            })->withCount('policies')->limit(5)->get();
+
+            if ($matches->isNotEmpty()) {
+                $clients = $matches;
+                $reason = "Coincidencia por Nombre y Apellidos: '{$nombre} {$apellido}'";
+                $matchedField = 'nombre';
+            }
+        }
+
+        // 4. Coincidencia si meten el nombre completo en el campo nombre o apellido
+        if ($clients->isEmpty() && empty($apellido) && !empty($nombre) && strlen($nombre) >= 3) {
+            $parts = preg_split('/\s+/', $nombre);
+            if (count($parts) >= 2) {
+                $p1 = $parts[0];
+                $p2 = $parts[1];
+                $matches = Client::where(function($q) use ($p1, $p2) {
+                    $q->where('nombre', 'like', "%{$p1}%")->where('apellido', 'like', "%{$p2}%");
+                })->orWhere(function($q) use ($p1, $p2) {
+                    $q->where('nombre', 'like', "%{$p2}%")->where('apellido', 'like', "%{$p1}%");
+                })->withCount('policies')->limit(5)->get();
+
+                if ($matches->isNotEmpty()) {
+                    $clients = $matches;
+                    $reason = "Coincidencia por Nombre y Apellidos: '{$nombre}'";
+                    $matchedField = 'nombre';
+                }
+            } else if (strlen($nombre) >= 4) {
+                $matches = Client::where('nombre', 'like', "%{$nombre}%")
+                    ->orWhere('apellido', 'like', "%{$nombre}%")
+                    ->withCount('policies')
+                    ->limit(5)
+                    ->get();
+                if ($matches->isNotEmpty()) {
+                    $clients = $matches;
+                    $reason = "Coincidencia por Nombre: '{$nombre}'";
+                    $matchedField = 'nombre';
+                }
+            }
+        }
+
+        // 5. Coincidencia si meten apellido solo con >= 4 letras
+        if ($clients->isEmpty() && empty($nombre) && !empty($apellido) && strlen($apellido) >= 4) {
+            $matches = Client::where('apellido', 'like', "%{$apellido}%")
+                ->orWhere('nombre', 'like', "%{$apellido}%")
+                ->withCount('policies')
+                ->limit(5)
+                ->get();
+
+            if ($matches->isNotEmpty()) {
+                $clients = $matches;
+                $reason = "Coincidencia por Apellido: '{$apellido}'";
+                $matchedField = 'apellido';
+            }
+        }
+
+        if ($clients->isEmpty()) {
+            return response()->json(['exists' => false, 'clients' => []]);
+        }
+
+        return response()->json([
+            'exists' => true,
+            'reason' => $reason,
+            'field' => $matchedField,
+            'clients' => $clients->map(function($c) {
+                return [
+                    'id' => $c->id,
+                    'nombre_completo' => "{$c->apellido}, {$c->nombre}",
+                    'doc_identidad' => $c->doc_identidad ?: 'Sin DNI',
+                    'ssn' => $c->ssn ?: '',
+                    'telefono' => $c->telefono_movil ?: ($c->telefono_fijo ?: ''),
+                    'policies_count' => $c->policies_count,
+                    'url' => route('clients.show', $c),
+                ];
+            })
+        ]);
     }
 }
 
