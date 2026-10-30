@@ -1326,7 +1326,7 @@ Liquidado por: KFM Insurance Agency · Base Naval de Rota (NEX)
                         <select id="pcs_canal_devolucion" onchange="document.getElementById('pcs_canal_resultado').innerText = this.value" class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
                             <option value="Transferencia Bancaria" selected>🏦 Transferencia Bancaria</option>
                             <option value="Tarjeta de Crédito / Débito">💳 Tarjeta de Crédito / Débito</option>
-                            <option value="Efectivo (Oficina NEX Base Naval)">💵 Efectivo (Oficina NEX Base Naval)</option>
+                            <option value="Efectivo (solo en Rota)">💵 Efectivo (solo en Rota)</option>
                         </select>
                     </div>
                 </div>
