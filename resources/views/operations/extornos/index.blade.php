@@ -94,7 +94,13 @@
                                 </div>
                             </td>
                             <td class="py-3.5 px-4">
-                                <strong class="text-slate-900 block">{{ $extorno->client_name }}</strong>
+                                @if($extorno->client_id)
+                                    <a href="{{ route('clients.show', $extorno->client_id) }}" class="text-sky-800 hover:text-sky-950 hover:underline font-bold block">
+                                        {{ $extorno->client_name }} ↗
+                                    </a>
+                                @else
+                                    <strong class="text-slate-900 block">{{ $extorno->client_name }}</strong>
+                                @endif
                                 @if($extorno->recibo_numero)
                                     <span class="text-[10px] font-mono text-slate-400 block">Recibo: {{ $extorno->recibo_numero }}</span>
                                 @endif
@@ -131,7 +137,12 @@
                                     {{ $extorno->status }}
                                 </span>
                             </td>
-                            <td class="py-3.5 px-4 text-right">
+                            <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                                @if($extorno->client_id)
+                                    <a href="{{ route('clients.show', $extorno->client_id) }}" class="px-2.5 py-1 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 rounded-lg text-xs font-semibold mr-1 inline-block">
+                                        Ficha Cliente →
+                                    </a>
+                                @endif
                                 <button type="button" onclick="openEditarExtornoModal({{ $extorno->id }}, '{{ $extorno->status }}', '{{ $extorno->amount_reimbursed }}', '{{ $extorno->recibo_numero }}', {{ $extorno->stateside_geico_form ? 'true' : 'false' }}, '{{ addslashes($extorno->observaciones ?? '') }}')"
                                         class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs shadow-xs transition">
                                     Editar / Liquidar
@@ -169,6 +180,8 @@
             </div>
             <form method="POST" action="{{ route('operations.extornos.store') }}">
                 @csrf
+                <input type="hidden" name="client_id" id="extorno_client_id" value="">
+                <input type="hidden" name="policy_id" id="extorno_policy_id" value="">
                 <div class="p-6 space-y-3 text-xs">
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -315,6 +328,8 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.found) {
+                        if (data.client_id) document.getElementById('extorno_client_id').value = data.client_id;
+                        if (data.policy_id) document.getElementById('extorno_policy_id').value = data.policy_id;
                         if (data.client_name) document.getElementById('extorno_client_name').value = data.client_name;
                         if (data.office) document.getElementById('extorno_office').value = data.office;
                         if (data.cartera) document.getElementById('extorno_cartera').value = data.cartera;

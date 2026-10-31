@@ -30,7 +30,7 @@
                 <span>🖨️ Imprimir</span>
             </button>
             @php
-                $fechaDoc = $tramite->fecha_tramite ? \Carbon\Carbon::parse($tramite->fecha_tramite)->format('d/m/Y') : date('d/m/Y');
+                $fechaDoc = $tramite->fecha_tramite ? (str_contains($tramite->fecha_tramite, '/') ? $tramite->fecha_tramite : \Carbon\Carbon::parse($tramite->fecha_tramite)->format('d/m/Y')) : date('d/m/Y');
                 $lugar = 'ROTA';
                 $precioVal = $tramite->precio_venta ? number_format((float)$tramite->precio_venta, 2, ',', '.') . ' €' : '0,00 €';
                 $reciboPart = $tramite->recibo_numero ? trim($tramite->recibo_numero) . ' ' : '';

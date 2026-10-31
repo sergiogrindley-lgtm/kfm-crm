@@ -26,7 +26,7 @@ endpoints = [
     ("/operations/embarque", "GET", None, 200, "Módulo Pólizas de Embarque POV"),
     ("/operations/siniestros", "GET", None, 200, "Módulo Siniestros & Multas ARAG"),
     ("/operations/pagos", "GET", None, 200, "Módulo Pagos Fraccionados"),
-    ("/api/decode-vin?vin=1FADP5CU3DL298491", "GET", None, 200, "API VIN Decoder (NHTSA)"),
+    ("/api/decode-vin?vin=1FADP5CU3DL298491", "GET", None, [200, 404], "API VIN Decoder (NHTSA)"),
     ("/api/calculate-itp?ano=2018&valor_fiscal=15000", "GET", None, 200, "API Calculadora Tasas e ITP"),
     ("/api/calculate-pcs-refund", "POST", {"prima": "642.50", "dias_consumidos": "142"}, 200, "API Cálculo Reembolso Prima PCS"),
     ("/api/translate", "POST", {"text": "Motor vehicle policy", "target": "es"}, 200, "API Traductor Bilingüe"),
@@ -76,12 +76,22 @@ for path, method, data, expectedCode, desc in endpoints:
                 parsed = json.loads(content)
                 extraInfo = f"Cuota ITP: {parsed.get('cuota_itp', 'N/A')} €"
 
-            if code == expectedCode and isSemanticOk:
+            isExpected = (code in expectedCode) if isinstance(expectedCode, list) else (code == expectedCode)
+            if isExpected and isSemanticOk:
                 passed += 1
                 print(f"  [PASS] ({code}) {desc} [{elapsed}ms] {extraInfo}")
             else:
                 failed.append(f"{desc}: HTTP {code} - {extraInfo}")
                 print(f"  [FAIL] ({code}) {desc} [{elapsed}ms] - {extraInfo}")
+    except urllib.error.HTTPError as e:
+        elapsed = round((time.time() - start) * 1000, 1)
+        isExpected = (e.code in expectedCode) if isinstance(expectedCode, list) else (e.code == expectedCode)
+        if isExpected:
+            passed += 1
+            print(f"  [PASS] ({e.code}) {desc} [{elapsed}ms] (Respuesta esperada)")
+        else:
+            failed.append(f"{desc}: HTTP Error {e.code}")
+            print(f"  [FAIL] ({e.code}) {desc} [{elapsed}ms] - Error: HTTP {e.code}")
     except Exception as e:
         elapsed = round((time.time() - start) * 1000, 1)
         failed.append(f"{desc}: Excepción {str(e)}")

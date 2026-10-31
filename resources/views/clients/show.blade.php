@@ -393,6 +393,11 @@
                                                     <span>✏️ Editar Póliza</span>
                                                 </button>
 
+                                                <a href="{{ route('operations.extornos.index', ['q' => $policy->numero_poliza]) }}" 
+                                                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 shadow-xs transition cursor-pointer">
+                                                    <span>🛫 Ver en Extornos</span>
+                                                </a>
+
                                                 <form action="{{ route('clients.policies.reactivate', [$client, $policy]) }}" method="POST" onsubmit="return confirm('¿Reactivar la póliza #{{ $policy->numero_poliza }} a estado Activo?');">
                                                     @csrf
                                                     <button type="submit" 
@@ -1262,7 +1267,7 @@
                 @csrf
                 <input type="hidden" name="client_id" value="{{ $client->id }}">
                 <input type="hidden" name="policy_id" id="modal_extorno_policy_id" value="">
-                <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
+                <input type="hidden" name="redirect_to" value="{{ route('operations.extornos.index') }}">
 
                 <div class="p-6 space-y-3 text-xs">
                     <div class="grid grid-cols-2 gap-3">

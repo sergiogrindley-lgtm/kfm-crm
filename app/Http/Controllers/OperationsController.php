@@ -456,6 +456,31 @@ class OperationsController extends Controller
      */
     public function indexExtornos(Request $request)
     {
+        // Auto-sincronizar cualquier póliza cancelada que aún no tenga registro en Extornos
+        $polizasCanceladas = Policy::where(function($q) {
+                $q->where('estado', 'Cancelado')
+                  ->orWhere('balance', 'Cancelled');
+            })
+            ->whereNotIn('id', Extorno::whereNotNull('policy_id')->pluck('policy_id'))
+            ->with('client.sede')
+            ->get();
+
+        foreach ($polizasCanceladas as $pol) {
+            $cli = $pol->client;
+            Extorno::create([
+                'client_id' => $cli?->id,
+                'policy_id' => $pol->id,
+                'office' => ($cli && $cli->sede && $cli->sede->slug === 'central') ? 'Central' : 'NEX',
+                'cartera' => ($pol->codigo_aseguradora == '87' || str_contains($pol->aseguradora ?? '', 'GEICO')) ? 'GEICO' : 'Patria Hispana',
+                'numero_poliza' => $pol->numero_poliza ?: 'Pendiente',
+                'client_name' => $cli ? strtoupper($cli->full_name) : 'CLIENTE KFM',
+                'patria_amount' => $pol->prima,
+                'projected_departure' => 'Cancelación registrada en CRM',
+                'status' => 'Pendiente',
+                'observaciones' => $pol->observaciones ? "Historial: " . trim($pol->observaciones) : 'Cancelación registrada desde ficha de cliente',
+            ]);
+        }
+
         $query = Extorno::with(['client', 'policy'])->latest();
 
         if ($search = $request->input('q')) {
