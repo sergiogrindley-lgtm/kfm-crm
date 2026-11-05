@@ -11,6 +11,7 @@ use App\Models\SinMatricula;
 use App\Models\PolizaEmbarque;
 use App\Models\Siniestro;
 use App\Models\PagoFraccionado;
+use App\Models\CesionPoliza;
 use Illuminate\Http\Request;
 
 class OperationsController extends Controller
@@ -547,6 +548,10 @@ class OperationsController extends Controller
             'numero_poliza' => $policy->numero_poliza,
             'client_id' => $client?->id,
             'client_name' => $client ? strtoupper($client->full_name) : '',
+            'client_dni' => $client?->doc_identidad ?: ($client?->ssn ? "SSN: {$client->ssn}" : ''),
+            'client_telefono' => $client?->telefono,
+            'sede_id' => $client?->sede_id,
+            'agente' => $policy->agente ?: $client?->agente,
             'office' => $office,
             'cartera' => $cartera,
             'cartera_label' => $cartera === '87' ? '87 (GEICO 87)' : '81 (Patria 81)',
@@ -554,6 +559,9 @@ class OperationsController extends Controller
             'estado' => $policy->estado,
             'ramo' => $policy->ramo,
             'matricula' => $policy->matricula,
+            'marca' => $policy->marca,
+            'modelo' => $policy->modelo,
+            'vin' => $policy->vin,
             'vehiculo' => trim("{$policy->marca} {$policy->modelo}"),
         ]);
     }
@@ -1087,5 +1095,144 @@ class OperationsController extends Controller
 
         return redirect()->route('operations.pagos.index')
             ->with('success', "Estado de pago actualizado para #{$pago->numero_poliza}.");
+    }
+
+    /**
+     * =========================================================================
+     * 7. CESIONES DE PÓLIZA SIN TRANSFERENCIA
+     * =========================================================================
+     */
+    public function indexCesiones(Request $request)
+    {
+        $query = CesionPoliza::with(['client', 'policy', 'sede'])->latest();
+
+        if ($search = $request->input('q')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('numero_poliza', 'like', "%{$search}%")
+                  ->orWhere('cedente_nombre', 'like', "%{$search}%")
+                  ->orWhere('cesionario_nombre', 'like', "%{$search}%")
+                  ->orWhere('matricula', 'like', "%{$search}%")
+                  ->orWhere('cesionario_ssn', 'like', "%{$search}%");
+            });
+        }
+
+        if ($estado = $request->input('estado')) {
+            $query->where('estado', $estado);
+        }
+
+        if ($sedeId = $request->input('sede_id')) {
+            $query->where('sede_id', $sedeId);
+        }
+
+        $cesiones = $query->paginate(20)->withQueryString();
+
+        $stats = [
+            'total' => CesionPoliza::count(),
+            'activas' => CesionPoliza::where('estado', 'Activa')->count(),
+            'pendientes' => CesionPoliza::where('estado', 'Pendiente de firma')->count(),
+            'finalizadas' => CesionPoliza::where('estado', 'Finalizada')->count(),
+        ];
+
+        $sedes = Sede::all();
+
+        return view('operations.cesiones.index', compact('cesiones', 'stats', 'sedes'));
+    }
+
+    public function storeCesion(Request $request)
+    {
+        $validated = $request->validate([
+            'numero_poliza' => 'required|string|max:50',
+            'cartera' => 'nullable|string|max:20',
+            'cedente_nombre' => 'required|string|max:150',
+            'cedente_dni' => 'nullable|string|max:50',
+            'cedente_telefono' => 'nullable|string|max:50',
+            'cesionario_nombre' => 'required|string|max:150',
+            'cesionario_ssn' => 'nullable|string|max:50',
+            'cesionario_dob' => 'nullable|string|max:50',
+            'cesionario_direccion' => 'nullable|string|max:255',
+            'cesionario_telefono' => 'nullable|string|max:50',
+            'cesionario_email' => 'nullable|string|max:100',
+            'matricula' => 'required|string|max:50',
+            'marca' => 'nullable|string|max:100',
+            'modelo' => 'nullable|string|max:100',
+            'vin' => 'nullable|string|max:50',
+            'tiene_suplemento' => 'nullable|boolean',
+            'suplemento_recibo' => 'nullable|string|max:50',
+            'suplemento_cantidad' => 'nullable|string|max:50',
+            'fecha_cesion' => 'nullable|string|max:50',
+            'estado' => 'required|string|max:50',
+            'observaciones' => 'nullable|string',
+            'client_id' => 'nullable|integer',
+            'policy_id' => 'nullable|integer',
+            'sede_id' => 'nullable|integer',
+            'agente' => 'nullable|string|max:50',
+        ]);
+
+        $validated['tiene_suplemento'] = $request->boolean('tiene_suplemento') || !empty($validated['suplemento_recibo']) || !empty($validated['suplemento_cantidad']);
+
+        $pol = Policy::where('numero_poliza', trim($validated['numero_poliza']))->first();
+        if ($pol) {
+            $validated['policy_id'] = $pol->id;
+            $validated['client_id'] = $pol->client_id;
+            if (empty($validated['sede_id'])) {
+                $validated['sede_id'] = $pol->sede_id ?: $pol->client?->sede_id;
+            }
+            if (empty($validated['agente'])) {
+                $validated['agente'] = $pol->agente ?: $pol->client?->agente;
+            }
+        }
+
+        if (empty($validated['fecha_cesion'])) {
+            $validated['fecha_cesion'] = date('d/m/Y');
+        }
+
+        $cesion = CesionPoliza::create($validated);
+
+        return redirect()->route('operations.cesiones.index')
+            ->with('success', "Cesión de póliza #{$cesion->numero_poliza} registrada correctamente para {$cesion->cesionario_nombre}.");
+    }
+
+    public function updateCesion(Request $request, CesionPoliza $cesion)
+    {
+        $validated = $request->validate([
+            'estado' => 'required|string|max:50',
+            'cesionario_ssn' => 'nullable|string|max:50',
+            'cesionario_dob' => 'nullable|string|max:50',
+            'cesionario_direccion' => 'nullable|string|max:255',
+            'cesionario_telefono' => 'nullable|string|max:50',
+            'cesionario_email' => 'nullable|string|max:100',
+            'tiene_suplemento' => 'nullable|boolean',
+            'suplemento_recibo' => 'nullable|string|max:50',
+            'suplemento_cantidad' => 'nullable|string|max:50',
+            'observaciones' => 'nullable|string',
+        ]);
+
+        $validated['tiene_suplemento'] = $request->boolean('tiene_suplemento') || !empty($validated['suplemento_recibo']) || !empty($validated['suplemento_cantidad']);
+
+        $cesion->update($validated);
+
+        return redirect()->route('operations.cesiones.index')
+            ->with('success', "Cesión de póliza #{$cesion->numero_poliza} actualizada.");
+    }
+
+    public function documentoCesionPoliza(CesionPoliza $cesion)
+    {
+        $fecha = $cesion->fecha_cesion ?: ($cesion->created_at ? $cesion->created_at->format('d/m/Y') : date('d/m/Y'));
+        $dia = date('d');
+        $mesNombre = 'OCTUBRE';
+        $ano = date('Y');
+
+        if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', trim($fecha), $m)) {
+            $dia = (int)$m[1];
+            $meses = [
+                1 => 'ENERO', 2 => 'FEBRERO', 3 => 'MARZO', 4 => 'ABRIL',
+                5 => 'MAYO', 6 => 'JUNIO', 7 => 'JULIO', 8 => 'AGOSTO',
+                9 => 'SEPTIEMBRE', 10 => 'OCTUBRE', 11 => 'NOVIEMBRE', 12 => 'DICIEMBRE'
+            ];
+            $mesNombre = $meses[(int)$m[2]] ?? 'OCTUBRE';
+            $ano = $m[3];
+        }
+
+        return view('operations.cesiones.documento', compact('cesion', 'dia', 'mesNombre', 'ano'));
     }
 }

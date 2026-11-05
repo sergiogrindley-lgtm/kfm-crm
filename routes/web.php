@@ -70,6 +70,12 @@ Route::prefix('operations')->name('operations.')->group(function () {
     Route::get('pagos', [OperationsController::class, 'indexPagos'])->name('pagos.index');
     Route::post('pagos', [OperationsController::class, 'storePago'])->name('pagos.store');
     Route::patch('pagos/{pago}', [OperationsController::class, 'updatePago'])->name('pagos.update');
+
+    // 7. CESIONES DE PÓLIZA SIN TRANSFERENCIA
+    Route::get('cesiones', [OperationsController::class, 'indexCesiones'])->name('cesiones.index');
+    Route::post('cesiones', [OperationsController::class, 'storeCesion'])->name('cesiones.store');
+    Route::patch('cesiones/{cesion}', [OperationsController::class, 'updateCesion'])->name('cesiones.update');
+    Route::get('cesiones/{cesion}/documento', [OperationsController::class, 'documentoCesionPoliza'])->name('cesiones.documento');
 });
 
 // Endpoint de diagnóstico rápido de IP pública y cabeceras

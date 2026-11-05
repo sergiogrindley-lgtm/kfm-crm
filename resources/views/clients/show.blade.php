@@ -647,6 +647,62 @@
                                 </div>
                             @endif
 
+                            @php
+                                $policyCesion = ($client->cesiones ? $client->cesiones->firstWhere('policy_id', $policy->id) : null)
+                                    ?? ($client->cesiones ? $client->cesiones->firstWhere('numero_poliza', $policy->numero_poliza) : null);
+                            @endphp
+
+                            @if($policyCesion)
+                                <div class="bg-gradient-to-r from-sky-50 via-blue-50 to-indigo-50 border-2 border-sky-300 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-sky-600 text-white flex items-center justify-center text-base shadow-xs flex-shrink-0 mt-0.5">
+                                            🤝
+                                        </div>
+                                        <div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <strong class="text-xs font-bold uppercase tracking-wider text-sky-950 font-display">
+                                                    Cesión de Póliza sin Transferencia
+                                                </strong>
+                                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $policyCesion->status_badge_color }}">
+                                                    {{ $policyCesion->estado }}
+                                                </span>
+                                            </div>
+                                            <div class="text-xs text-slate-700 mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+                                                <span>Nuevo Tomador: <strong class="font-bold text-slate-900 uppercase">{{ $policyCesion->cesionario_nombre }}</strong></span>
+                                                @if($policyCesion->cesionario_ssn)
+                                                    <span class="font-mono text-[11px] text-slate-600 bg-white/70 px-1 rounded border border-slate-200">SSN: {{ $policyCesion->cesionario_ssn }}</span>
+                                                @endif
+                                                @if($policyCesion->cesionario_telefono)
+                                                    <span>Tel: <strong class="text-slate-800">{{ $policyCesion->cesionario_telefono }}</strong></span>
+                                                @endif
+                                                <span>Fecha Cesión: <strong class="text-slate-800">{{ $policyCesion->fecha_cesion ?: '-' }}</strong></span>
+                                                @if($policyCesion->tiene_suplemento || $policyCesion->suplemento_recibo || $policyCesion->suplemento_cantidad)
+                                                    <span class="bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-300">
+                                                        Suplemento: {{ $policyCesion->suplemento_cantidad ? $policyCesion->suplemento_cantidad . ' €' : 'Sí' }}
+                                                        @if($policyCesion->suplemento_recibo) (Recibo: {{ $policyCesion->suplemento_recibo }})@endif
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            @if($policyCesion->observaciones)
+                                                <p class="text-[11px] text-sky-900/90 mt-1 italic leading-tight">
+                                                    "{{ $policyCesion->observaciones }}"
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <a href="{{ route('operations.cesiones.documento', $policyCesion) }}" target="_blank"
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-2xs transition">
+                                            <span>🖨️ Hoja de Cesión</span>
+                                        </a>
+                                        <a href="{{ route('operations.cesiones.index', ['q' => $policy->numero_poliza]) }}" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-sky-100 text-sky-900 border border-sky-300 shadow-2xs transition">
+                                            <span>Ver en Cesiones →</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+
                             <!-- Acciones Operativas KFM & Tramitación Militar -->
                             <div class="pt-3 border-t border-slate-100 space-y-2">
                                 <div class="flex items-center justify-between">
@@ -756,8 +812,9 @@
                         $unlinkedSM = $client->sinMatriculas ? $client->sinMatriculas->reject(fn($sm) => in_array($sm->policy_id, $knownPolicyIds) || in_array($sm->numero_poliza, $knownPolicyNums)) : collect();
                         $unlinkedEmbarques = $client->polizasEmbarque ? $client->polizasEmbarque->reject(fn($emb) => in_array($emb->policy_id, $knownPolicyIds) || in_array($emb->numero_poliza, $knownPolicyNums)) : collect();
                         $unlinkedPagos = $client->pagosFraccionados ? $client->pagosFraccionados->reject(fn($p) => in_array($p->policy_id, $knownPolicyIds) || in_array($p->numero_poliza, $knownPolicyNums)) : collect();
+                        $unlinkedCesiones = $client->cesiones ? $client->cesiones->reject(fn($c) => in_array($c->policy_id, $knownPolicyIds) || in_array($c->numero_poliza, $knownPolicyNums)) : collect();
 
-                        $totalUnlinked = $unlinkedSiniestros->count() + $unlinkedExtornos->count() + $unlinkedSM->count() + $unlinkedEmbarques->count() + $unlinkedPagos->count();
+                        $totalUnlinked = $unlinkedSiniestros->count() + $unlinkedExtornos->count() + $unlinkedSM->count() + $unlinkedEmbarques->count() + $unlinkedPagos->count() + $unlinkedCesiones->count();
                     @endphp
 
                     @if($totalUnlinked > 0)
@@ -812,6 +869,18 @@
                                             <span class="text-slate-500 ml-2">{{ $up->estado }} (Total: {{ $up->total_seguro }})</span>
                                         </div>
                                         <a href="{{ route('operations.pagos.index', ['q' => $up->numero_poliza]) }}" class="text-sky-700 hover:underline font-bold text-[11px]">Ver en Pagos →</a>
+                                    </div>
+                                @endforeach
+                                @foreach($unlinkedCesiones as $uc)
+                                    <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                                        <div>
+                                            <span class="font-bold text-sky-800">🤝 Cesión #{{ $uc->numero_poliza }}</span>
+                                            <span class="text-slate-500 ml-2">{{ $uc->estado }} • Cesionario: {{ $uc->cesionario_nombre }}</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="{{ route('operations.cesiones.documento', $uc) }}" target="_blank" class="text-slate-600 hover:underline font-bold text-[11px]">🖨️ Doc</a>
+                                            <a href="{{ route('operations.cesiones.index', ['q' => $uc->numero_poliza]) }}" class="text-sky-700 hover:underline font-bold text-[11px]">Ver en Cesiones →</a>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>

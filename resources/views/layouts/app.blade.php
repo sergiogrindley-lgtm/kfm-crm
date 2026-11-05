@@ -76,7 +76,7 @@
                     <div class="relative">
                         <button type="button" 
                                 onclick="toggleOperacionesDropdown(event)" 
-                                class="px-3.5 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-200 hover:bg-white/10 hover:text-white transition-all flex items-center space-x-2 whitespace-nowrap cursor-pointer {{ request()->routeIs('operations.extornos.*') || request()->routeIs('operations.sin-matricula.*') || request()->routeIs('operations.embarque.*') || request()->routeIs('operations.siniestros.*') || request()->routeIs('operations.multas.*') || request()->routeIs('operations.pagos.*') ? 'bg-white/20 text-white font-bold ring-1 ring-white/20' : '' }}">
+                                class="px-3.5 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-200 hover:bg-white/10 hover:text-white transition-all flex items-center space-x-2 whitespace-nowrap cursor-pointer {{ request()->routeIs('operations.extornos.*') || request()->routeIs('operations.sin-matricula.*') || request()->routeIs('operations.embarque.*') || request()->routeIs('operations.siniestros.*') || request()->routeIs('operations.multas.*') || request()->routeIs('operations.pagos.*') || request()->routeIs('operations.cesiones.*') ? 'bg-white/20 text-white font-bold ring-1 ring-white/20' : '' }}">
                             <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
                             <span>Operaciones</span>
                             <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -87,6 +87,15 @@
                                 <span>Operativa KFM Insurance</span>
                                 <span class="bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded text-[9px] font-bold">DATABASE25</span>
                             </div>
+
+                            <!-- Cesiones de póliza sin transferencia -->
+                            <a href="{{ route('operations.cesiones.index') }}" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-sky-50/70 transition text-slate-800">
+                                <span class="text-base p-1.5 rounded-lg bg-sky-100 text-sky-800">🤝</span>
+                                <div>
+                                    <strong class="block text-slate-900 font-bold text-xs">Cesiones de póliza sin transferencia</strong>
+                                    <span class="text-[11px] text-slate-500">Uso y derechos sin transferir en DGT</span>
+                                </div>
+                            </a>
 
                             <!-- Extornos PCS -->
                             <a href="{{ route('operations.extornos.index') }}" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-rose-50/70 transition text-slate-800">

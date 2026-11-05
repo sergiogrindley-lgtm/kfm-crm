@@ -326,6 +326,31 @@ auditAssert($respSiniestros->name() === 'operations.siniestros.index', "Módulo 
 $respPagos = $opsCtrl->indexPagos(Request::create('/operations/pagos', 'GET'));
 auditAssert($respPagos->name() === 'operations.pagos.index', "Módulo Pagos Fraccionados operativo");
 
+// 8.8 Cesiones de Póliza sin Transferencia
+$respCesiones = $opsCtrl->indexCesiones(Request::create('/operations/cesiones', 'GET'));
+auditAssert($respCesiones->name() === 'operations.cesiones.index', "Módulo Cesiones de Póliza sin Transferencia: Listado operativo");
+
+$testCesion = \App\Models\CesionPoliza::create([
+    'numero_poliza' => 'TEST-CESION-01',
+    'cedente_nombre' => 'JOHNATHAN TEST DOE',
+    'cesionario_nombre' => 'MICHAEL SMITH',
+    'cesionario_ssn' => 'FA-12345',
+    'cesionario_dob' => '15/08/1994',
+    'cesionario_direccion' => 'PSC 819 BOX 100 ROTA',
+    'matricula' => '9999XYZ',
+    'marca' => 'HONDA',
+    'modelo' => 'CIVIC',
+    'tiene_suplemento' => true,
+    'suplemento_recibo' => 'REC-SUP-01',
+    'suplemento_cantidad' => '50,00',
+    'estado' => 'Activa',
+]);
+auditAssert($testCesion->exists, "Alta de Cesión de Póliza con Suplemento y Datos Militares OK");
+
+$respDocCesionPoliza = $opsCtrl->documentoCesionPoliza($testCesion);
+auditAssert($respDocCesionPoliza->name() === 'operations.cesiones.documento', "Documento Oficial Imprimible de Cesión de Póliza operativo");
+$testCesion->delete();
+
 // -------------------------------------------------------------------------
 // 9. LIMPIEZA DE DATOS DE AUDITORÍA
 // -------------------------------------------------------------------------

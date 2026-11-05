@@ -111,6 +111,22 @@
                 <span class="font-medium text-slate-200">Embarques:</span>
                 <span class="font-bold text-emerald-300">{{ $operacionesStats['embarque'] }} en mar</span>
             </a>
+
+            <!-- Cesiones de Póliza -->
+            <a href="{{ route('operations.cesiones.index') }}" 
+               class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center space-x-2">
+                <span>🤝</span>
+                <span class="font-medium text-slate-200">Cesiones:</span>
+                <span class="font-bold text-sky-300">{{ $operacionesStats['cesiones'] ?? 0 }} activas</span>
+            </a>
+
+            <!-- Pagos Fraccionados -->
+            <a href="{{ route('operations.pagos.index') }}" 
+               class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center space-x-2">
+                <span>💳</span>
+                <span class="font-medium text-slate-200">2º Plazos:</span>
+                <span class="font-bold text-teal-300">{{ $operacionesStats['pagos'] ?? 0 }} pend.</span>
+            </a>
         </div>
     </div>
     @endif

@@ -11,6 +11,7 @@ use App\Models\SinMatricula;
 use App\Models\PolizaEmbarque;
 use App\Models\Siniestro;
 use App\Models\PagoFraccionado;
+use App\Models\CesionPoliza;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
@@ -74,6 +75,8 @@ class ClientController extends Controller
             'sin_matricula' => SinMatricula::where('estado', 'Pendiente')->count(),
             'siniestros' => Siniestro::where('tipo', 'Siniestro')->where('estado_siniestro', '!=', 'Cerrado')->count(),
             'embarque' => PolizaEmbarque::where('estado', 'En Tránsito')->count(),
+            'pagos' => PagoFraccionado::where('estado', 'Pendiente 2º Pago')->count(),
+            'cesiones' => CesionPoliza::where('estado', 'Activa')->count(),
         ];
 
         return view('clients.index', compact(
@@ -313,7 +316,7 @@ class ClientController extends Controller
 
     public function show(Client $client)
     {
-        $client->load(['sede', 'policies.extorno', 'policies.siniestros', 'extornos', 'siniestros', 'sinMatriculas', 'polizasEmbarque', 'pagosFraccionados']);
+        $client->load(['sede', 'policies.extorno', 'policies.siniestros', 'policies.cesiones', 'extornos', 'siniestros', 'sinMatriculas', 'polizasEmbarque', 'pagosFraccionados', 'cesiones']);
         $sedes = Sede::all();
         $agentes = $this->agentesDisponibles;
         return view('clients.show', compact('client', 'sedes', 'agentes'));

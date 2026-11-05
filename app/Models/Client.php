@@ -66,6 +66,11 @@ class Client extends Model
         return $this->hasMany(PagoFraccionado::class);
     }
 
+    public function cesiones(): HasMany
+    {
+        return $this->hasMany(CesionPoliza::class);
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim("{$this->nombre} {$this->apellido}");

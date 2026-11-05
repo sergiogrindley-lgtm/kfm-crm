@@ -65,4 +65,9 @@ class Policy extends Model
     {
         return $this->hasMany(Siniestro::class);
     }
+
+    public function cesiones(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CesionPoliza::class);
+    }
 }
