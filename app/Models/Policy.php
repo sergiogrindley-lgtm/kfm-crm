@@ -45,4 +45,14 @@ class Policy extends Model
     {
         return $this->belongsTo(Sede::class);
     }
+
+    public function extorno(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Extorno::class);
+    }
+
+    public function extornos(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Extorno::class);
+    }
 }

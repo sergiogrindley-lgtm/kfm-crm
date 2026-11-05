@@ -471,7 +471,7 @@ class OperationsController extends Controller
                 'client_id' => $cli?->id,
                 'policy_id' => $pol->id,
                 'office' => ($cli && $cli->sede && $cli->sede->slug === 'central') ? 'Central' : 'NEX',
-                'cartera' => ($pol->codigo_aseguradora == '87' || str_contains($pol->aseguradora ?? '', 'GEICO')) ? 'GEICO' : 'Patria Hispana',
+                'cartera' => ($pol->codigo_aseguradora == '87' || str_contains($pol->aseguradora ?? '', 'GEICO')) ? '87' : '81',
                 'numero_poliza' => $pol->numero_poliza ?: 'Pendiente',
                 'client_name' => $cli ? strtoupper($cli->full_name) : 'CLIENTE KFM',
                 'patria_amount' => $pol->prima,
@@ -531,7 +531,7 @@ class OperationsController extends Controller
 
         $client = $policy->client;
         $office = ($client && $client->sede && $client->sede->slug === 'central') ? 'Central' : 'NEX';
-        $cartera = ($policy->codigo_aseguradora == '87' || str_contains($policy->aseguradora ?? '', 'GEICO')) ? 'GEICO' : 'Patria Hispana';
+        $cartera = ($policy->codigo_aseguradora == '87' || str_contains($policy->aseguradora ?? '', 'GEICO')) ? '87' : '81';
 
         return response()->json([
             'found' => true,
@@ -580,22 +580,30 @@ class OperationsController extends Controller
             }
         }
 
-        $cancelarPoliza = $request->boolean('cancelar_poliza');
         $redirectTo = $validated['redirect_to'] ?? null;
         unset($validated['cancelar_poliza'], $validated['redirect_to']);
 
+        // Normalizar cartera a 81 / 87
+        if ($validated['cartera'] === 'Patria Hispana') {
+            $validated['cartera'] = '81';
+        } elseif ($validated['cartera'] === 'GEICO' || $validated['cartera'] === 'GEICO Overseas') {
+            $validated['cartera'] = '87';
+        }
+
         $extorno = Extorno::create($validated);
 
-        // Si se solicita cancelar la póliza asociada (o viene de Baja PCS)
-        if (!empty($validated['policy_id']) && $cancelarPoliza) {
+        // Siempre cancelar / dar de baja la póliza asociada en la ficha del cliente
+        if (!empty($validated['policy_id'])) {
             $pol = Policy::find($validated['policy_id']);
-            if ($pol && $pol->estado !== 'Cancelado') {
+            if ($pol) {
                 $fecha = date('d/m/Y');
                 $obsAct = $pol->observaciones ? trim($pol->observaciones) . "\n" : '';
+                $montoReembolso = $validated['amount_reimbursed'] ?: ($validated['patria_amount'] ?? '');
+                $motivoSalida = $validated['projected_departure'] ?: 'Órdenes de Traslado PCS';
                 $pol->update([
                     'estado' => 'Cancelado',
                     'balance' => 'Cancelled',
-                    'observaciones' => $obsAct . "● BAJA POR EXTORNO PCS ({$fecha}): Reembolso {$validated['amount_reimbursed']} (Destino: {$validated['projected_departure']})",
+                    'observaciones' => $obsAct . "● BAJA POR EXTORNO PCS ({$fecha}): Reembolso {$montoReembolso} € (Destino: {$motivoSalida})",
                 ]);
             }
         }

@@ -196,7 +196,7 @@
                                         <div class="flex items-center space-x-2">
                                             <span class="text-base font-bold text-slate-900 font-display">
                                                 @if(strtolower($policy->ramo) === 'hogar')
-                                                    <span>🏠 {{ $policy->tipo_vivienda ?: 'Seguro de Hogar' }}</span>
+                                                    <span>🏠 VIVIENDA</span>
                                                     @if($policy->direccion_riesgo)
                                                         <span class="text-xs font-normal text-slate-600 block sm:inline"> — {{ $policy->direccion_riesgo }}</span>
                                                     @endif
@@ -301,24 +301,21 @@
                                            title="Decodificar especificaciones completas de este bastidor en vivo">
                                             <span>⚡ Decodificar Bastidor</span>
                                         </button>
-                                        <button type="button" 
-                                           onclick="openItpCalculatorModal({{ substr($policy->fecha_efecto ?? '2013', 0, 4) ?: 2013 }}, 21000)"
-                                           class="inline-flex items-center gap-1 font-sans text-[10px] bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
-                                           title="Calcular tasas e ITP Junta de Andalucía Modelo 620">
-                                            <span>📊 Tasas & ITP</span>
-                                        </button>
-                                        <button type="button" 
-                                           onclick="openItvCalculatorModal({{ substr($policy->fecha_efecto ?? '2013', 0, 4) ?: 2013 }})"
+                                        <a href="https://auto-info.gratis/es/" target="_blank" rel="noopener noreferrer"
                                            class="inline-flex items-center gap-1 font-sans text-[10px] bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
-                                           title="Calcular periodicidad y requisitos ITV">
-                                            <span>🚗 ITV</span>
-                                        </button>
-                                        <button type="button" 
-                                           onclick="openPcsTrackingModal('{{ $policy->vin }}')"
-                                           class="inline-flex items-center gap-1 font-sans text-[10px] bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-300 font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
-                                           title="Rastrear estado de transporte militar PCS My POV">
-                                            <span>⚓ Tracking PCS</span>
-                                        </button>
+                                           title="Comprobar datos y ficha técnica por matrícula en Auto-Info">
+                                            <span>🔍 Auto-Info ↗</span>
+                                        </a>
+                                        <a href="https://www.juntadeandalucia.es/economiayhacienda/apl/surweb/consultas/vehiculos/consultaVehiculos.jsp?portal=ATRIAN&claseVehiculo=coche" target="_blank" rel="noopener noreferrer"
+                                           class="inline-flex items-center gap-1 font-sans text-[10px] bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
+                                           title="Consultar precios medios y tasación de vehículos usados Junta de Andalucía">
+                                            <span>🚗 Valoración Coches ↗</span>
+                                        </a>
+                                        <a href="https://www.juntadeandalucia.es/economiayhacienda/apl/surweb/consultas/vehiculos/consultaVehiculos.jsp?portal=ATRIAN&claseVehiculo=motocicleta" target="_blank" rel="noopener noreferrer"
+                                           class="inline-flex items-center gap-1 font-sans text-[10px] bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
+                                           title="Consultar precios medios y tasación de motocicletas Junta de Andalucía">
+                                            <span>🏍️ Valoración Motos ↗</span>
+                                        </a>
                                     </div>
                                 @endif
                             </div>
@@ -327,6 +324,57 @@
                                 <div class="text-xs bg-amber-50 text-amber-950 p-2.5 rounded-lg border border-amber-200/90 flex items-start gap-1.5 shadow-2xs">
                                     <span class="text-amber-800 font-bold flex-shrink-0">📝 Obs:</span>
                                     <span class="text-slate-800 leading-snug">{{ $policy->observaciones }}</span>
+                                </div>
+                            @endif
+
+                            @php
+                                $policyExtorno = $policy->extorno 
+                                    ?? ($client->extornos ? $client->extornos->firstWhere('policy_id', $policy->id) : null)
+                                    ?? ($client->extornos ? $client->extornos->firstWhere('numero_poliza', $policy->numero_poliza) : null);
+                            @endphp
+
+                            @if($policyExtorno)
+                                <div class="bg-gradient-to-r from-amber-50 via-amber-50/90 to-orange-50 border-2 border-amber-300 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center text-base shadow-xs flex-shrink-0 mt-0.5">
+                                            🛫
+                                        </div>
+                                        <div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <strong class="text-xs font-bold uppercase tracking-wider text-amber-950 font-display">
+                                                    Extorno Grabado en Contratación
+                                                </strong>
+                                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $policyExtorno->status_badge_color }}">
+                                                    {{ $policyExtorno->status }}
+                                                </span>
+                                            </div>
+                                            <div class="text-xs text-slate-700 mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+                                                <span>Reembolso: <strong class="text-emerald-700 font-mono font-bold">{{ $policyExtorno->amount_reimbursed ?: ($policyExtorno->patria_amount ?: 'A calcular') }} €</strong></span>
+                                                <span>Cartera: <strong class="text-slate-900 font-bold">{{ $policyExtorno->cartera }}</strong></span>
+                                                <span>Sede: <strong>{{ $policyExtorno->office }}</strong></span>
+                                                @if($policyExtorno->projected_departure)
+                                                    <span>Motivo: <strong>{{ $policyExtorno->projected_departure }}</strong></span>
+                                                @endif
+                                                @if($policyExtorno->email_sent_patria_date)
+                                                    <span class="text-slate-500">Email Cía: <strong>{{ $policyExtorno->email_sent_patria_date }}</strong></span>
+                                                @endif
+                                                @if($policyExtorno->recibo_numero)
+                                                    <span class="font-mono text-slate-500">Recibo: {{ $policyExtorno->recibo_numero }}</span>
+                                                @endif
+                                            </div>
+                                            @if($policyExtorno->observaciones)
+                                                <p class="text-[11px] text-amber-900/90 mt-1 italic leading-tight">
+                                                    "{{ $policyExtorno->observaciones }}"
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <a href="{{ route('operations.extornos.index', ['q' => $policy->numero_poliza]) }}" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs transition">
+                                            <span>Ver en Extornos →</span>
+                                        </a>
+                                    </div>
                                 </div>
                             @endif
 
@@ -361,7 +409,7 @@
 
                                         <!-- 5. Baja PCS / Reembolso Prorrateado -->
                                         <button type="button" 
-                                                onclick="openNuevoExtornoDesdePoliza('{{ $policy->numero_poliza }}', '{{ ($client->sede && $client->sede->slug === 'central') ? 'Central' : 'NEX' }}', '{{ addslashes(strtoupper($client->full_name)) }}', '{{ ($policy->codigo_aseguradora == '87' || str_contains($policy->aseguradora ?? '', 'GEICO')) ? 'GEICO' : 'Patria Hispana' }}', '{{ $policy->prima }}', '{{ $policy->id }}')"
+                                                onclick="openNuevoExtornoDesdePoliza('{{ $policy->numero_poliza }}', '{{ ($client->sede && $client->sede->slug === 'central') ? 'Central' : 'NEX' }}', '{{ addslashes(strtoupper($client->full_name)) }}', '{{ ($policy->codigo_aseguradora == '87' || str_contains($policy->aseguradora ?? '', 'GEICO')) ? '87' : '81' }}', '{{ $policy->prima }}', '{{ $policy->id }}')"
                                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition cursor-pointer">
                                             <span>🛫</span>
                                             <span>Baja PCS / Devolución</span>
@@ -369,7 +417,7 @@
 
                                         <!-- 6. Botón Cancelar Póliza -->
                                         <button type="button" 
-                                                onclick="openCancelPolicyModal('{{ $policy->id }}', '{{ $policy->numero_poliza }}', '{{ addslashes($policy->marca . ' ' . $policy->modelo) }}', '{{ addslashes($policy->matricula ?: $policy->ramo) }}')"
+                                                onclick="openCancelPolicyModal('{{ $policy->id }}', '{{ $policy->numero_poliza }}', '{{ addslashes($policy->marca ? ($policy->marca . ' ' . $policy->modelo) : (strtolower($policy->ramo) === 'hogar' ? 'Vivienda' : $policy->ramo)) }}', '{{ addslashes($policy->matricula ?: $policy->ramo) }}')"
                                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 hover:border-rose-400 shadow-sm transition cursor-pointer ml-auto">
                                             <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                                             <span>🚫 Cancelar Póliza</span>
@@ -542,9 +590,8 @@
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Vivienda</label>
                                     <select name="tipo_vivienda" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
-                                        <option value="">-- Seleccionar --</option>
-                                        <option value="PISO MEDIO">Piso (Planta Intermedia)</option>
-                                        <option value="PISO BAJO">Piso (Bajo / Con Jardín)</option>
+                                        <option value="VIVIENDA" selected>Vivienda</option>
+                                        <option value="PISO">Piso</option>
                                         <option value="ATICO">Ático</option>
                                         <option value="UNIF ADOSADA">Unifamiliar Adosada</option>
                                         <option value="UNIF NO ADOSADA">Chalet / Vivienda Aislada</option>
@@ -854,7 +901,8 @@
         document.getElementById('modal_extorno_numero_poliza').value = poliza || '';
         document.getElementById('modal_extorno_office').value = office || 'NEX';
         document.getElementById('modal_extorno_client_name').value = clientName || '';
-        document.getElementById('modal_extorno_cartera').value = cartera || 'Patria Hispana';
+        const cVal = (cartera === '87' || (typeof cartera === 'string' && (cartera.includes('87') || cartera.includes('GEICO')))) ? '87' : '81';
+        document.getElementById('modal_extorno_cartera').value = cVal;
         document.getElementById('modal_extorno_patria_amount').value = prima || '';
         document.getElementById('modal_extorno_policy_id').value = policyId || '';
         document.getElementById('modal_extorno_amount_reimbursed').value = prima || '';
@@ -879,8 +927,15 @@
                     if (data.found) {
                         if (data.client_name) document.getElementById('modal_extorno_client_name').value = data.client_name;
                         if (data.office) document.getElementById('modal_extorno_office').value = data.office;
-                        if (data.cartera) document.getElementById('modal_extorno_cartera').value = data.cartera;
-                        if (data.patria_amount) document.getElementById('modal_extorno_patria_amount').value = data.patria_amount;
+                        if (data.cartera) {
+                            const cVal = (data.cartera === '87' || data.cartera.includes('87') || data.cartera.includes('GEICO')) ? '87' : '81';
+                            document.getElementById('modal_extorno_cartera').value = cVal;
+                        }
+                        if (data.patria_amount) {
+                            document.getElementById('modal_extorno_patria_amount').value = data.patria_amount;
+                            const reim = document.getElementById('modal_extorno_amount_reimbursed');
+                            if (reim && !reim.value) reim.value = data.patria_amount;
+                        }
                         if (data.policy_id) document.getElementById('modal_extorno_policy_id').value = data.policy_id;
                     }
                 })
@@ -988,7 +1043,9 @@
         document.getElementById('edit_vin').value = policy.vin || '';
         
         document.getElementById('edit_direccion_riesgo').value = policy.direccion_riesgo || '';
-        document.getElementById('edit_tipo_vivienda').value = policy.tipo_vivienda || '';
+        let tvVal = policy.tipo_vivienda || 'VIVIENDA';
+        if (tvVal === 'PISO MEDIO') tvVal = 'VIVIENDA';
+        document.getElementById('edit_tipo_vivienda').value = tvVal;
         document.getElementById('edit_detalles_cobertura').value = policy.detalles_cobertura || '';
         
         document.getElementById('edit_recibo_numero').value = policy.recibo_numero || '';
@@ -1289,10 +1346,10 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-slate-700 font-bold mb-1">Cartera / Aseguradora</label>
-                            <select name="cartera" id="modal_extorno_cartera" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
-                                <option value="Patria Hispana">Patria Hispana</option>
-                                <option value="GEICO">GEICO Overseas</option>
+                            <label class="block text-slate-700 font-bold mb-1">Cartera (81 / 87) *</label>
+                            <select name="cartera" id="modal_extorno_cartera" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
+                                <option value="81">81 (Patria 81)</option>
+                                <option value="87">87 (GEICO 87)</option>
                             </select>
                         </div>
                         <div>
@@ -1324,16 +1381,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="pt-1 flex flex-col gap-2">
-                        <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
-                            <input type="checkbox" name="stateside_geico_form" value="1" class="w-4 h-4 text-rose-600 rounded">
-                            <span>¿Formulario GEICO Stateside cumplimentado?</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer font-bold text-rose-800 bg-rose-50 p-2 rounded-lg border border-rose-200">
-                            <input type="checkbox" name="cancelar_poliza" value="1" checked class="w-4 h-4 text-rose-600 rounded">
-                            <span>Dar de baja / cancelar la póliza simultáneamente en la ficha del cliente</span>
-                        </label>
-                    </div>
+                    <input type="hidden" name="cancelar_poliza" value="1">
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Observaciones</label>
                         <textarea name="observaciones" id="modal_extorno_observaciones" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg" placeholder="Entregado recibo VPC, devuelto por transferencia..."></textarea>
@@ -1637,9 +1685,8 @@
                             <div>
                                 <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Tipo de Vivienda</label>
                                 <select name="tipo_vivienda" id="edit_tipo_vivienda" class="w-full text-xs px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg">
-                                    <option value="">-- Seleccionar --</option>
-                                    <option value="PISO MEDIO">Piso (Planta Intermedia)</option>
-                                    <option value="PISO BAJO">Piso (Bajo / Con Jardín)</option>
+                                    <option value="VIVIENDA">Vivienda</option>
+                                    <option value="PISO">Piso</option>
                                     <option value="ATICO">Ático</option>
                                     <option value="UNIF ADOSADA">Unifamiliar Adosada</option>
                                     <option value="UNIF NO ADOSADA">Chalet / Vivienda Aislada</option>

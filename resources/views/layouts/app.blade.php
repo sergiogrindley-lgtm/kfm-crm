@@ -163,19 +163,43 @@
                                 </div>
                             </button>
 
-                            <!-- 2. Calculadora Fiscal ITP & DGT -->
-                            <button type="button" onclick="openItpCalculatorModal()" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-slate-800 cursor-pointer">
-                                <span class="text-base p-1.5 rounded-lg bg-amber-100 text-amber-800">📊</span>
+                            <!-- 2. Auto-Info (Comprobar vehículo por matrícula) -->
+                            <a href="https://auto-info.gratis/es/" target="_blank" rel="noopener noreferrer" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-emerald-50/70 transition text-slate-800 cursor-pointer">
+                                <span class="text-base p-1.5 rounded-lg bg-emerald-100 text-emerald-800">🔍</span>
                                 <div>
                                     <strong class="block text-slate-900 font-bold text-xs flex items-center gap-1.5">
-                                        <span>Calculadora ITP Andalucía & DGT</span>
-                                        <span class="text-[9px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Modelo 620</span>
+                                        <span>Auto-Info (Comprobar Matrícula)</span>
+                                        <span class="text-[9px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Externo ↗</span>
                                     </strong>
-                                    <span class="text-[11px] text-slate-600">Tablas BOE depreciación, tasa 4.1 y total trámite</span>
+                                    <span class="text-[11px] text-slate-600">Comprobar datos técnicos y ficha por número de matrícula</span>
                                 </div>
-                            </button>
+                            </a>
 
-                            <!-- 3. Asistente y Traductor Militar -->
+                            <!-- 3. Valoración Vehículos Usados (Junta de Andalucía) -->
+                            <a href="https://www.juntadeandalucia.es/economiayhacienda/apl/surweb/consultas/vehiculos/consultaVehiculos.jsp?portal=ATRIAN&claseVehiculo=coche" target="_blank" rel="noopener noreferrer" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-slate-800 cursor-pointer">
+                                <span class="text-base p-1.5 rounded-lg bg-amber-100 text-amber-800">🚗</span>
+                                <div>
+                                    <strong class="block text-slate-900 font-bold text-xs flex items-center gap-1.5">
+                                        <span>Valoración Vehículos Usados</span>
+                                        <span class="text-[9px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Junta And. ↗</span>
+                                    </strong>
+                                    <span class="text-[11px] text-slate-600">Precios medios oficiales ATRIAN para coches usados</span>
+                                </div>
+                            </a>
+
+                            <!-- 4. Valoración de Motocicletas (Junta de Andalucía) -->
+                            <a href="https://www.juntadeandalucia.es/economiayhacienda/apl/surweb/consultas/vehiculos/consultaVehiculos.jsp?portal=ATRIAN&claseVehiculo=motocicleta" target="_blank" rel="noopener noreferrer" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-slate-800 cursor-pointer">
+                                <span class="text-base p-1.5 rounded-lg bg-amber-100 text-amber-800">🏍️</span>
+                                <div>
+                                    <strong class="block text-slate-900 font-bold text-xs flex items-center gap-1.5">
+                                        <span>Valoración de Motocicletas</span>
+                                        <span class="text-[9px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Junta And. ↗</span>
+                                    </strong>
+                                    <span class="text-[11px] text-slate-600">Tasación y precios oficiales ATRIAN para motos y ciclomotores</span>
+                                </div>
+                            </a>
+
+                            <!-- 5. Asistente y Traductor Militar -->
                             <button type="button" onclick="openTranslatorModal()" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-indigo-50/70 transition text-slate-800 cursor-pointer">
                                 <span class="text-base p-1.5 rounded-lg bg-indigo-100 text-indigo-800">🔤</span>
                                 <div>
@@ -184,30 +208,6 @@
                                         <span class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Plantillas</span>
                                     </strong>
                                     <span class="text-[11px] text-slate-600">Traducción rápida y emails tipo para marineros</span>
-                                </div>
-                            </button>
-
-                            <!-- 4. Calculadora de ITV Militar -->
-                            <button type="button" onclick="openItvCalculatorModal()" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-emerald-50/70 transition text-slate-800 cursor-pointer">
-                                <span class="text-base p-1.5 rounded-lg bg-emerald-100 text-emerald-800">🚗</span>
-                                <div>
-                                    <strong class="block text-slate-900 font-bold text-xs flex items-center gap-1.5">
-                                        <span>Calculadora ITV Militar (VEIASA)</span>
-                                        <span class="text-[9px] bg-slate-700 text-white px-1.5 py-0.5 rounded font-bold uppercase">Periodicidad</span>
-                                    </strong>
-                                    <span class="text-[11px] text-slate-600">Vencimientos según año y requisitos POV Rota</span>
-                                </div>
-                            </button>
-
-                            <!-- 5. Tracking de Embarque PCS My POV -->
-                            <button type="button" onclick="openPcsTrackingModal()" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-sky-50/70 transition text-slate-800 cursor-pointer">
-                                <span class="text-base p-1.5 rounded-lg bg-sky-100 text-sky-800">⚓</span>
-                                <div>
-                                    <strong class="block text-slate-900 font-bold text-xs flex items-center gap-1.5">
-                                        <span>Rastreo Marítimo POV (VPC Rota)</span>
-                                        <span class="text-[9px] bg-sky-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Aduana</span>
-                                    </strong>
-                                    <span class="text-[11px] text-slate-600">Seguimiento de llegada a Base y pase aduanero</span>
                                 </div>
                             </button>
                         </div>

@@ -312,9 +312,8 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Vivienda</label>
                             <select name="tipo_vivienda" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs">
-                                <option value="">-- Seleccionar --</option>
-                                <option value="PISO MEDIO">Piso (Planta Intermedia)</option>
-                                <option value="PISO BAJO">Piso (Bajo / Con Jardín)</option>
+                                <option value="VIVIENDA" selected>Vivienda</option>
+                                <option value="PISO">Piso</option>
                                 <option value="ATICO">Ático</option>
                                 <option value="UNIF ADOSADA">Unifamiliar Adosada</option>
                                 <option value="UNIF NO ADOSADA">Chalet / Vivienda Aislada</option>

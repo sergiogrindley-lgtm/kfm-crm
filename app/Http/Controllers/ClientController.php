@@ -252,7 +252,10 @@ class ClientController extends Controller
             $modeloPoliza = ($ramo === 'Vehiculo') ? $modelo : null;
             $matriculaPoliza = ($ramo === 'Vehiculo') ? $matricula : null;
             $vinPoliza = ($ramo === 'Vehiculo') ? $vin : null;
-            $tipoViviendaPoliza = ($ramo === 'Hogar') ? ($validated['tipo_vivienda'] ?? null) : null;
+            $tipoViviendaPoliza = ($ramo === 'Hogar') ? ($validated['tipo_vivienda'] ?: 'VIVIENDA') : null;
+            if ($tipoViviendaPoliza === 'PISO MEDIO') {
+                $tipoViviendaPoliza = 'VIVIENDA';
+            }
             $direccionRiesgoPoliza = ($ramo === 'Hogar') ? $direccionRiesgo : null;
             $detallesCoberturaPoliza = ($ramo === 'RC') ? $detallesCobertura : null;
 
@@ -290,7 +293,7 @@ class ClientController extends Controller
 
     public function show(Client $client)
     {
-        $client->load(['sede', 'policies']);
+        $client->load(['sede', 'policies.extorno', 'extornos']);
         $sedes = Sede::all();
         $agentes = $this->agentesDisponibles;
         return view('clients.show', compact('client', 'sedes', 'agentes'));
@@ -406,6 +409,10 @@ class ClientController extends Controller
         if ($ramo !== 'Hogar') {
             $validated['tipo_vivienda'] = null;
             $validated['direccion_riesgo'] = null;
+        } else {
+            if (empty($validated['tipo_vivienda']) || $validated['tipo_vivienda'] === 'PISO MEDIO') {
+                $validated['tipo_vivienda'] = 'VIVIENDA';
+            }
         }
         if ($ramo !== 'Vehiculo') {
             $validated['marca'] = null;
@@ -473,7 +480,10 @@ class ClientController extends Controller
         $modelo = ($ramo === 'Vehiculo') && !empty($validated['modelo']) ? strtoupper(trim($validated['modelo'])) : null;
         $matricula = ($ramo === 'Vehiculo') && !empty($validated['matricula']) ? strtoupper(trim($validated['matricula'])) : null;
         $vin = ($ramo === 'Vehiculo') && !empty($validated['vin']) ? strtoupper(trim($validated['vin'])) : null;
-        $tipoVivienda = ($ramo === 'Hogar') ? ($validated['tipo_vivienda'] ?? null) : null;
+        $tipoVivienda = ($ramo === 'Hogar') ? ($validated['tipo_vivienda'] ?: 'VIVIENDA') : null;
+        if ($tipoVivienda === 'PISO MEDIO') {
+            $tipoVivienda = 'VIVIENDA';
+        }
         $direccionRiesgo = ($ramo === 'Hogar') ? ($validated['direccion_riesgo'] ?? null) : null;
         $detallesCobertura = ($ramo === 'RC') ? ($validated['detalles_cobertura'] ?? null) : null;
 
@@ -542,7 +552,7 @@ class ClientController extends Controller
             [
                 'client_id' => $client->id,
                 'office' => ($client->sede && $client->sede->slug === 'central') ? 'Central' : 'NEX',
-                'cartera' => ($policy->codigo_aseguradora == '87' || str_contains($policy->aseguradora ?? '', 'GEICO')) ? 'GEICO' : 'Patria Hispana',
+                'cartera' => ($policy->codigo_aseguradora == '87' || str_contains($policy->aseguradora ?? '', 'GEICO')) ? '87' : '81',
                 'numero_poliza' => $policy->numero_poliza ?: 'Pendiente',
                 'client_name' => strtoupper($client->full_name),
                 'patria_amount' => $policy->prima,

@@ -74,12 +74,11 @@
             <table class="w-full text-left text-xs border-collapse">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                        <th class="py-3.5 px-4">Póliza / Oficina</th>
+                        <th class="py-3.5 px-4">Póliza / Cartera</th>
                         <th class="py-3.5 px-4">Asegurado (Militar)</th>
                         <th class="py-3.5 px-4">Fecha Salida / Destino PCS</th>
                         <th class="py-3.5 px-4">Email Patria</th>
                         <th class="py-3.5 px-4">Importe Reembolso</th>
-                        <th class="py-3.5 px-4">GEICO US Form</th>
                         <th class="py-3.5 px-4">Estado</th>
                         <th class="py-3.5 px-4 text-right">Acciones</th>
                     </tr>
@@ -89,8 +88,8 @@
                         <tr class="hover:bg-slate-50/80 transition">
                             <td class="py-3.5 px-4">
                                 <span class="font-mono font-bold text-sm text-slate-900">#{{ $extorno->numero_poliza }}</span>
-                                <div class="text-[10px] text-slate-400 mt-0.5">
-                                    {{ $extorno->cartera }} • Sede: <strong>{{ $extorno->office }}</strong>
+                                <div class="text-[10px] text-slate-500 mt-0.5">
+                                    Cartera: <strong class="text-slate-900 font-bold">{{ $extorno->cartera }}</strong> • Sede: <strong>{{ $extorno->office }}</strong>
                                 </div>
                             </td>
                             <td class="py-3.5 px-4">
@@ -122,17 +121,6 @@
                                 <span class="text-[10px] text-slate-400">Prima orig: {{ $extorno->patria_amount ?: '-' }}</span>
                             </td>
                             <td class="py-3.5 px-4">
-                                @if($extorno->stateside_geico_form)
-                                    <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                                        ✓ Rellenado
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
-                                        Pendiente
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="py-3.5 px-4">
                                 <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold border {{ $extorno->status_badge_color }}">
                                     {{ $extorno->status }}
                                 </span>
@@ -143,7 +131,7 @@
                                         Ficha Cliente →
                                     </a>
                                 @endif
-                                <button type="button" onclick="openEditarExtornoModal({{ $extorno->id }}, '{{ $extorno->status }}', '{{ $extorno->amount_reimbursed }}', '{{ $extorno->recibo_numero }}', {{ $extorno->stateside_geico_form ? 'true' : 'false' }}, '{{ addslashes($extorno->observaciones ?? '') }}')"
+                                <button type="button" onclick="openEditarExtornoModal({{ $extorno->id }}, '{{ $extorno->status }}', '{{ $extorno->amount_reimbursed }}', '{{ $extorno->recibo_numero }}', '{{ addslashes($extorno->observaciones ?? '') }}')"
                                         class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs shadow-xs transition">
                                     Editar / Liquidar
                                 </button>
@@ -151,7 +139,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="py-12 text-center text-slate-400">
+                            <td colspan="7" class="py-12 text-center text-slate-400">
                                 No se encontraron registros de extornos por traslado militar
                             </td>
                         </tr>
@@ -182,11 +170,12 @@
                 @csrf
                 <input type="hidden" name="client_id" id="extorno_client_id" value="">
                 <input type="hidden" name="policy_id" id="extorno_policy_id" value="">
+                <input type="hidden" name="cancelar_poliza" value="1">
                 <div class="p-6 space-y-3 text-xs">
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Nº Póliza *</label>
-                            <input type="text" name="numero_poliza" id="extorno_numero_poliza" required oninput="lookupPolicyForExtorno(this.value)" placeholder="Ej: 1849102" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                            <input type="text" name="numero_poliza" id="extorno_numero_poliza" required oninput="lookupPolicyForExtorno(this.value)" onchange="lookupPolicyForExtorno(this.value)" placeholder="Ej: 1849102" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Oficina KFM *</label>
@@ -203,10 +192,10 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-slate-700 font-bold mb-1">Cartera / Aseguradora</label>
-                            <select name="cartera" id="extorno_cartera" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
-                                <option value="Patria Hispana">Patria Hispana</option>
-                                <option value="GEICO">GEICO Overseas</option>
+                            <label class="block text-slate-700 font-bold mb-1">Cartera (81 / 87) *</label>
+                            <select name="cartera" id="extorno_cartera" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
+                                <option value="81">81 (Patria 81)</option>
+                                <option value="87">87 (GEICO 87)</option>
                             </select>
                         </div>
                         <div>
@@ -227,7 +216,7 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Importe Reembolso (€)</label>
-                            <input type="text" name="amount_reimbursed" placeholder="285,40 €" class="w-full font-bold text-emerald-700 px-3 py-1.5 border border-slate-300 rounded-lg">
+                            <input type="text" name="amount_reimbursed" id="extorno_amount_reimbursed" placeholder="285,40 €" class="w-full font-bold text-emerald-700 px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Estado Inicial</label>
@@ -237,12 +226,6 @@
                                 <option value="Reembolsado">Reembolsado</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="pt-1">
-                        <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
-                            <input type="checkbox" name="stateside_geico_form" value="1" class="w-4 h-4 text-rose-600 rounded">
-                            <span>¿Formulario GEICO Stateside cumplimentado?</span>
-                        </label>
                     </div>
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Observaciones</label>
@@ -288,12 +271,6 @@
                         <input type="text" name="recibo_numero" id="edit_recibo" placeholder="REC-EXT-2026-..." class="w-full font-mono px-3 py-2 border border-slate-300 rounded-xl">
                     </div>
                     <div>
-                        <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
-                            <input type="checkbox" name="stateside_geico_form" id="edit_geico" value="1" class="w-4 h-4 text-emerald-600 rounded">
-                            <span>Formulario GEICO Stateside Completado</span>
-                        </label>
-                    </div>
-                    <div>
                         <label class="block text-slate-700 font-bold mb-1">Observaciones</label>
                         <textarea name="observaciones" id="edit_obs" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-xl"></textarea>
                     </div>
@@ -319,7 +296,7 @@
     function lookupPolicyForExtorno(val) {
         clearTimeout(lookupExtornoTimer);
         const pill = document.getElementById('extorno_lookup_pill');
-        if (!val || val.trim().length < 3) {
+        if (!val || val.trim().length < 2) {
             if (pill) pill.classList.add('hidden');
             return;
         }
@@ -332,10 +309,17 @@
                         if (data.policy_id) document.getElementById('extorno_policy_id').value = data.policy_id;
                         if (data.client_name) document.getElementById('extorno_client_name').value = data.client_name;
                         if (data.office) document.getElementById('extorno_office').value = data.office;
-                        if (data.cartera) document.getElementById('extorno_cartera').value = data.cartera;
-                        if (data.patria_amount) document.getElementById('extorno_patria_amount').value = data.patria_amount;
+                        if (data.cartera) {
+                            const cVal = (data.cartera === '87' || data.cartera.includes('87') || data.cartera.includes('GEICO')) ? '87' : '81';
+                            document.getElementById('extorno_cartera').value = cVal;
+                        }
+                        if (data.patria_amount) {
+                            document.getElementById('extorno_patria_amount').value = data.patria_amount;
+                            const reim = document.getElementById('extorno_amount_reimbursed');
+                            if (reim && !reim.value) reim.value = data.patria_amount;
+                        }
                         if (pill) {
-                            pill.innerHTML = `✓ Cliente activo: <strong>${data.client_name}</strong> · ${data.ramo} ${data.vehiculo ? `(${data.vehiculo})` : ''} · Prima: ${data.patria_amount || '—'}`;
+                            pill.innerHTML = `✓ Cliente activo: <strong>${data.client_name}</strong> · ${data.ramo} ${data.vehiculo ? `(${data.vehiculo})` : ''} · Cartera: ${data.cartera} · Prima: ${data.patria_amount || '—'} €`;
                             pill.classList.remove('hidden');
                         }
                     } else {
@@ -343,15 +327,14 @@
                     }
                 })
                 .catch(err => console.error(err));
-        }, 300);
+        }, 200);
     }
 
-    function openEditarExtornoModal(id, status, amount, recibo, geico, obs) {
+    function openEditarExtornoModal(id, status, amount, recibo, obs) {
         document.getElementById('editarExtornoForm').action = "/operations/extornos/" + id;
         document.getElementById('edit_status').value = status;
         document.getElementById('edit_amount').value = amount;
         document.getElementById('edit_recibo').value = recibo;
-        document.getElementById('edit_geico').checked = geico;
         document.getElementById('edit_obs').value = obs;
         document.getElementById('editarExtornoModal').classList.remove('hidden');
     }

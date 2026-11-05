@@ -297,7 +297,7 @@
                                                                 <span class="font-mono bg-white px-1.5 py-0.5 rounded border border-slate-300 text-slate-900 mr-1">{{ $policy->matricula }}</span>
                                                             @endif
                                                             @if(strtolower($policy->ramo) === 'hogar')
-                                                                <span>{{ $policy->tipo_vivienda ?: 'Hogar' }}</span>
+                                                                <span>VIVIENDA</span>
                                                                 @if($policy->direccion_riesgo)
                                                                     <span class="text-slate-500 font-normal text-xs">— {{ $policy->direccion_riesgo }}</span>
                                                                 @endif
