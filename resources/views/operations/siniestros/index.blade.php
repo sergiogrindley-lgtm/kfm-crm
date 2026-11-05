@@ -193,10 +193,20 @@
                                                 @php
                                                     $telLimpio = preg_replace('/[^0-9]/', '', $item->client->telefono);
                                                     if (strlen($telLimpio) === 9) $telLimpio = '34' . $telLimpio;
-                                                    $msgWa = rawurlencode("Hola {$item->client_name}, le contactamos de KFM Insurance en relación a su siniestro (Póliza #{$item->numero_poliza}, Matrícula {$item->matricula}). Le avisamos el {$item->fecha_cliente_avisado} y estamos a la espera de su respuesta para continuar la tramitación. Muchas gracias.");
+                                                    
+                                                    $fAvisado = $item->fecha_cliente_avisado ?: date('d/m/Y');
+                                                    $fAvisadoFormat = $fAvisado;
+                                                    if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', trim($fAvisado), $m)) {
+                                                        // Formatear en estándar US (MM/DD/YYYY) para el personal naval US Navy
+                                                        $fAvisadoFormat = sprintf('%02d/%02d/%04d', $m[2], $m[1], $m[3]);
+                                                    }
+                                                    
+                                                    $msgWaText = "Hello " . strtoupper($item->client_name) . ", we are contacting you from KFM Insurance regarding your claim (Policy #" . ($item->numero_poliza ?: '-') . ", License Plate " . ($item->matricula ?: '-') . "). We notified you on " . $fAvisadoFormat . " and are waiting for your response to continue the process. If you don't provide your incident version by today, we will have to accept fault. Thank you very much.";
+                                                    $msgWa = rawurlencode($msgWaText);
                                                 @endphp
                                                 <a href="https://wa.me/{{ $telLimpio }}?text={{ $msgWa }}" target="_blank" rel="noopener noreferrer"
-                                                   class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition">
+                                                   class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition"
+                                                   title="Enviar aviso por WhatsApp en inglés al cliente">
                                                     <span>📲 Enviar WhatsApp</span>
                                                 </a>
                                             @endif

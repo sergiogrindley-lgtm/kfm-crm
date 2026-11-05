@@ -434,10 +434,19 @@
                                                         @php
                                                             $telLimpio = preg_replace('/[^0-9]/', '', $client->telefono);
                                                             if (strlen($telLimpio) === 9) $telLimpio = '34' . $telLimpio;
-                                                            $msgWa = rawurlencode("Hola {$client->full_name}, le contactamos de KFM Insurance en relación a su siniestro (Póliza #{$policy->numero_poliza}, Matrícula {$policy->matricula}). Le avisamos el {$sin->fecha_cliente_avisado} y estamos a la espera de su respuesta para continuar la tramitación. Muchas gracias.");
+
+                                                            $fAvisado = $sin->fecha_cliente_avisado ?: date('d/m/Y');
+                                                            $fAvisadoFormat = $fAvisado;
+                                                            if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', trim($fAvisado), $m)) {
+                                                                $fAvisadoFormat = sprintf('%02d/%02d/%04d', $m[2], $m[1], $m[3]);
+                                                            }
+
+                                                            $msgWaText = "Hello " . strtoupper($client->full_name) . ", we are contacting you from KFM Insurance regarding your claim (Policy #" . ($policy->numero_poliza ?: '-') . ", License Plate " . ($policy->matricula ?: '-') . "). We notified you on " . $fAvisadoFormat . " and are waiting for your response to continue the process. If you don't provide your incident version by today, we will have to accept fault. Thank you very much.";
+                                                            $msgWa = rawurlencode($msgWaText);
                                                         @endphp
                                                         <a href="https://wa.me/{{ $telLimpio }}?text={{ $msgWa }}" target="_blank" rel="noopener noreferrer"
-                                                           class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold bg-white text-emerald-800 hover:bg-emerald-50 shadow-xs transition">
+                                                           class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold bg-white text-emerald-800 hover:bg-emerald-50 shadow-xs transition"
+                                                           title="Enviar aviso por WhatsApp en inglés al cliente">
                                                             <span>📲 Reavisar por WhatsApp</span>
                                                         </a>
                                                     @endif
