@@ -194,28 +194,28 @@
                             </a>
 
                             <!-- 3. Valoración Vehículos Usados (Junta de Andalucía) -->
-                            <a href="https://www.juntadeandalucia.es/economiayhacienda/apl/surweb/consultas/vehiculos/consultaVehiculos.jsp?portal=ATRIAN&claseVehiculo=coche" target="_blank" rel="noopener noreferrer" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-slate-800 cursor-pointer">
+                            <button type="button" onclick="openJuntaModal('coche')" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-slate-800 cursor-pointer">
                                 <span class="text-base p-1.5 rounded-lg bg-amber-100 text-amber-800">🚗</span>
                                 <div>
                                     <strong class="block text-slate-900 font-bold text-xs flex items-center gap-1.5">
                                         <span>Valoración Vehículos Usados</span>
-                                        <span class="text-[9px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Junta And. ↗</span>
+                                        <span class="text-[9px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Junta And. Embed</span>
                                     </strong>
                                     <span class="text-[11px] text-slate-600">Precios medios oficiales ATRIAN para coches usados</span>
                                 </div>
-                            </a>
+                            </button>
 
                             <!-- 4. Valoración de Motocicletas (Junta de Andalucía) -->
-                            <a href="https://www.juntadeandalucia.es/economiayhacienda/apl/surweb/consultas/vehiculos/consultaVehiculos.jsp?portal=ATRIAN&claseVehiculo=motocicleta" target="_blank" rel="noopener noreferrer" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-slate-800 cursor-pointer">
+                            <button type="button" onclick="openJuntaModal('motocicleta')" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-slate-800 cursor-pointer">
                                 <span class="text-base p-1.5 rounded-lg bg-amber-100 text-amber-800">🏍️</span>
                                 <div>
                                     <strong class="block text-slate-900 font-bold text-xs flex items-center gap-1.5">
                                         <span>Valoración de Motocicletas</span>
-                                        <span class="text-[9px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Junta And. ↗</span>
+                                        <span class="text-[9px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Junta And. Embed</span>
                                     </strong>
                                     <span class="text-[11px] text-slate-600">Tasación y precios oficiales ATRIAN para motos y ciclomotores</span>
                                 </div>
-                            </a>
+                            </button>
 
                             <!-- 5. Asistente y Traductor Militar -->
                             <button type="button" onclick="openTranslatorModal()" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-indigo-50/70 transition text-slate-800 cursor-pointer">
@@ -862,6 +862,88 @@ You can drop by our NEX office or send them by reply to this message. Thank you!
         </div>
     </div>
 
+    <!-- Modal 6: Valoración Oficial de Vehículos y Motocicletas (Junta de Andalucía - ATRIAN) -->
+    <div id="juntaModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 transition-all">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full border border-slate-200 overflow-hidden transform transition-all flex flex-col max-h-[92vh]">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-[#0c3547] via-[#11435a] to-[#0c3547] text-white p-4 sm:p-5 flex items-center justify-between border-b border-[#1b4b61] flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center text-xl font-bold border border-amber-400/30">
+                        🏛️
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 id="juntaModalTitle" class="font-bold text-base text-white tracking-wide">Valoración Oficial de Vehículos Usados (Junta de Andalucía)</h3>
+                            <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-400/30 px-2 py-0.5 rounded-full font-bold uppercase">ATRIAN Oficial</span>
+                        </div>
+                        <p class="text-xs text-amber-100/80">Consulta de precios medios de venta y valor fiscal aprobado por la Consejería de Hacienda</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <a id="juntaExternalLink" href="https://www.juntadeandalucia.es/economiayhacienda/apl/surweb/consultas/vehiculos/consultaVehiculos.jsp?portal=ATRIAN&claseVehiculo=coche" 
+                       target="_blank" rel="noopener noreferrer" 
+                       class="text-xs text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition flex items-center gap-1 cursor-pointer">
+                        <span>Abrir fuera</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </a>
+                    <button type="button" onclick="closeJuntaModal()" class="text-slate-300 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs Coche / Moto -->
+            <div class="bg-slate-100 px-4 py-2 border-b border-slate-200 flex items-center justify-between gap-3 flex-shrink-0">
+                <div class="flex items-center space-x-2">
+                    <button type="button" id="tabJuntaCoche" onclick="setJuntaTab('coche')" 
+                            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-amber-600 text-white shadow-xs">
+                        <span>🚗</span>
+                        <span>Coches y Turismos</span>
+                    </button>
+                    <button type="button" id="tabJuntaMoto" onclick="setJuntaTab('motocicleta')" 
+                            class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition flex items-center gap-1.5 cursor-pointer">
+                        <span>🏍️</span>
+                        <span>Motos y Ciclomotores</span>
+                    </button>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <button type="button" onclick="reloadJuntaIframe()" class="hover:text-slate-800 transition flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:underline cursor-pointer">
+                        <span>🔄 Recargar portal</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Iframe Container con Spinner -->
+            <div class="relative flex-1 bg-slate-50 min-h-[550px] overflow-hidden">
+                <div id="juntaLoadingState" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 z-10">
+                    <div class="animate-spin rounded-full h-8 w-8 border-4 border-amber-600 border-t-transparent mb-3"></div>
+                    <p class="text-xs font-bold text-slate-700">Cargando Oficina Virtual de la Junta de Andalucía (ATRIAN)...</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Precios Medios BOJA • Transmisiones Patrimoniales ITP</p>
+                </div>
+                <iframe id="iframeJunta" 
+                        src="" 
+                        class="w-full h-full min-h-[550px] border-0"
+                        onload="document.getElementById('juntaLoadingState').classList.add('hidden')"
+                        allow="fullscreen">
+                </iframe>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs flex-shrink-0">
+                <div class="flex items-center gap-2 text-slate-600">
+                    <span class="text-amber-600 font-bold">💡 Consejo:</span>
+                    <span class="hidden sm:inline">Selecciona Marca, Modelo y Año para obtener el valor fiscal oficial con el que se liquida el ITP y Gestoría.</span>
+                    <span class="sm:hidden">Consulta oficial de valores fiscales ATRIAN.</span>
+                </div>
+                <button type="button" onclick="closeJuntaModal()"
+                        class="px-5 py-2 bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function toggleHerramientasDropdown(event) {
             event.stopPropagation();
@@ -1247,6 +1329,61 @@ You can drop by our NEX office or send them by reply to this message. Thank you!
                     setTimeout(() => btn.innerHTML = orig, 2000);
                 }
             });
+        }
+
+        // 6. Valoración Oficial Junta de Andalucía (Embed Modal)
+        function openJuntaModal(tipo = 'coche') {
+            const modal = document.getElementById('juntaModal');
+            if (!modal) return;
+            
+            const drop = document.getElementById('herramientasDropdown');
+            if (drop) drop.classList.add('hidden');
+            
+            setJuntaTab(tipo);
+            modal.classList.remove('hidden');
+        }
+
+        function closeJuntaModal() {
+            const modal = document.getElementById('juntaModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function setJuntaTab(tipo) {
+            const btnCoche = document.getElementById('tabJuntaCoche');
+            const btnMoto = document.getElementById('tabJuntaMoto');
+            const iframe = document.getElementById('iframeJunta');
+            const externalLink = document.getElementById('juntaExternalLink');
+            const title = document.getElementById('juntaModalTitle');
+            const loader = document.getElementById('juntaLoadingState');
+            
+            let url = '';
+            if (tipo === 'coche') {
+                if (btnCoche) btnCoche.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-amber-600 text-white shadow-xs";
+                if (btnMoto) btnMoto.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition flex items-center gap-1.5 cursor-pointer";
+                if (title) title.textContent = "Valoración Oficial de Vehículos Usados (Junta de Andalucía)";
+                url = "https://www.juntadeandalucia.es/economiayhacienda/apl/surweb/consultas/vehiculos/consultaVehiculos.jsp?portal=ATRIAN&claseVehiculo=coche";
+            } else {
+                if (btnMoto) btnMoto.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-amber-600 text-white shadow-xs";
+                if (btnCoche) btnCoche.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition flex items-center gap-1.5 cursor-pointer";
+                if (title) title.textContent = "Valoración Oficial de Motocicletas (Junta de Andalucía)";
+                url = "https://www.juntadeandalucia.es/economiayhacienda/apl/surweb/consultas/vehiculos/consultaVehiculos.jsp?portal=ATRIAN&claseVehiculo=motocicleta";
+            }
+
+            if (externalLink) externalLink.href = url;
+
+            if (iframe && iframe.src !== url) {
+                if (loader) loader.classList.remove('hidden');
+                iframe.src = url;
+            }
+        }
+
+        function reloadJuntaIframe() {
+            const iframe = document.getElementById('iframeJunta');
+            const loader = document.getElementById('juntaLoadingState');
+            if (iframe && iframe.src) {
+                if (loader) loader.classList.remove('hidden');
+                iframe.src = iframe.src;
+            }
         }
     </script>
 </body>
