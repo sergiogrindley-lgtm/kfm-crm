@@ -418,9 +418,18 @@
                                                 @if($sin->fecha_reclamacion_recibida)
                                                     <span>Reclamación Recibida: <strong class="font-mono text-slate-900">{{ $sin->fecha_reclamacion_recibida }}</strong></span>
                                                 @endif
+                                                @if($sin->fecha_cliente_avisado)
+                                                    <span>Cliente Avisado: <strong class="font-mono text-slate-900">{{ $sin->fecha_cliente_avisado }}</strong></span>
+                                                @endif
                                                 <span>Aseguradora: <strong class="text-slate-900 font-bold">{{ $sin->cartera }}</strong></span>
                                                 <span>Sede: <strong>{{ $sin->office }}</strong></span>
                                             </div>
+                                            @if($sin->requiere_reaviso)
+                                                <div class="mt-2 text-xs bg-rose-600 text-white font-bold rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-xs">
+                                                    <span>⚠️</span>
+                                                    <span>¡ATENCIÓN! Han pasado {{ $sin->dias_desde_aviso }} días desde que se avisó al cliente sin respuesta. Requiere reavisar.</span>
+                                                </div>
+                                            @endif
                                             @if($sin->observaciones)
                                                 <p class="text-[11px] {{ $sin->tipo === 'Multa' ? 'text-amber-900/90' : 'text-rose-900/90' }} mt-1 italic leading-tight">
                                                     "{{ $sin->observaciones }}"
@@ -1552,25 +1561,31 @@
                             <input type="text" name="tramitador" value="Diego" placeholder="Diego" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-medium">
                         </div>
                         <div>
-                            <label class="block text-slate-700 font-bold mb-1">Reclamación Recibida (Fecha)</label>
-                            <input type="text" name="fecha_reclamacion_recibida" value="{{ date('d/m/Y') }}" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                            <label class="block text-slate-700 font-bold mb-1">Fecha Email a Tramitador</label>
+                            <input type="text" name="fecha_email_diego" value="{{ date('d/m/Y') }}" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-slate-700 font-bold mb-1">Fecha Email a Tramitador</label>
-                            <input type="text" name="fecha_email_diego" value="{{ date('d/m/Y') }}" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                            <label class="block text-slate-700 font-bold mb-1">Reclamación Recibida (Fecha)</label>
+                            <input type="text" name="fecha_reclamacion_recibida" value="{{ date('d/m/Y') }}" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
                         <div>
-                            <label class="block text-slate-700 font-bold mb-1">Estado Siniestro</label>
-                            <select name="estado_siniestro" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
-                                <option value="Abierto" selected>Abierto</option>
-                                <option value="En Peritación">En Peritación</option>
-                                <option value="Indemnizado">Indemnizado</option>
-                                <option value="Cerrado">Cerrado</option>
-                            </select>
+                            <label class="block text-slate-700 font-bold mb-1">Cliente Avisado (Fecha)</label>
+                            <input type="text" name="fecha_cliente_avisado" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Estado</label>
+                        <select name="estado_siniestro" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
+                            <option value="Abierto" selected>Abierto</option>
+                            <option value="Parte enviado">Parte enviado</option>
+                            <option value="Declaracion de Inexistencia">Declaracion de Inexistencia</option>
+                            <option value="Peritacion">Peritacion</option>
+                            <option value="Cerrado">Cerrado</option>
+                        </select>
                     </div>
 
                     <div>

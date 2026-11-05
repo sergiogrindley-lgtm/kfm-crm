@@ -45,12 +45,49 @@
         </div>
     </div>
 
+    <!-- Alerta de Seguimiento Automático (+5 días desde Cliente Avisado) -->
+    @if(($stats['siniestros_reaviso'] ?? 0) > 0 && $tab !== 'multas')
+        <div class="bg-gradient-to-r from-rose-600 via-rose-700 to-amber-600 text-white p-4 rounded-2xl shadow-lg border border-rose-400 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-pulse">
+            <div class="flex items-start sm:items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-2xl flex-shrink-0">
+                    ⚠️
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm text-white font-display">
+                        ¡Atención! Hay {{ $stats['siniestros_reaviso'] }} siniestro(s) pendiente(s) de reavisar al cliente
+                    </h3>
+                    <p class="text-xs text-rose-100">
+                        Estado Abierto con fecha de reclamación y más de 5 días transcurridos desde la fecha en que se avisó al cliente sin respuesta.
+                    </p>
+                </div>
+            </div>
+            <div class="flex-shrink-0">
+                @if(request('filter') === 'reaviso')
+                    <a href="{{ route('operations.siniestros.index') }}" 
+                       class="px-4 py-2 bg-white text-rose-800 hover:bg-rose-50 rounded-xl text-xs font-bold shadow-md transition inline-block">
+                        Mostrar Todos los Siniestros
+                    </a>
+                @else
+                    <a href="{{ route('operations.siniestros.index', ['filter' => 'reaviso']) }}" 
+                       class="px-4 py-2 bg-white text-rose-800 hover:bg-rose-50 rounded-xl text-xs font-bold shadow-md transition inline-block">
+                        Filtrar Pendientes de Reaviso ({{ $stats['siniestros_reaviso'] }}) →
+                    </a>
+                @endif
+            </div>
+        </div>
+    @endif
+
     <!-- Navigation Tabs: Siniestros vs Multas -->
     <div class="flex border-b border-slate-200 space-x-6 text-sm font-bold">
         <a href="{{ route('operations.siniestros.index') }}"
            class="pb-3 border-b-2 flex items-center gap-2 {{ $tab !== 'multas' ? 'border-rose-600 text-rose-700' : 'border-transparent text-slate-400 hover:text-slate-600' }}">
             <span>💥 Siniestros de Tráfico (Patria / ARAG)</span>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">{{ $stats['siniestros_abiertos'] }} abiertos</span>
+            @if(($stats['siniestros_reaviso'] ?? 0) > 0)
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-600 text-white animate-pulse">
+                    ⚠️ {{ $stats['siniestros_reaviso'] }} reavisar
+                </span>
+            @endif
         </a>
 
         <a href="{{ route('operations.multas.index') }}"
@@ -71,7 +108,7 @@
                         @if($tab !== 'multas')
                             <th class="py-3.5 px-4">Ref. Patria / ARAG</th>
                             <th class="py-3.5 px-4">Tramitador</th>
-                            <th class="py-3.5 px-4">Reclamación Recibida</th>
+                            <th class="py-3.5 px-4">Reclamación / Cliente Avisado</th>
                             <th class="py-3.5 px-4">Estado Siniestro</th>
                         @else
                             <th class="py-3.5 px-4">Fecha Infracción</th>
@@ -84,7 +121,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100 font-medium">
                     @forelse($items as $item)
-                        <tr class="hover:bg-slate-50/80 transition">
+                        <tr class="{{ $item->requiere_reaviso ? 'bg-rose-50/70 border-l-4 border-l-rose-600 hover:bg-rose-100/60' : 'hover:bg-slate-50/80' }} transition">
                             <td class="py-3.5 px-4">
                                 <span class="font-mono font-bold text-sm text-slate-900 block">#{{ $item->numero_poliza }}</span>
                                 <span class="font-mono text-xs font-semibold bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">
@@ -130,11 +167,29 @@
                                 </td>
                                 <td class="py-3.5 px-4">
                                     @if($item->fecha_reclamacion_recibida)
-                                        <span class="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                                            {{ $item->fecha_reclamacion_recibida }}
-                                        </span>
-                                    @else
+                                        <div class="text-[11px] text-slate-700">
+                                            Recibida: <strong class="font-mono font-bold text-slate-900">{{ $item->fecha_reclamacion_recibida }}</strong>
+                                        </div>
+                                    @endif
+                                    @if($item->fecha_cliente_avisado)
+                                        <div class="text-[11px] text-slate-700 mt-0.5">
+                                            Avisado: <strong class="font-mono font-bold text-slate-900">{{ $item->fecha_cliente_avisado }}</strong>
+                                            @if($item->dias_desde_aviso !== null)
+                                                <span class="text-[10px] text-slate-500 font-semibold">({{ $item->dias_desde_aviso }} días)</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                    @if(!$item->fecha_reclamacion_recibida && !$item->fecha_cliente_avisado)
                                         <span class="text-slate-400 text-xs">—</span>
+                                    @endif
+
+                                    @if($item->requiere_reaviso)
+                                        <div class="mt-1">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-600 text-white shadow-xs">
+                                                <span>⚠️</span>
+                                                <span>REAVISAR CLIENTE (+{{ $item->dias_desde_aviso }}d)</span>
+                                            </span>
+                                        </div>
                                     @endif
                                 </td>
                                 <td class="py-3.5 px-4">
@@ -173,8 +228,8 @@
                                         Ficha Cliente →
                                     </a>
                                 @endif
-                                <button type="button" onclick="openEditarSiniestroModal({{ $item->id }}, '{{ $item->tipo }}', '{{ $item->estado_siniestro }}', '{{ $item->estado_multa }}', '{{ addslashes($item->referencia_patria ?? '') }}', '{{ addslashes($item->referencia_arag ?? '') }}', '{{ addslashes($item->tramitador ?? ($item->tramitadora ?? '')) }}', '{{ addslashes($item->fecha_reclamacion_recibida ?? '') }}', '{{ addslashes($item->observaciones ?? '') }}')"
-                                        class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs shadow-xs transition">
+                                <button type="button" onclick="openEditarSiniestroModal({{ $item->id }}, '{{ $item->tipo }}', '{{ $item->estado_siniestro }}', '{{ $item->estado_multa }}', '{{ addslashes($item->referencia_patria ?? '') }}', '{{ addslashes($item->referencia_arag ?? '') }}', '{{ addslashes($item->tramitador ?? ($item->tramitadora ?? '')) }}', '{{ addslashes($item->fecha_reclamacion_recibida ?? '') }}', '{{ addslashes($item->fecha_cliente_avisado ?? '') }}', '{{ addslashes($item->observaciones ?? '') }}')"
+                                        class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs shadow-xs transition cursor-pointer">
                                     Actualizar
                                 </button>
                             </td>
@@ -256,24 +311,29 @@
                                 <input type="text" name="tramitador" value="Diego" placeholder="Diego" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-medium">
                             </div>
                             <div>
-                                <label class="block text-slate-700 font-bold mb-1">Reclamación Recibida (Fecha)</label>
-                                <input type="text" name="fecha_reclamacion_recibida" value="{{ date('d/m/Y') }}" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                                <label class="block text-slate-700 font-bold mb-1">Fecha Email a Tramitador</label>
+                                <input type="text" name="fecha_email_diego" value="{{ date('d/m/Y') }}" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-slate-700 font-bold mb-1">Fecha Email a Tramitador</label>
-                                <input type="text" name="fecha_email_diego" value="{{ date('d/m/Y') }}" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                                <label class="block text-slate-700 font-bold mb-1">Reclamación Recibida (Fecha)</label>
+                                <input type="text" name="fecha_reclamacion_recibida" value="{{ date('d/m/Y') }}" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
                             <div>
-                                <label class="block text-slate-700 font-bold mb-1">Estado Siniestro</label>
-                                <select name="estado_siniestro" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
-                                    <option value="Abierto">Abierto</option>
-                                    <option value="En Peritación">En Peritación</option>
-                                    <option value="Indemnizado">Indemnizado</option>
-                                    <option value="Cerrado">Cerrado</option>
-                                </select>
+                                <label class="block text-slate-700 font-bold mb-1">Cliente Avisado (Fecha)</label>
+                                <input type="text" name="fecha_cliente_avisado" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Estado</label>
+                            <select name="estado_siniestro" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
+                                <option value="Abierto" selected>Abierto</option>
+                                <option value="Parte enviado">Parte enviado</option>
+                                <option value="Declaracion de Inexistencia">Declaracion de Inexistencia</option>
+                                <option value="Peritacion">Peritacion</option>
+                                <option value="Cerrado">Cerrado</option>
+                            </select>
                         </div>
                     </div>
 
@@ -349,18 +409,25 @@
                                 <input type="text" name="tramitador" id="edit_tramitador" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-medium">
                             </div>
                             <div>
-                                <label class="block text-slate-700 font-bold mb-1">Reclamación Recibida</label>
-                                <input type="text" name="fecha_reclamacion_recibida" id="edit_fecha_reclamacion_recibida" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                                <label class="block text-slate-700 font-bold mb-1">Estado</label>
+                                <select name="estado_siniestro" id="edit_estado_siniestro" class="w-full px-3 py-1.5 border border-slate-300 rounded-xl font-bold">
+                                    <option value="Abierto">Abierto</option>
+                                    <option value="Parte enviado">Parte enviado</option>
+                                    <option value="Declaracion de Inexistencia">Declaracion de Inexistencia</option>
+                                    <option value="Peritacion">Peritacion</option>
+                                    <option value="Cerrado">Cerrado ✓</option>
+                                </select>
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-slate-700 font-bold mb-1">Estado Siniestro</label>
-                            <select name="estado_siniestro" id="edit_estado_siniestro" class="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold">
-                                <option value="Abierto">Abierto</option>
-                                <option value="En Peritación">En Peritación</option>
-                                <option value="Indemnizado">Indemnizado</option>
-                                <option value="Cerrado">Cerrado ✓</option>
-                            </select>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-1">Reclamación Recibida</label>
+                                <input type="text" name="fecha_reclamacion_recibida" id="edit_fecha_reclamacion_recibida" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-1">Cliente Avisado</label>
+                                <input type="text" name="fecha_cliente_avisado" id="edit_fecha_cliente_avisado" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                            </div>
                         </div>
                     </div>
                     <div id="editFieldsMulta" class="hidden">
@@ -439,7 +506,7 @@
     function closeNuevoSiniestroModal() {
         document.getElementById('nuevoSiniestroModal').classList.add('hidden');
     }
-    function openEditarSiniestroModal(id, tipo, estadoSin, estadoMul, refPatria, refArag, tramitador, fReclamacion, obs) {
+    function openEditarSiniestroModal(id, tipo, estadoSin, estadoMul, refPatria, refArag, tramitador, fReclamacion, fAvisado, obs) {
         document.getElementById('editarSiniestroForm').action = "/operations/siniestros/" + id;
         if (tipo === 'Multa') {
             document.getElementById('editFieldsSiniestro').classList.add('hidden');
@@ -453,6 +520,7 @@
             document.getElementById('edit_referencia_arag').value = refArag || '';
             document.getElementById('edit_tramitador').value = tramitador || 'Diego';
             document.getElementById('edit_fecha_reclamacion_recibida').value = fReclamacion || '';
+            document.getElementById('edit_fecha_cliente_avisado').value = fAvisado || '';
         }
         document.getElementById('edit_sin_obs').value = obs;
         document.getElementById('editarSiniestroModal').classList.remove('hidden');

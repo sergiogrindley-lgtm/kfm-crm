@@ -883,16 +883,24 @@ class OperationsController extends Controller
             });
         }
 
+        $filter = $request->input('filter');
+        if ($filter === 'reaviso' && $tab !== 'multas') {
+            $query->where('estado_siniestro', 'Abierto')
+                  ->whereNotNull('fecha_cliente_avisado')
+                  ->where('fecha_cliente_avisado', '!=', '');
+        }
+
         $items = $query->paginate(20)->withQueryString();
 
         $stats = [
             'siniestros_abiertos' => Siniestro::where('tipo', 'Siniestro')->where('estado_siniestro', '!=', 'Cerrado')->count(),
             'siniestros_total' => Siniestro::where('tipo', 'Siniestro')->count(),
+            'siniestros_reaviso' => Siniestro::where('tipo', 'Siniestro')->where('estado_siniestro', 'Abierto')->get()->filter(fn($s) => $s->requiere_reaviso)->count(),
             'multas_activas' => Siniestro::where('tipo', 'Multa')->where('estado_multa', 'En Trámite ARAG')->count(),
             'multas_total' => Siniestro::where('tipo', 'Multa')->count(),
         ];
 
-        return view('operations.siniestros.index', compact('items', 'stats', 'tab'));
+        return view('operations.siniestros.index', compact('items', 'stats', 'tab', 'filter'));
     }
 
     public function indexMultas(Request $request)
@@ -914,6 +922,7 @@ class OperationsController extends Controller
             'policy_id' => 'nullable|integer',
             'fecha_email_diego' => 'nullable|string|max:50',
             'fecha_reclamacion_recibida' => 'nullable|string|max:50',
+            'fecha_cliente_avisado' => 'nullable|string|max:50',
             'referencia_patria' => 'nullable|string|max:100',
             'referencia_arag' => 'nullable|string|max:100',
             'referencia_siniestro' => 'nullable|string|max:100',
@@ -964,6 +973,7 @@ class OperationsController extends Controller
             'tramitadora' => 'nullable|string|max:100',
             'tramitador' => 'nullable|string|max:100',
             'fecha_reclamacion_recibida' => 'nullable|string|max:50',
+            'fecha_cliente_avisado' => 'nullable|string|max:50',
             'estado_siniestro' => 'nullable|string|max:50',
             'estado_multa' => 'nullable|string|max:50',
             'observaciones' => 'nullable|string',
