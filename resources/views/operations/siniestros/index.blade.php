@@ -184,11 +184,22 @@
                                     @endif
 
                                     @if($item->requiere_reaviso)
-                                        <div class="mt-1">
+                                        <div class="mt-1 flex flex-col items-start gap-1">
                                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-600 text-white shadow-xs">
                                                 <span>⚠️</span>
                                                 <span>REAVISAR CLIENTE (+{{ $item->dias_desde_aviso }}d)</span>
                                             </span>
+                                            @if($item->client && $item->client->telefono)
+                                                @php
+                                                    $telLimpio = preg_replace('/[^0-9]/', '', $item->client->telefono);
+                                                    if (strlen($telLimpio) === 9) $telLimpio = '34' . $telLimpio;
+                                                    $msgWa = rawurlencode("Hola {$item->client_name}, le contactamos de KFM Insurance en relación a su siniestro (Póliza #{$item->numero_poliza}, Matrícula {$item->matricula}). Le avisamos el {$item->fecha_cliente_avisado} y estamos a la espera de su respuesta para continuar la tramitación. Muchas gracias.");
+                                                @endphp
+                                                <a href="https://wa.me/{{ $telLimpio }}?text={{ $msgWa }}" target="_blank" rel="noopener noreferrer"
+                                                   class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition">
+                                                    <span>📲 Enviar WhatsApp</span>
+                                                </a>
+                                            @endif
                                         </div>
                                     @endif
                                 </td>

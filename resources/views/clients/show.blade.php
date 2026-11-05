@@ -425,9 +425,22 @@
                                                 <span>Sede: <strong>{{ $sin->office }}</strong></span>
                                             </div>
                                             @if($sin->requiere_reaviso)
-                                                <div class="mt-2 text-xs bg-rose-600 text-white font-bold rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-xs">
-                                                    <span>⚠️</span>
-                                                    <span>¡ATENCIÓN! Han pasado {{ $sin->dias_desde_aviso }} días desde que se avisó al cliente sin respuesta. Requiere reavisar.</span>
+                                                <div class="mt-2 text-xs bg-rose-600 text-white font-bold rounded-lg p-2.5 flex flex-wrap items-center justify-between gap-2 shadow-xs">
+                                                    <div class="flex items-center gap-2">
+                                                        <span>⚠️</span>
+                                                        <span>¡ATENCIÓN! Han pasado {{ $sin->dias_desde_aviso }} días desde que se avisó al cliente sin respuesta. Requiere reavisar.</span>
+                                                    </div>
+                                                    @if($client->telefono)
+                                                        @php
+                                                            $telLimpio = preg_replace('/[^0-9]/', '', $client->telefono);
+                                                            if (strlen($telLimpio) === 9) $telLimpio = '34' . $telLimpio;
+                                                            $msgWa = rawurlencode("Hola {$client->full_name}, le contactamos de KFM Insurance en relación a su siniestro (Póliza #{$policy->numero_poliza}, Matrícula {$policy->matricula}). Le avisamos el {$sin->fecha_cliente_avisado} y estamos a la espera de su respuesta para continuar la tramitación. Muchas gracias.");
+                                                        @endphp
+                                                        <a href="https://wa.me/{{ $telLimpio }}?text={{ $msgWa }}" target="_blank" rel="noopener noreferrer"
+                                                           class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold bg-white text-emerald-800 hover:bg-emerald-50 shadow-xs transition">
+                                                            <span>📲 Reavisar por WhatsApp</span>
+                                                        </a>
+                                                    @endif
                                                 </div>
                                             @endif
                                             @if($sin->observaciones)
