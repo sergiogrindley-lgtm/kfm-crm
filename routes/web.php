@@ -24,6 +24,7 @@ Route::match(['get', 'post'], 'api/translate', [ClientController::class, 'transl
 Route::match(['get', 'post'], 'api/calculate-pcs-refund', [ClientController::class, 'calculatePcsRefund'])->name('api.calculate-pcs-refund');
 Route::get('api/check-duplicate-client', [ClientController::class, 'checkDuplicateClient'])->name('api.check-duplicate-client');
 Route::get('api/lookup-policy', [OperationsController::class, 'lookupPolicy'])->name('api.lookup-policy');
+Route::get('api/lookup-plate', [OperationsController::class, 'lookupPlate'])->name('api.lookup-plate');
 Route::get('operations/extornos/lookup-policy', [OperationsController::class, 'lookupPolicy']);
 
 // =========================================================================

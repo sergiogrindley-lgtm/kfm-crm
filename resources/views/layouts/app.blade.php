@@ -166,41 +166,31 @@
                         <div id="herramientasDropdown" class="hidden absolute left-0 mt-2 w-84 bg-white rounded-2xl shadow-2xl border border-slate-200 py-1.5 z-50 text-xs divide-y divide-slate-100 overflow-hidden">
                             <div class="px-4 py-2 bg-slate-50 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500">
                                 <span>Suite Integrada Oficina NEX</span>
-                                <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[9px] font-bold">100% Nativo</span>
                             </div>
                             
                             <!-- 1. Decodificador VIN -->
                             <button type="button" onclick="openVinDecoderModal()" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-cyan-50/70 transition text-slate-800 cursor-pointer">
                                 <span class="text-base p-1.5 rounded-lg bg-[#0c3547] text-cyan-300">⚡</span>
                                 <div>
-                                    <strong class="block text-[#0c3547] font-bold text-xs flex items-center gap-1.5">
-                                        <span>Decodificador VIN (NHTSA)</span>
-                                        <span class="text-[9px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">En vivo</span>
-                                    </strong>
+                                    <strong class="block text-[#0c3547] font-bold text-xs">Decodificador VIN (NHTSA)</strong>
                                     <span class="text-[11px] text-slate-600">Ficha técnica oficial de bastidores US en 0.2s</span>
                                 </div>
                             </button>
 
                             <!-- 2. Auto-Info (Comprobar vehículo por matrícula) -->
-                            <a href="https://auto-info.gratis/es/" target="_blank" rel="noopener noreferrer" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-emerald-50/70 transition text-slate-800 cursor-pointer">
+                            <button type="button" onclick="openMatriculaModal()" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-emerald-50/70 transition text-slate-800 cursor-pointer">
                                 <span class="text-base p-1.5 rounded-lg bg-emerald-100 text-emerald-800">🔍</span>
                                 <div>
-                                    <strong class="block text-slate-900 font-bold text-xs flex items-center gap-1.5">
-                                        <span>Auto-Info (Comprobar Matrícula)</span>
-                                        <span class="text-[9px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Externo ↗</span>
-                                    </strong>
+                                    <strong class="block text-slate-900 font-bold text-xs">Auto-Info (Comprobar Matrícula)</strong>
                                     <span class="text-[11px] text-slate-600">Comprobar datos técnicos y ficha por número de matrícula</span>
                                 </div>
-                            </a>
+                            </button>
 
                             <!-- 3. Valoración Vehículos Usados (Junta de Andalucía) -->
                             <button type="button" onclick="openJuntaModal('coche')" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-slate-800 cursor-pointer">
                                 <span class="text-base p-1.5 rounded-lg bg-amber-100 text-amber-800">🚗</span>
                                 <div>
-                                    <strong class="block text-slate-900 font-bold text-xs flex items-center gap-1.5">
-                                        <span>Valoración Vehículos Usados</span>
-                                        <span class="text-[9px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Junta And. Embed</span>
-                                    </strong>
+                                    <strong class="block text-slate-900 font-bold text-xs">Valoración Vehículos Usados</strong>
                                     <span class="text-[11px] text-slate-600">Precios medios oficiales ATRIAN para coches usados</span>
                                 </div>
                             </button>
@@ -209,10 +199,7 @@
                             <button type="button" onclick="openJuntaModal('motocicleta')" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-slate-800 cursor-pointer">
                                 <span class="text-base p-1.5 rounded-lg bg-amber-100 text-amber-800">🏍️</span>
                                 <div>
-                                    <strong class="block text-slate-900 font-bold text-xs flex items-center gap-1.5">
-                                        <span>Valoración de Motocicletas</span>
-                                        <span class="text-[9px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Junta And. Embed</span>
-                                    </strong>
+                                    <strong class="block text-slate-900 font-bold text-xs">Valoración de Motocicletas</strong>
                                     <span class="text-[11px] text-slate-600">Tasación y precios oficiales ATRIAN para motos y ciclomotores</span>
                                 </div>
                             </button>
@@ -221,10 +208,7 @@
                             <button type="button" onclick="openTranslatorModal()" class="w-full text-left flex items-start space-x-3 px-4 py-2.5 hover:bg-indigo-50/70 transition text-slate-800 cursor-pointer">
                                 <span class="text-base p-1.5 rounded-lg bg-indigo-100 text-indigo-800">🔤</span>
                                 <div>
-                                    <strong class="block text-slate-900 font-bold text-xs flex items-center gap-1.5">
-                                        <span>Asistente & Traductor Navy (EN ⇄ ES)</span>
-                                        <span class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.5 rounded font-bold uppercase">Plantillas</span>
-                                    </strong>
+                                    <strong class="block text-slate-900 font-bold text-xs">Asistente & Traductor Navy (EN ⇄ ES)</strong>
                                     <span class="text-[11px] text-slate-600">Traducción rápida y emails tipo para marineros</span>
                                 </div>
                             </button>
@@ -944,6 +928,173 @@ You can drop by our NEX office or send them by reply to this message. Thank you!
         </div>
     </div>
 
+    <!-- Modal 7: Comprobador Oficial de Matrícula (Auto-Info & DGT) -->
+    <div id="matriculaModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-[#0c3547] text-white p-5 flex items-center justify-between border-b border-[#1b4b61]">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-xl font-bold border border-emerald-400/30">
+                        🔍
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-bold text-base text-white tracking-wide">Comprobador de Matrícula (Auto-Info & DGT)</h3>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded-full font-bold uppercase">Algoritmo Oficial + CRM</span>
+                        </div>
+                        <p class="text-xs text-cyan-100/80">Fecha de matriculación, distintivo ambiental DGT, cotejo en pólizas KFM y ficha técnica</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeMatriculaModal()" class="text-slate-300 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+                <!-- Barra de Búsqueda de Matrícula -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Matrícula del Vehículo (Española Ordinaria o Histórica)
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <div class="relative flex-1">
+                            <input type="text" id="matInput" maxlength="15" placeholder="Ej: 0680 JCL ó 2585 MND"
+                                   class="w-full font-mono text-base font-bold uppercase tracking-widest px-4 py-2.5 rounded-xl border border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition uppercase"
+                                   onkeydown="if(event.key === 'Enter') ejecutarComprobarMatricula()">
+                        </div>
+                        <button type="button" onclick="ejecutarComprobarMatricula()"
+                                class="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md hover:shadow-lg transition cursor-pointer flex items-center gap-1.5">
+                            <span>🔍</span>
+                            <span>Comprobar</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between mt-2 text-xs flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-500 font-semibold text-[11px]">Probar con:</span>
+                            <button type="button" onclick="pegarMatriculaDemo('0680 JCL')" class="text-emerald-700 hover:text-emerald-900 font-semibold underline text-[11px] cursor-pointer">
+                                0680 JCL (Jonathan Negron)
+                            </button>
+                            <span class="text-slate-300">•</span>
+                            <button type="button" onclick="pegarMatriculaDemo('2585 MND')" class="text-emerald-700 hover:text-emerald-900 font-semibold underline text-[11px] cursor-pointer">
+                                2585 MND (Mercedes 190)
+                            </button>
+                        </div>
+                        <span class="text-slate-400 text-[11px]">Cálculo instantáneo DGT (0.1s)</span>
+                    </div>
+                </div>
+
+                <!-- Estado Cargando -->
+                <div id="matLoadingState" class="hidden py-8 text-center">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-600 border-t-transparent mb-3"></div>
+                    <p class="text-sm font-semibold text-slate-700">Analizando matrícula y cotejando con base de datos KFM...</p>
+                    <p class="text-xs text-slate-400 mt-1">Algoritmo Oficial DGT España • Registro KFM Insurance</p>
+                </div>
+
+                <!-- Estado Error -->
+                <div id="matErrorState" class="hidden bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-xl text-xs flex items-start gap-3">
+                    <span class="text-base text-rose-600">⚠️</span>
+                    <div>
+                        <strong class="font-bold block text-rose-900">No se pudo consultar la matrícula:</strong>
+                        <span id="matErrorMsg">Introduce una matrícula válida.</span>
+                    </div>
+                </div>
+
+                <!-- Ficha de Resultados -->
+                <div id="matResultCard" class="hidden space-y-4">
+                    <!-- Cabecera de la Matrícula Encontrada -->
+                    <div class="bg-gradient-to-r from-[#0c3547] to-[#134e4a] text-white p-4 rounded-xl shadow-md flex items-center justify-between flex-wrap gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white px-3 py-1.5 rounded-lg border-2 border-slate-300 shadow-sm flex items-center gap-1.5">
+                                <span class="w-3.5 h-6 bg-blue-700 text-[9px] font-black text-white flex flex-col items-center justify-center rounded-xs leading-none">E</span>
+                                <span id="matResPlate" class="font-mono font-black text-xl text-slate-900 tracking-wider">0680 JCL</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold tracking-widest text-teal-300 block mb-0.5" id="matResTipo">Ordinaria Europea</span>
+                                <h4 id="matResVehicle" class="text-base font-bold text-white leading-tight">Vehículo no identificado</h4>
+                            </div>
+                        </div>
+                        <div class="text-right flex flex-col items-end">
+                            <span id="matResBadgeDgt" class="inline-block px-3 py-1 rounded-lg font-black text-xs uppercase shadow-sm">
+                                Distintivo C
+                            </span>
+                            <div class="text-[11px] text-teal-200 mt-1" id="matResAntiguedad">11 años aprox.</div>
+                        </div>
+                    </div>
+
+                    <!-- Cuadrícula de Especificaciones Técnicas y DGT -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                            <span class="text-[10px] text-slate-500 uppercase font-semibold block">Fecha Matriculación (DGT)</span>
+                            <strong id="matResFecha" class="text-slate-800 text-sm font-bold text-emerald-700">-</strong>
+                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                            <span class="text-[10px] text-slate-500 uppercase font-semibold block">Año Modelo DGT</span>
+                            <strong id="matResAno" class="text-slate-800 text-sm font-bold">-</strong>
+                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                            <span class="text-[10px] text-slate-500 uppercase font-semibold block">Distintivo Ambiental</span>
+                            <strong id="matResEtiquetaDesc" class="text-slate-800 text-sm font-bold">-</strong>
+                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                            <span class="text-[10px] text-slate-500 uppercase font-semibold block">Bastidor (VIN)</span>
+                            <strong id="matResVin" class="text-slate-800 font-mono text-xs font-bold truncate block">-</strong>
+                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                            <span class="text-[10px] text-slate-500 uppercase font-semibold block">Cliente Asegurado KFM</span>
+                            <strong id="matResCliente" class="text-slate-800 text-xs font-bold truncate block">-</strong>
+                        </div>
+                        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                            <span class="text-[10px] text-slate-500 uppercase font-semibold block">Póliza Registrada</span>
+                            <strong id="matResPoliza" class="text-slate-800 text-xs font-bold truncate block">-</strong>
+                        </div>
+                    </div>
+
+                    <!-- Cuadrícula Técnica Adicional (si tiene VIN o specs) -->
+                    <div id="matVinSpecsBox" class="hidden bg-slate-50 border border-slate-200 p-3 rounded-xl text-xs space-y-2">
+                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                            <span>Datos Técnicos Homologados (NHTSA / DOT)</span>
+                            <button type="button" id="btnVerVinEnDecoder" class="text-cyan-700 hover:text-cyan-900 font-semibold underline cursor-pointer text-[11px]">
+                                Abrir en Decodificador VIN ⚡
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                            <div><span class="text-slate-500">Marca:</span> <strong id="matSpecMake">-</strong></div>
+                            <div><span class="text-slate-500">Modelo:</span> <strong id="matSpecModel">-</strong></div>
+                            <div><span class="text-slate-500">Combustible:</span> <strong id="matSpecFuel">-</strong></div>
+                            <div><span class="text-slate-500">Motor/Cilindrada:</span> <strong id="matSpecEngine">-</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Enlace directo a Auto-Info Online -->
+                    <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex items-center justify-between text-xs text-emerald-900">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">🌐</span>
+                            <span>¿Necesitas informe completo con ITV, kilometraje o historial de titulares?</span>
+                        </div>
+                        <a id="btnLinkAutoInfo" href="https://auto-info.gratis/es/" target="_blank" rel="noopener noreferrer"
+                           class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition shrink-0 flex items-center gap-1 shadow-xs cursor-pointer">
+                            <span>Ver en Auto-Info Online ↗</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                <button type="button" id="btnCopiarMatricula" onclick="copiarFichaMatricula()"
+                        class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl border border-slate-300 shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                    <span>Copiar Ficha Resumida</span>
+                </button>
+                <button type="button" onclick="closeMatriculaModal()"
+                        class="px-5 py-2 bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function toggleHerramientasDropdown(event) {
             event.stopPropagation();
@@ -980,6 +1131,8 @@ You can drop by our NEX office or send them by reply to this message. Thank you!
         function openVinDecoderModal(vin = '') {
             const modal = document.getElementById('vinDecoderModal');
             if (!modal) return;
+            const drop = document.getElementById('herramientasDropdown');
+            if (drop) drop.classList.add('hidden');
             modal.classList.remove('hidden');
             const input = document.getElementById('vinInput');
             if (vin) {
@@ -1384,6 +1537,160 @@ You can drop by our NEX office or send them by reply to this message. Thank you!
                 if (loader) loader.classList.remove('hidden');
                 iframe.src = iframe.src;
             }
+        }
+
+        // 7. Comprobador de Matrícula (Auto-Info & DGT)
+        function openMatriculaModal(matricula = '') {
+            const modal = document.getElementById('matriculaModal');
+            if (!modal) return;
+            const drop = document.getElementById('herramientasDropdown');
+            if (drop) drop.classList.add('hidden');
+            modal.classList.remove('hidden');
+            const input = document.getElementById('matInput');
+            if (matricula) {
+                input.value = matricula;
+                ejecutarComprobarMatricula();
+            } else {
+                setTimeout(() => input.focus(), 100);
+            }
+        }
+
+        function closeMatriculaModal() {
+            const modal = document.getElementById('matriculaModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function pegarMatriculaDemo(mat) {
+            const input = document.getElementById('matInput');
+            if (input) {
+                input.value = mat;
+                ejecutarComprobarMatricula();
+            }
+        }
+
+        async function ejecutarComprobarMatricula() {
+            const input = document.getElementById('matInput');
+            const mat = (input.value || '').trim().toUpperCase();
+            input.value = mat;
+
+            const loading = document.getElementById('matLoadingState');
+            const errorBox = document.getElementById('matErrorState');
+            const errorMsg = document.getElementById('matErrorMsg');
+            const resultCard = document.getElementById('matResultCard');
+
+            if (mat.length < 4) {
+                errorMsg.textContent = 'Por favor introduce una matrícula válida (mínimo 4 caracteres).';
+                errorBox.classList.remove('hidden');
+                resultCard.classList.add('hidden');
+                loading.classList.add('hidden');
+                return;
+            }
+
+            errorBox.classList.add('hidden');
+            resultCard.classList.add('hidden');
+            loading.classList.remove('hidden');
+
+            try {
+                const res = await fetch(`/api/lookup-plate?matricula=${encodeURIComponent(mat)}`);
+                const data = await res.json();
+
+                loading.classList.add('hidden');
+
+                if (data.success) {
+                    document.getElementById('matResPlate').textContent = data.matricula;
+                    document.getElementById('matResTipo').textContent = data.tipo_matricula;
+                    document.getElementById('matResVehicle').textContent = data.vehiculo || 'Vehículo';
+                    document.getElementById('matResFecha').textContent = data.fecha_matriculacion;
+                    document.getElementById('matResAno').textContent = data.ano_matriculacion;
+                    document.getElementById('matResAntiguedad').textContent = data.antiguedad_texto;
+                    document.getElementById('matResEtiquetaDesc').textContent = data.etiqueta_label;
+
+                    // Distintivo badge color
+                    const badge = document.getElementById('matResBadgeDgt');
+                    badge.textContent = `Etiqueta ${data.etiqueta_dgt}`;
+                    if (data.etiqueta_dgt === '0') {
+                        badge.className = 'inline-block px-3 py-1 rounded-lg font-black text-xs uppercase shadow-sm bg-blue-500 text-white';
+                    } else if (data.etiqueta_dgt === 'ECO') {
+                        badge.className = 'inline-block px-3 py-1 rounded-lg font-black text-xs uppercase shadow-sm bg-teal-500 text-white';
+                    } else if (data.etiqueta_dgt.includes('C')) {
+                        badge.className = 'inline-block px-3 py-1 rounded-lg font-black text-xs uppercase shadow-sm bg-emerald-600 text-white';
+                    } else if (data.etiqueta_dgt.includes('B')) {
+                        badge.className = 'inline-block px-3 py-1 rounded-lg font-black text-xs uppercase shadow-sm bg-amber-500 text-white';
+                    } else {
+                        badge.className = 'inline-block px-3 py-1 rounded-lg font-black text-xs uppercase shadow-sm bg-slate-500 text-white';
+                    }
+
+                    // VIN & CRM Info
+                    document.getElementById('matResVin').textContent = data.vin || 'No registrado';
+                    if (data.client_name) {
+                        document.getElementById('matResCliente').textContent = data.client_name;
+                    } else {
+                        document.getElementById('matResCliente').textContent = 'No registrado en KFM';
+                    }
+
+                    if (data.policy_number) {
+                        document.getElementById('matResPoliza').textContent = `#${data.policy_number} (${data.cartera || 'KFM'})`;
+                    } else {
+                        document.getElementById('matResPoliza').textContent = 'Sin póliza activa';
+                    }
+
+                    // Specs box
+                    const specsBox = document.getElementById('matVinSpecsBox');
+                    if (data.vin_data) {
+                        document.getElementById('matSpecMake').textContent = data.vin_data.make || data.marca || '-';
+                        document.getElementById('matSpecModel').textContent = data.vin_data.model || data.modelo || '-';
+                        document.getElementById('matSpecFuel').textContent = data.vin_data.fuel || '-';
+                        document.getElementById('matSpecEngine').textContent = [data.vin_data.displacement, data.vin_data.cylinders ? data.vin_data.cylinders + ' cil.' : ''].filter(Boolean).join(' ') || '-';
+                        
+                        const btnDecoder = document.getElementById('btnVerVinEnDecoder');
+                        btnDecoder.onclick = () => {
+                            closeMatriculaModal();
+                            openVinDecoderModal(data.vin);
+                        };
+                        specsBox.classList.remove('hidden');
+                    } else {
+                        specsBox.classList.add('hidden');
+                    }
+
+                    // Enlace a Auto-info
+                    const btnLink = document.getElementById('btnLinkAutoInfo');
+                    if (btnLink) {
+                        btnLink.href = data.external_url || data.external_lookup_url || 'https://auto-info.gratis/es/';
+                    }
+
+                    window._lastPlateData = data;
+                    resultCard.classList.remove('hidden');
+                } else {
+                    errorMsg.textContent = data.message || 'No se pudo comprobar la matrícula.';
+                    errorBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                loading.classList.add('hidden');
+                errorMsg.textContent = 'Error de conexión al comprobar la matrícula.';
+                errorBox.classList.remove('hidden');
+            }
+        }
+
+        function copiarFichaMatricula() {
+            if (!window._lastPlateData) return;
+            const d = window._lastPlateData;
+            const texto = `FICHA VEHÍCULO Y MATRÍCULA (AUTO-INFO & DGT)\n` +
+                `Matrícula: ${d.matricula}\n` +
+                `Tipo: ${d.tipo_matricula}\n` +
+                `Fecha Estimada DGT: ${d.fecha_matriculacion} (${d.antiguedad_texto})\n` +
+                `Distintivo Ambiental: ${d.etiqueta_label}\n` +
+                `Vehículo: ${d.vehiculo}\n` +
+                `Bastidor (VIN): ${d.vin || 'N/D'}\n` +
+                (d.client_name ? `Cliente KFM: ${d.client_name} (Póliza #${d.policy_number || 'N/D'})\n` : '') +
+                `Cotejado en KFM Insurance NEX Office`;
+            navigator.clipboard.writeText(texto).then(() => {
+                const btn = document.getElementById('btnCopiarMatricula');
+                if (btn) {
+                    const original = btn.innerHTML;
+                    btn.innerHTML = '<span>✅</span><span>¡Ficha Copiada!</span>';
+                    setTimeout(() => btn.innerHTML = original, 2000);
+                }
+            });
         }
     </script>
 </body>

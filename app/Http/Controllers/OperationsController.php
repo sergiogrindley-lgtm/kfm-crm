@@ -566,6 +566,250 @@ class OperationsController extends Controller
         ]);
     }
 
+    public function lookupPlate(Request $request)
+    {
+        $plateInput = trim($request->input('matricula') ?? $request->input('q') ?? '');
+        if (empty($plateInput)) {
+            return response()->json(['success' => false, 'message' => 'Por favor introduce una matrícula.']);
+        }
+
+        $clean = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $plateInput));
+        $dgt = $this->calcularMatriculaEspanola($clean);
+
+        // Buscar en la base de datos de KFM (Policies, Gestoria, Cesiones, Sin Matricula)
+        $policy = Policy::with(['client.sede'])
+            ->where(function ($q) use ($clean, $plateInput) {
+                $q->where('matricula', $clean)
+                  ->orWhere('matricula', $plateInput)
+                  ->orWhere('matricula', 'like', "%{$clean}%");
+            })
+            ->latest()
+            ->first();
+
+        $gestoria = null;
+        if (!$policy) {
+            $gestoria = GestoriaTramite::with('client')
+                ->where(function ($q) use ($clean, $plateInput) {
+                    $q->where('matricula', $clean)
+                      ->orWhere('matricula', 'like', "%{$clean}%");
+                })
+                ->latest()
+                ->first();
+        }
+
+        $client = $policy?->client ?: $gestoria?->client;
+        $foundInCrm = ($policy || $gestoria);
+
+        $marca = $policy?->marca ?: $gestoria?->marca ?: '';
+        $modelo = $policy?->modelo ?: $gestoria?->modelo ?: '';
+        $vin = $policy?->vin ?: $gestoria?->vin ?: '';
+
+        // Si tenemos VIN pero no marca/modelo completos, o queremos ficha técnica completa de EE.UU. / DOT
+        $vinData = null;
+        if ($vin && strlen($vin) === 17) {
+            try {
+                $response = \Illuminate\Support\Facades\Http::timeout(3)->get("https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/{$vin}?format=json");
+                if ($response->successful()) {
+                    $results = $response->json('Results.0');
+                    if ($results && !empty($results['Make'])) {
+                        $vinData = [
+                            'make' => $results['Make'] ?? '',
+                            'model' => $results['Model'] ?? '',
+                            'year' => $results['ModelYear'] ?? '',
+                            'fuel' => $results['FuelTypePrimary'] ?? '',
+                            'displacement' => $results['DisplacementL'] ? "{$results['DisplacementL']}L" : '',
+                            'cylinders' => $results['EngineCylinders'] ?? '',
+                            'body' => $results['BodyClass'] ?? '',
+                            'plant_country' => $results['PlantCountry'] ?? '',
+                        ];
+                        if (empty($marca)) $marca = $results['Make'];
+                        if (empty($modelo)) $modelo = $results['Model'];
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Silently ignore NHTSA external failure
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'matricula' => $dgt['matricula_formateada'] ?? $clean,
+            'raw_matricula' => $clean,
+            'tipo_matricula' => $dgt['tipo'] ?? 'Ordinaria',
+            'fecha_matriculacion' => $dgt['fecha_texto'] ?? 'Estimada',
+            'ano_matriculacion' => $dgt['ano'] ?? 2018,
+            'antiguedad_texto' => $dgt['antiguedad'] ?? '',
+            'etiqueta_dgt' => $dgt['etiqueta'] ?? 'C',
+            'etiqueta_label' => $dgt['etiqueta_label'] ?? 'Distintivo C (Verde)',
+            'etiqueta_color' => $dgt['etiqueta_color'] ?? 'emerald',
+            'found_in_crm' => (bool)$foundInCrm,
+            'marca' => $marca ?: 'No identificada',
+            'modelo' => $modelo ?: '',
+            'vehiculo' => trim("{$marca} {$modelo}") ?: 'Vehículo',
+            'vin' => $vin ?: 'No registrado',
+            'vin_data' => $vinData,
+            'client_id' => $client?->id,
+            'client_name' => $client ? strtoupper($client->full_name) : null,
+            'client_phone' => $client?->telefono,
+            'policy_id' => $policy?->id,
+            'policy_number' => $policy?->numero_poliza,
+            'cartera' => ($policy?->codigo_aseguradora === '87') ? 'GEICO 87' : ($policy ? 'Patria 81' : null),
+            'policy_status' => $policy?->estado,
+            'external_url' => "https://auto-info.gratis/es/",
+        ]);
+    }
+
+    public function calcularMatriculaEspanola(string $clean): array
+    {
+        // 1. Formato ordinario moderno: 4 dígitos + 3 letras (0000 BBB a 9999 ZZZ)
+        if (preg_match('/^(\d{4})([BCDFGHJKLMNPRSTVWXYZ]{3})$/i', $clean, $m)) {
+            $digits = $m[1];
+            $letters = strtoupper($m[2]);
+            $formatted = "{$digits} {$letters}";
+            
+            $chars = 'BCDFGHJKLMNPRSTVWXYZ';
+            $idx = 0;
+            for ($i = 0; $i < 3; $i++) {
+                $pos = strpos($chars, $letters[$i]);
+                if ($pos !== false) {
+                    $idx = $idx * 20 + $pos;
+                }
+            }
+
+            $milestones = [
+                [0,    2000, 9,  'Septiembre 2000'],
+                [67,   2001, 1,  'Enero 2001'],
+                [230,  2002, 1,  'Enero 2002'],
+                [400,  2002, 10, 'Octubre 2002'],
+                [480,  2003, 1,  'Enero 2003'],
+                [680,  2004, 1,  'Enero 2004'],
+                [800,  2004, 9,  'Septiembre 2004'],
+                [870,  2005, 1,  'Enero 2005'],
+                [1060, 2006, 1,  'Enero 2006'],
+                [1200, 2006, 5,  'Mayo 2006'],
+                [1340, 2007, 1,  'Enero 2007'],
+                [1550, 2008, 1,  'Enero 2008'],
+                [1600, 2008, 2,  'Febrero 2008'],
+                [1720, 2009, 1,  'Enero 2009'],
+                [1860, 2010, 1,  'Enero 2010'],
+                [2000, 2010, 12, 'Diciembre 2010'],
+                [2010, 2011, 1,  'Enero 2011'],
+                [2120, 2012, 1,  'Enero 2012'],
+                [2220, 2013, 1,  'Enero 2013'],
+                [2300, 2014, 1,  'Enero 2014'],
+                [2400, 2014, 11, 'Noviembre 2014'],
+                [2420, 2015, 1,  'Enero 2015'],
+                [2428, 2015, 4,  'Abril 2015'],
+                [2530, 2016, 1,  'Enero 2016'],
+                [2700, 2017, 1,  'Enero 2017'],
+                [2800, 2017, 6,  'Junio 2017'],
+                [2900, 2018, 1,  'Enero 2018'],
+                [3060, 2019, 1,  'Enero 2019'],
+                [3200, 2019, 9,  'Septiembre 2019'],
+                [3260, 2020, 1,  'Enero 2020'],
+                [3351, 2020, 7,  'Julio 2020'],
+                [3410, 2021, 1,  'Enero 2021'],
+                [3520, 2022, 1,  'Enero 2022'],
+                [3600, 2022, 9,  'Septiembre 2022'],
+                [3680, 2023, 1,  'Enero 2023'],
+                [3802, 2023, 4,  'Abril 2023'],
+                [3880, 2024, 1,  'Enero 2024'],
+                [4000, 2024, 9,  'Septiembre 2024'],
+                [4060, 2025, 1,  'Enero 2025'],
+                [4200, 2025, 9,  'Septiembre 2025'],
+                [4300, 2026, 1,  'Enero 2026'],
+            ];
+
+            $fechaTexto = 'Reciente (2026)';
+            $ano = 2026;
+            $mes = 1;
+
+            $count = count($milestones);
+            for ($k = 0; $k < $count - 1; $k++) {
+                $idx1 = $milestones[$k][0];
+                $idx2 = $milestones[$k + 1][0];
+                if ($idx >= $idx1 && $idx <= $idx2) {
+                    $useFirst = ($idx - $idx1) <= ($idx2 - $idx);
+                    $mChoose = $useFirst ? $milestones[$k] : $milestones[$k + 1];
+                    $ano = $mChoose[1];
+                    $mes = $mChoose[2];
+                    $fechaTexto = $mChoose[3];
+                    break;
+                }
+            }
+
+            if ($idx > 4300) {
+                $ano = 2026;
+                $fechaTexto = 'Año 2026';
+            }
+
+            $currentYear = (int)date('Y');
+            $diffYears = max(0, $currentYear - $ano);
+            $antiguedadTexto = "{$diffYears} años aprox.";
+
+            if ($ano >= 2015) {
+                $etiqueta = 'C';
+                $etiquetaLabel = 'Distintivo C (Verde)';
+                $etiquetaColor = 'emerald';
+            } elseif ($ano >= 2006) {
+                $etiqueta = 'C / B';
+                $etiquetaLabel = 'Distintivo C (Gasolina) / B (Diésel)';
+                $etiquetaColor = 'amber';
+            } elseif ($ano >= 2001) {
+                $etiqueta = 'B';
+                $etiquetaLabel = 'Distintivo B (Amarillo - Gasolina)';
+                $etiquetaColor = 'yellow';
+            } else {
+                $etiqueta = 'Sin Etiqueta';
+                $etiquetaLabel = 'Sin Distintivo Ambiental (Categoría A)';
+                $etiquetaColor = 'slate';
+            }
+
+            return [
+                'tipo' => 'Ordinaria (Sistema Europeo)',
+                'matricula_formateada' => $formatted,
+                'fecha_texto' => $fechaTexto,
+                'ano' => $ano,
+                'mes' => $mes,
+                'antiguedad' => $antiguedadTexto,
+                'etiqueta' => $etiqueta,
+                'etiqueta_label' => $etiquetaLabel,
+                'etiqueta_color' => $etiquetaColor,
+            ];
+        }
+
+        // 2. Formato provincial histórico (ej: CA-1234-AB)
+        if (preg_match('/^([A-Z]{1,2})(\d{4,6})([A-Z]{0,2})$/i', $clean, $m)) {
+            $prov = strtoupper($m[1]);
+            $num = $m[2];
+            $let = strtoupper($m[3]);
+            $formatted = "{$prov}-{$num}" . ($let ? "-{$let}" : '');
+
+            return [
+                'tipo' => "Provincial Histórica ({$prov})",
+                'matricula_formateada' => $formatted,
+                'fecha_texto' => 'Anterior a Septiembre 2000',
+                'ano' => 1998,
+                'antiguedad' => 'Más de 25 años (Vehículo Clásico)',
+                'etiqueta' => 'Sin Etiqueta',
+                'etiqueta_label' => 'Sin Distintivo Ambiental (Categoría A)',
+                'etiqueta_color' => 'slate',
+            ];
+        }
+
+        // 3. Fallback
+        return [
+            'tipo' => 'Especial / Extranjera',
+            'matricula_formateada' => $clean,
+            'fecha_texto' => 'No disponible',
+            'ano' => 2018,
+            'antiguedad' => '-',
+            'etiqueta' => 'Consultar DGT',
+            'etiqueta_label' => 'Consultar en Auto-Info o DGT',
+            'etiqueta_color' => 'slate',
+        ];
+    }
+
     public function storeExtorno(Request $request)
     {
         $validated = $request->validate([
