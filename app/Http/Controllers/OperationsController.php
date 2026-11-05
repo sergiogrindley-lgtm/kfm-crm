@@ -896,7 +896,7 @@ class OperationsController extends Controller
             'siniestros_abiertos' => Siniestro::where('tipo', 'Siniestro')->where('estado_siniestro', '!=', 'Cerrado')->count(),
             'siniestros_total' => Siniestro::where('tipo', 'Siniestro')->count(),
             'siniestros_reaviso' => Siniestro::where('tipo', 'Siniestro')->where('estado_siniestro', 'Abierto')->get()->filter(fn($s) => $s->requiere_reaviso)->count(),
-            'multas_activas' => Siniestro::where('tipo', 'Multa')->where('estado_multa', 'En Trámite ARAG')->count(),
+            'multas_activas' => Siniestro::where('tipo', 'Multa')->where('estado_multa', '!=', 'Archivada')->count(),
             'multas_total' => Siniestro::where('tipo', 'Multa')->count(),
         ];
 
@@ -976,6 +976,8 @@ class OperationsController extends Controller
             'fecha_cliente_avisado' => 'nullable|string|max:50',
             'estado_siniestro' => 'nullable|string|max:50',
             'estado_multa' => 'nullable|string|max:50',
+            'ticket_date' => 'nullable|string|max:50',
+            'date_sent_arag' => 'nullable|string|max:50',
             'observaciones' => 'nullable|string',
         ]);
 

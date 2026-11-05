@@ -255,7 +255,7 @@
                                         Ficha Cliente →
                                     </a>
                                 @endif
-                                <button type="button" onclick="openEditarSiniestroModal({{ $item->id }}, '{{ $item->tipo }}', '{{ $item->estado_siniestro }}', '{{ $item->estado_multa }}', '{{ addslashes($item->referencia_patria ?? '') }}', '{{ addslashes($item->referencia_arag ?? '') }}', '{{ addslashes($item->tramitador ?? ($item->tramitadora ?? '')) }}', '{{ addslashes($item->fecha_reclamacion_recibida ?? '') }}', '{{ addslashes($item->fecha_cliente_avisado ?? '') }}', '{{ addslashes($item->observaciones ?? '') }}')"
+                                <button type="button" onclick="openEditarSiniestroModal({{ $item->id }}, '{{ $item->tipo }}', '{{ $item->estado_siniestro }}', '{{ $item->estado_multa }}', '{{ addslashes($item->referencia_patria ?? '') }}', '{{ addslashes($item->referencia_arag ?? '') }}', '{{ addslashes($item->tramitador ?? ($item->tramitadora ?? '')) }}', '{{ addslashes($item->fecha_reclamacion_recibida ?? '') }}', '{{ addslashes($item->fecha_cliente_avisado ?? '') }}', '{{ addslashes($item->observaciones ?? '') }}', '{{ addslashes($item->ticket_date ?? '') }}', '{{ addslashes($item->date_sent_arag ?? '') }}')"
                                         class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs shadow-xs transition cursor-pointer">
                                     Actualizar
                                 </button>
@@ -369,27 +369,19 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-slate-700 font-bold mb-1">Fecha Infracción (Ticket Date)</label>
-                                <input type="text" name="ticket_date" placeholder="dd/mm/aaaa" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                                <input type="text" name="ticket_date" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
-                            <div>
-                                <label class="block text-slate-700 font-bold mb-1">Fecha Notificación Cliente</label>
-                                <input type="text" name="date_client_notified" value="{{ date('d/m/Y') }}" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-slate-700 font-bold mb-1">Fecha Envío a ARAG</label>
-                                <input type="text" name="date_sent_arag" value="{{ date('d/m/Y') }}" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                                <input type="text" name="date_sent_arag" value="{{ date('d/m/Y') }}" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
-                            <div>
-                                <label class="block text-slate-700 font-bold mb-1">Estado Recurso ARAG</label>
-                                <select name="estado_multa" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
-                                    <option value="En Trámite ARAG">En Trámite ARAG</option>
-                                    <option value="Estimada">Estimada (Anulada) ✓</option>
-                                    <option value="Pagada">Pagada con Bonificación</option>
-                                    <option value="Archivada">Archivada</option>
-                                </select>
-                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Estado de Recurso</label>
+                            <select name="estado_multa" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
+                                <option value="En trámite" selected>En trámite</option>
+                                <option value="Archivada">Archivada</option>
+                            </select>
                         </div>
                     </div>
 
@@ -457,14 +449,24 @@
                             </div>
                         </div>
                     </div>
-                    <div id="editFieldsMulta" class="hidden">
-                        <label class="block text-slate-700 font-bold mb-1">Estado Recurso ARAG</label>
-                        <select name="estado_multa" id="edit_estado_multa" class="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold">
-                            <option value="En Trámite ARAG">En Trámite ARAG</option>
-                            <option value="Estimada">Estimada (Anulada) ✓</option>
-                            <option value="Pagada">Pagada</option>
-                            <option value="Archivada">Archivada</option>
-                        </select>
+                    <div id="editFieldsMulta" class="hidden space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-1">Fecha Infracción</label>
+                                <input type="text" name="ticket_date" id="edit_ticket_date" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-1">Fecha Envío a ARAG</label>
+                                <input type="text" name="date_sent_arag" id="edit_date_sent_arag" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Estado de Recurso</label>
+                            <select name="estado_multa" id="edit_estado_multa" class="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold">
+                                <option value="En trámite">En trámite</option>
+                                <option value="Archivada">Archivada</option>
+                            </select>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Observaciones</label>
@@ -533,12 +535,22 @@
     function closeNuevoSiniestroModal() {
         document.getElementById('nuevoSiniestroModal').classList.add('hidden');
     }
-    function openEditarSiniestroModal(id, tipo, estadoSin, estadoMul, refPatria, refArag, tramitador, fReclamacion, fAvisado, obs) {
+    function openEditarSiniestroModal(id, tipo, estadoSin, estadoMul, refPatria, refArag, tramitador, fReclamacion, fAvisado, obs, ticketDate, dateSentArag) {
         document.getElementById('editarSiniestroForm').action = "/operations/siniestros/" + id;
         if (tipo === 'Multa') {
             document.getElementById('editFieldsSiniestro').classList.add('hidden');
             document.getElementById('editFieldsMulta').classList.remove('hidden');
-            document.getElementById('edit_estado_multa').value = estadoMul;
+            let selEstado = 'En trámite';
+            if (estadoMul && estadoMul.toLowerCase().includes('archivada')) {
+                selEstado = 'Archivada';
+            }
+            document.getElementById('edit_estado_multa').value = selEstado;
+            if (document.getElementById('edit_ticket_date')) {
+                document.getElementById('edit_ticket_date').value = ticketDate || '';
+            }
+            if (document.getElementById('edit_date_sent_arag')) {
+                document.getElementById('edit_date_sent_arag').value = dateSentArag || '';
+            }
         } else {
             document.getElementById('editFieldsSiniestro').classList.remove('hidden');
             document.getElementById('editFieldsMulta').classList.add('hidden');
