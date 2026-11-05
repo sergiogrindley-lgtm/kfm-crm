@@ -70,4 +70,9 @@ class Client extends Model
     {
         return trim("{$this->nombre} {$this->apellido}");
     }
+
+    public function getTelefonoAttribute(): ?string
+    {
+        return $this->telefono_movil ?: $this->telefono_fijo;
+    }
 }
