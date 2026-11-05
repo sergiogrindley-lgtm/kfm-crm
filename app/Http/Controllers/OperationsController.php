@@ -910,8 +910,14 @@ class OperationsController extends Controller
             'numero_poliza' => 'required|string|max:50',
             'matricula' => 'required|string|max:50',
             'client_name' => 'required|string|max:150',
+            'client_id' => 'nullable|integer',
+            'policy_id' => 'nullable|integer',
             'fecha_email_diego' => 'nullable|string|max:50',
+            'fecha_reclamacion_recibida' => 'nullable|string|max:50',
+            'referencia_patria' => 'nullable|string|max:100',
+            'referencia_arag' => 'nullable|string|max:100',
             'referencia_siniestro' => 'nullable|string|max:100',
+            'tramitador' => 'nullable|string|max:100',
             'tramitadora' => 'nullable|string|max:100',
             'estado_siniestro' => 'nullable|string|max:50',
             'ticket_date' => 'nullable|string|max:50',
@@ -921,19 +927,55 @@ class OperationsController extends Controller
             'observaciones' => 'nullable|string',
         ]);
 
-        Siniestro::create($validated);
+        $validated['cartera'] = (str_contains($validated['cartera'] ?? '', '87') || str_contains($validated['cartera'] ?? '', 'GEICO')) ? '87 (GEICO 87)' : '81 (Patria 81)';
 
-        return redirect()->route('operations.siniestros.index', ['tab' => strtolower($validated['tipo']) === 'multa' ? 'multas' : 'siniestros'])
+        if (!empty($validated['tramitador']) && empty($validated['tramitadora'])) {
+            $validated['tramitadora'] = $validated['tramitador'];
+        }
+
+        if (!empty($validated['referencia_patria']) && empty($validated['referencia_siniestro'])) {
+            $validated['referencia_siniestro'] = $validated['referencia_patria'];
+        }
+
+        // Asociar automáticamente con póliza y cliente si existen
+        $pol = Policy::where('numero_poliza', trim($validated['numero_poliza']))->first();
+        if ($pol) {
+            $validated['policy_id'] = $pol->id;
+            $validated['client_id'] = $pol->client_id;
+        }
+
+        $sin = Siniestro::create($validated);
+
+        // Si se envió desde la ficha de cliente, volver a la ficha
+        if ($request->filled('redirect_to_client') && $sin->client_id) {
+            return redirect()->route('clients.show', $sin->client_id)
+                ->with('success', "Parte de {$validated['tipo']} grabado correctamente en la contratación del cliente.");
+        }
+
+        return redirect()->route(strtolower($validated['tipo']) === 'multa' ? 'operations.multas.index' : 'operations.siniestros.index')
             ->with('success', "{$validated['tipo']} registrado correctamente.");
     }
 
     public function updateSiniestro(Request $request, Siniestro $siniestro)
     {
         $validated = $request->validate([
+            'referencia_patria' => 'nullable|string|max:100',
+            'referencia_arag' => 'nullable|string|max:100',
+            'tramitadora' => 'nullable|string|max:100',
+            'tramitador' => 'nullable|string|max:100',
+            'fecha_reclamacion_recibida' => 'nullable|string|max:50',
             'estado_siniestro' => 'nullable|string|max:50',
             'estado_multa' => 'nullable|string|max:50',
             'observaciones' => 'nullable|string',
         ]);
+
+        if (!empty($validated['tramitador']) && empty($validated['tramitadora'])) {
+            $validated['tramitadora'] = $validated['tramitador'];
+        }
+
+        if (!empty($validated['referencia_patria'])) {
+            $validated['referencia_siniestro'] = $validated['referencia_patria'];
+        }
 
         $siniestro->update($validated);
 

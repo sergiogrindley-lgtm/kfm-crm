@@ -15,10 +15,10 @@
                 <span class="text-xs text-slate-400">Excel {{ $tab === 'multas' ? 'MULTAS' : 'SINIESTROS' }}</span>
             </div>
             <h1 class="text-2xl font-black text-slate-900 font-display mt-1">
-                {{ $tab === 'multas' ? 'Recursos de Multas de Tráfico (ARAG)' : 'Siniestros de Tráfico (ARAG)' }}
+                {{ $tab === 'multas' ? 'Recursos de Multas de Tráfico (ARAG)' : 'Siniestros de Tráfico' }}
             </h1>
             <p class="text-xs text-slate-500">
-                {{ $tab === 'multas' ? 'Gestión y tramitación de sanciones de tráfico con la defensa jurídica de ARAG' : 'Partes de accidentes, peritaciones de daños y tramitación con Diego' }}
+                {{ $tab === 'multas' ? 'Gestión y tramitación de sanciones de tráfico con la defensa jurídica de ARAG' : 'Partes de accidentes, peritaciones de daños y tramitación de expedientes' }}
             </p>
         </div>
 
@@ -49,7 +49,7 @@
     <div class="flex border-b border-slate-200 space-x-6 text-sm font-bold">
         <a href="{{ route('operations.siniestros.index') }}"
            class="pb-3 border-b-2 flex items-center gap-2 {{ $tab !== 'multas' ? 'border-rose-600 text-rose-700' : 'border-transparent text-slate-400 hover:text-slate-600' }}">
-            <span>💥 Siniestros de Tráfico (Diego / Peritos)</span>
+            <span>💥 Siniestros de Tráfico (Patria / ARAG)</span>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">{{ $stats['siniestros_abiertos'] }} abiertos</span>
         </a>
 
@@ -69,8 +69,9 @@
                         <th class="py-3.5 px-4">Póliza / Matrícula</th>
                         <th class="py-3.5 px-4">Asegurado (Titular)</th>
                         @if($tab !== 'multas')
-                            <th class="py-3.5 px-4">Referencia Siniestro</th>
-                            <th class="py-3.5 px-4">Tramitadora / Diego</th>
+                            <th class="py-3.5 px-4">Ref. Patria / ARAG</th>
+                            <th class="py-3.5 px-4">Tramitador</th>
+                            <th class="py-3.5 px-4">Reclamación Recibida</th>
                             <th class="py-3.5 px-4">Estado Siniestro</th>
                         @else
                             <th class="py-3.5 px-4">Fecha Infracción</th>
@@ -91,20 +92,49 @@
                                 </span>
                             </td>
                             <td class="py-3.5 px-4">
-                                <strong class="text-slate-900 block">{{ $item->client_name }}</strong>
-                                <span class="text-[10px] text-slate-400">{{ $item->cartera }} • {{ $item->office }}</span>
+                                @if($item->client_id)
+                                    <a href="{{ route('clients.show', $item->client_id) }}" class="font-bold text-sky-800 hover:text-sky-900 hover:underline block">
+                                        {{ $item->client_name }}
+                                    </a>
+                                @else
+                                    <strong class="text-slate-900 block">{{ $item->client_name }}</strong>
+                                @endif
+                                <span class="text-[10px] text-slate-400">Aseguradora: <strong class="text-slate-700">{{ $item->cartera }}</strong> • {{ $item->office }}</span>
                             </td>
 
                             @if($tab !== 'multas')
                                 <td class="py-3.5 px-4">
-                                    <span class="font-mono font-bold text-rose-900 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
-                                        {{ $item->referencia_siniestro ?: 'Pendiente Ref.' }}
-                                    </span>
+                                    @if($item->referencia_patria)
+                                        <div class="font-mono font-bold text-rose-900 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 inline-block text-xs">
+                                            Patria: {{ $item->referencia_patria }}
+                                        </div>
+                                    @elseif($item->referencia_siniestro)
+                                        <div class="font-mono font-bold text-rose-900 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 inline-block text-xs">
+                                            Patria: {{ $item->referencia_siniestro }}
+                                        </div>
+                                    @endif
+                                    @if($item->referencia_arag)
+                                        <div class="font-mono font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block text-[11px] mt-0.5">
+                                            ARAG: {{ $item->referencia_arag }}
+                                        </div>
+                                    @endif
+                                    @if(!$item->referencia_patria && !$item->referencia_siniestro && !$item->referencia_arag)
+                                        <span class="text-slate-400 text-xs italic">Pendiente Ref.</span>
+                                    @endif
                                 </td>
                                 <td class="py-3.5 px-4">
-                                    <span class="text-slate-800 font-semibold block">{{ $item->tramitadora ?: 'Diego' }}</span>
+                                    <span class="text-slate-800 font-semibold block">{{ $item->tramitador ?: ($item->tramitadora ?: 'Diego') }}</span>
                                     @if($item->fecha_email_diego)
                                         <span class="text-[10px] text-slate-400">Email: {{ $item->fecha_email_diego }}</span>
+                                    @endif
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    @if($item->fecha_reclamacion_recibida)
+                                        <span class="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
+                                            {{ $item->fecha_reclamacion_recibida }}
+                                        </span>
+                                    @else
+                                        <span class="text-slate-400 text-xs">—</span>
                                     @endif
                                 </td>
                                 <td class="py-3.5 px-4">
@@ -137,8 +167,13 @@
                                 @endif
                             </td>
 
-                            <td class="py-3.5 px-4 text-right">
-                                <button type="button" onclick="openEditarSiniestroModal({{ $item->id }}, '{{ $item->tipo }}', '{{ $item->estado_siniestro }}', '{{ $item->estado_multa }}', '{{ addslashes($item->observaciones ?? '') }}')"
+                            <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                                @if($item->client_id)
+                                    <a href="{{ route('clients.show', $item->client_id) }}" class="px-2.5 py-1 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 rounded-lg text-xs font-semibold mr-1 inline-block">
+                                        Ficha Cliente →
+                                    </a>
+                                @endif
+                                <button type="button" onclick="openEditarSiniestroModal({{ $item->id }}, '{{ $item->tipo }}', '{{ $item->estado_siniestro }}', '{{ $item->estado_multa }}', '{{ addslashes($item->referencia_patria ?? '') }}', '{{ addslashes($item->referencia_arag ?? '') }}', '{{ addslashes($item->tramitador ?? ($item->tramitadora ?? '')) }}', '{{ addslashes($item->fecha_reclamacion_recibida ?? '') }}', '{{ addslashes($item->observaciones ?? '') }}')"
                                         class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs shadow-xs transition">
                                     Actualizar
                                 </button>
@@ -174,30 +209,31 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Nº Póliza *</label>
-                            <input type="text" name="numero_poliza" required placeholder="1839101" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                            <input type="text" name="numero_poliza" id="sin_numero_poliza" required oninput="lookupPolicyForSiniestro(this.value)" placeholder="1839101" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Matrícula Vehículo *</label>
-                            <input type="text" name="matricula" required placeholder="7192LMB" class="w-full uppercase font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                            <input type="text" name="matricula" id="sin_matricula" required placeholder="7192LMB" class="w-full uppercase font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
                     </div>
+                    <div id="sin_lookup_pill" class="hidden text-xs bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-lg px-3 py-1.5 font-medium"></div>
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Asegurado (Titular) *</label>
-                        <input type="text" name="client_name" required placeholder="PO1 ROBERT DAVIS" class="w-full uppercase font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                        <input type="text" name="client_name" id="sin_client_name" required placeholder="PO1 ROBERT DAVIS" class="w-full uppercase font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Oficina</label>
-                            <select name="office" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-semibold">
+                            <select name="office" id="sin_office" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-semibold">
                                 <option value="NEX">NEX (Base Naval)</option>
                                 <option value="Central">Central (Pueblo)</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Aseguradora</label>
-                            <select name="cartera" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
-                                <option value="Patria Hispana">Patria Hispana</option>
-                                <option value="GEICO">GEICO</option>
+                            <select name="cartera" id="sin_cartera" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
+                                <option value="81 (Patria 81)">81 (Patria 81)</option>
+                                <option value="87 (GEICO 87)">87 (GEICO 87)</option>
                             </select>
                         </div>
                     </div>
@@ -206,17 +242,27 @@
                     <div id="fieldsSiniestro" class="space-y-3">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-slate-700 font-bold mb-1">Referencia Siniestro</label>
-                                <input type="text" name="referencia_siniestro" placeholder="SIN-PAT-84192/26" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                                <label class="block text-slate-700 font-bold mb-1">Referencia Patria</label>
+                                <input type="text" name="referencia_patria" placeholder="SIN-PAT-84192/26" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
                             <div>
-                                <label class="block text-slate-700 font-bold mb-1">Tramitadora / Diego</label>
-                                <input type="text" name="tramitadora" value="Diego Fernández / Tramitadora Sur" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                                <label class="block text-slate-700 font-bold mb-1">Referencia ARAG</label>
+                                <input type="text" name="referencia_arag" placeholder="ARAG-9281/26" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-slate-700 font-bold mb-1">Fecha Email a Diego</label>
+                                <label class="block text-slate-700 font-bold mb-1">Tramitador</label>
+                                <input type="text" name="tramitador" value="Diego" placeholder="Diego" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-1">Reclamación Recibida (Fecha)</label>
+                                <input type="text" name="fecha_reclamacion_recibida" value="{{ date('d/m/Y') }}" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-1">Fecha Email a Tramitador</label>
                                 <input type="text" name="fecha_email_diego" value="{{ date('d/m/Y') }}" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
                             </div>
                             <div>
@@ -280,20 +326,42 @@
     <div class="flex min-h-full items-center justify-center p-4">
         <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200 overflow-hidden">
             <div class="bg-slate-900 text-white p-5 flex items-center justify-between">
-                <h3 class="font-bold text-base">Actualizar Estado de Expediente</h3>
+                <h3 class="font-bold text-base">Actualizar Expediente</h3>
                 <button type="button" onclick="closeEditarSiniestroModal()" class="text-white/80 hover:text-white">✕</button>
             </div>
             <form id="editarSiniestroForm" method="POST" action="">
                 @csrf @method('PATCH')
                 <div class="p-6 space-y-3 text-xs">
-                    <div id="editFieldsSiniestro">
-                        <label class="block text-slate-700 font-bold mb-1">Estado Siniestro</label>
-                        <select name="estado_siniestro" id="edit_estado_siniestro" class="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold">
-                            <option value="Abierto">Abierto</option>
-                            <option value="En Peritación">En Peritación</option>
-                            <option value="Indemnizado">Indemnizado</option>
-                            <option value="Cerrado">Cerrado ✓</option>
-                        </select>
+                    <div id="editFieldsSiniestro" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-1">Referencia Patria</label>
+                                <input type="text" name="referencia_patria" id="edit_referencia_patria" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-1">Referencia ARAG</label>
+                                <input type="text" name="referencia_arag" id="edit_referencia_arag" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-1">Tramitador</label>
+                                <input type="text" name="tramitador" id="edit_tramitador" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-slate-700 font-bold mb-1">Reclamación Recibida</label>
+                                <input type="text" name="fecha_reclamacion_recibida" id="edit_fecha_reclamacion_recibida" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Estado Siniestro</label>
+                            <select name="estado_siniestro" id="edit_estado_siniestro" class="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold">
+                                <option value="Abierto">Abierto</option>
+                                <option value="En Peritación">En Peritación</option>
+                                <option value="Indemnizado">Indemnizado</option>
+                                <option value="Cerrado">Cerrado ✓</option>
+                            </select>
+                        </div>
                     </div>
                     <div id="editFieldsMulta" class="hidden">
                         <label class="block text-slate-700 font-bold mb-1">Estado Recurso ARAG</label>
@@ -319,6 +387,38 @@
 </div>
 
 <script>
+    let lookupSinTimer = null;
+    function lookupPolicyForSiniestro(val) {
+        clearTimeout(lookupSinTimer);
+        const pill = document.getElementById('sin_lookup_pill');
+        if (!val || val.trim().length < 2) {
+            if (pill) pill.classList.add('hidden');
+            return;
+        }
+        lookupSinTimer = setTimeout(() => {
+            fetch(`/operations/extornos/lookup-policy?numero_poliza=${encodeURIComponent(val.trim())}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.found) {
+                        if (data.matricula) document.getElementById('sin_matricula').value = data.matricula;
+                        if (data.client_name) document.getElementById('sin_client_name').value = data.client_name;
+                        if (data.office) document.getElementById('sin_office').value = data.office;
+                        if (data.cartera) {
+                            const cVal = (data.cartera === '87' || data.cartera.includes('87') || data.cartera.includes('GEICO')) ? '87 (GEICO 87)' : '81 (Patria 81)';
+                            document.getElementById('sin_cartera').value = cVal;
+                        }
+                        if (pill) {
+                            pill.innerHTML = `✓ Cliente: <strong>${data.client_name}</strong> · ${data.ramo} ${data.vehiculo ? `(${data.vehiculo})` : ''} · Cartera: ${data.cartera}`;
+                            pill.classList.remove('hidden');
+                        }
+                    } else {
+                        if (pill) pill.classList.add('hidden');
+                    }
+                })
+                .catch(err => console.error(err));
+        }, 200);
+    }
+
     function openNuevoSiniestroModal(tipo) {
         document.getElementById('input_tipo').value = tipo;
         if (tipo === 'Multa') {
@@ -339,7 +439,7 @@
     function closeNuevoSiniestroModal() {
         document.getElementById('nuevoSiniestroModal').classList.add('hidden');
     }
-    function openEditarSiniestroModal(id, tipo, estadoSin, estadoMul, obs) {
+    function openEditarSiniestroModal(id, tipo, estadoSin, estadoMul, refPatria, refArag, tramitador, fReclamacion, obs) {
         document.getElementById('editarSiniestroForm').action = "/operations/siniestros/" + id;
         if (tipo === 'Multa') {
             document.getElementById('editFieldsSiniestro').classList.add('hidden');
@@ -349,6 +449,10 @@
             document.getElementById('editFieldsSiniestro').classList.remove('hidden');
             document.getElementById('editFieldsMulta').classList.add('hidden');
             document.getElementById('edit_estado_siniestro').value = estadoSin;
+            document.getElementById('edit_referencia_patria').value = refPatria || '';
+            document.getElementById('edit_referencia_arag').value = refArag || '';
+            document.getElementById('edit_tramitador').value = tramitador || 'Diego';
+            document.getElementById('edit_fecha_reclamacion_recibida').value = fReclamacion || '';
         }
         document.getElementById('edit_sin_obs').value = obs;
         document.getElementById('editarSiniestroModal').classList.remove('hidden');

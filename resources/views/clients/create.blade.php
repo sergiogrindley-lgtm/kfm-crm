@@ -219,8 +219,8 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Aseguradora (Código)</label>
                     <select name="codigo_aseguradora" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                        <option value="81" selected>Patria 81</option>
-                        <option value="87">GEICO 87</option>
+                        <option value="81" selected>81 (Patria 81)</option>
+                        <option value="87">87 (GEICO 87)</option>
                     </select>
                 </div>
                 <div>

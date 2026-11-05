@@ -60,4 +60,9 @@ class Policy extends Model
     {
         return $this->hasOne(SinMatricula::class);
     }
+
+    public function siniestros(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Siniestro::class);
+    }
 }

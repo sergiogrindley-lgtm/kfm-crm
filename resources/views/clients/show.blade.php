@@ -384,6 +384,59 @@
                                 </div>
                             @endif
 
+                            @php
+                                $policySiniestros = ($policy->siniestros && $policy->siniestros->count() > 0)
+                                    ? $policy->siniestros
+                                    : ($client->siniestros ? $client->siniestros->filter(function($s) use ($policy) {
+                                        return ($s->policy_id == $policy->id) || ($policy->numero_poliza && $s->numero_poliza == $policy->numero_poliza);
+                                    }) : collect());
+                            @endphp
+
+                            @foreach($policySiniestros as $sin)
+                                <div class="bg-gradient-to-r {{ $sin->tipo === 'Multa' ? 'from-amber-50 via-amber-50/90 to-yellow-50 border-amber-300' : 'from-rose-50 via-rose-50/90 to-red-50 border-rose-300' }} border-2 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg {{ $sin->tipo === 'Multa' ? 'bg-amber-600' : 'bg-rose-600' }} text-white flex items-center justify-center text-base shadow-xs flex-shrink-0 mt-0.5">
+                                            {{ $sin->tipo === 'Multa' ? '⚖️' : '💥' }}
+                                        </div>
+                                        <div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <strong class="text-xs font-bold uppercase tracking-wider {{ $sin->tipo === 'Multa' ? 'text-amber-950' : 'text-rose-950' }} font-display">
+                                                    {{ $sin->tipo === 'Multa' ? 'Multa Grabada en Contratación' : 'Siniestro Grabado en Contratación' }}
+                                                </strong>
+                                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $sin->status_badge_color }}">
+                                                    {{ $sin->tipo === 'Multa' ? $sin->estado_multa : $sin->estado_siniestro }}
+                                                </span>
+                                            </div>
+                                            <div class="text-xs text-slate-700 mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+                                                @if($sin->referencia_patria || $sin->referencia_siniestro)
+                                                    <span>Ref. Patria: <strong class="font-mono font-bold text-slate-900">{{ $sin->referencia_patria ?: $sin->referencia_siniestro }}</strong></span>
+                                                @endif
+                                                @if($sin->referencia_arag)
+                                                    <span>Ref. ARAG: <strong class="font-mono font-bold text-slate-900">{{ $sin->referencia_arag }}</strong></span>
+                                                @endif
+                                                <span>Tramitador: <strong>{{ $sin->tramitador ?: ($sin->tramitadora ?: 'Diego') }}</strong></span>
+                                                @if($sin->fecha_reclamacion_recibida)
+                                                    <span>Reclamación Recibida: <strong class="font-mono text-slate-900">{{ $sin->fecha_reclamacion_recibida }}</strong></span>
+                                                @endif
+                                                <span>Aseguradora: <strong class="text-slate-900 font-bold">{{ $sin->cartera }}</strong></span>
+                                                <span>Sede: <strong>{{ $sin->office }}</strong></span>
+                                            </div>
+                                            @if($sin->observaciones)
+                                                <p class="text-[11px] {{ $sin->tipo === 'Multa' ? 'text-amber-900/90' : 'text-rose-900/90' }} mt-1 italic leading-tight">
+                                                    "{{ $sin->observaciones }}"
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <a href="{{ route($sin->tipo === 'Multa' ? 'operations.multas.index' : 'operations.siniestros.index', ['q' => $policy->numero_poliza]) }}" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 shadow-2xs transition">
+                                            <span>Ver en {{ $sin->tipo === 'Multa' ? 'Multas' : 'Siniestros' }} →</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
+
                             <!-- Acciones Operativas KFM & Tramitación Militar -->
                             <div class="pt-3 border-t border-slate-100 space-y-2">
                                 <div class="flex items-center justify-between">
@@ -421,6 +474,13 @@
                                             <span>Baja PCS / Devolución</span>
                                         </button>
 
+                                        <!-- 5b. Registrar Siniestro -->
+                                        <button type="button" 
+                                                onclick="openNuevoSiniestroDesdePoliza('{{ $policy->numero_poliza }}', '{{ addslashes($policy->matricula ?: '') }}', '{{ ($client->sede && $client->sede->slug === 'central') ? 'Central' : 'NEX' }}', '{{ addslashes(strtoupper($client->full_name)) }}', '{{ ($policy->codigo_aseguradora == '87' || str_contains($policy->aseguradora ?? '', 'GEICO')) ? '87 (GEICO 87)' : '81 (Patria 81)' }}', '{{ $policy->id }}')"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-rose-50 text-rose-800 border border-rose-300 shadow-sm transition cursor-pointer">
+                                            <span>💥 Registrar Siniestro</span>
+                                        </button>
+
                                         <!-- 6. Botón Cancelar Póliza -->
                                         <button type="button" 
                                                 onclick="openCancelPolicyModal('{{ $policy->id }}', '{{ $policy->numero_poliza }}', '{{ addslashes($policy->marca ? ($policy->marca . ' ' . $policy->modelo) : (strtolower($policy->ramo) === 'hogar' ? 'Vivienda' : $policy->ramo)) }}', '{{ addslashes($policy->matricula ?: $policy->ramo) }}')"
@@ -445,6 +505,12 @@
                                                         onclick="openEditPolicyModal({{ json_encode($policy) }})"
                                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-xs transition cursor-pointer">
                                                     <span>✏️ Editar Póliza</span>
+                                                </button>
+
+                                                <button type="button" 
+                                                        onclick="openNuevoSiniestroDesdePoliza('{{ $policy->numero_poliza }}', '{{ addslashes($policy->matricula ?: '') }}', '{{ ($client->sede && $client->sede->slug === 'central') ? 'Central' : 'NEX' }}', '{{ addslashes(strtoupper($client->full_name)) }}', '{{ ($policy->codigo_aseguradora == '87' || str_contains($policy->aseguradora ?? '', 'GEICO')) ? '87 (GEICO 87)' : '81 (Patria 81)' }}', '{{ $policy->id }}')"
+                                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-rose-50 text-rose-800 border border-rose-300 shadow-xs transition cursor-pointer">
+                                                    <span>💥 Registrar Siniestro</span>
                                                 </button>
 
                                                 <a href="{{ route('operations.extornos.index', ['q' => $policy->numero_poliza]) }}" 
@@ -503,8 +569,8 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Aseguradora (Código)</label>
                             <select name="codigo_aseguradora" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                                <option value="81" selected>Patria 81</option>
-                                <option value="87">GEICO 87</option>
+                                <option value="81" selected>81 (Patria 81)</option>
+                                <option value="87">87 (GEICO 87)</option>
                             </select>
                         </div>
                         <div>
@@ -920,6 +986,22 @@
 
     function closeNuevoExtornoModal() {
         document.getElementById('nuevoExtornoModal').classList.add('hidden');
+    }
+
+    // Modal de Siniestro en Contratación
+    function openNuevoSiniestroDesdePoliza(numPoliza, matricula, office, clientName, cartera, policyId) {
+        document.getElementById('modal_sin_numero_poliza').value = numPoliza || '';
+        document.getElementById('modal_sin_matricula').value = matricula || '';
+        document.getElementById('modal_sin_office').value = office || 'NEX';
+        document.getElementById('modal_sin_client_name').value = clientName || '';
+        const cVal = (cartera === '87' || (typeof cartera === 'string' && (cartera.includes('87') || cartera.includes('GEICO')))) ? '87 (GEICO 87)' : '81 (Patria 81)';
+        document.getElementById('modal_sin_cartera').value = cVal;
+        document.getElementById('modal_sin_policy_id').value = policyId || '';
+        document.getElementById('nuevoSiniestroClienteModal').classList.remove('hidden');
+    }
+
+    function closeNuevoSiniestroClienteModal() {
+        document.getElementById('nuevoSiniestroClienteModal').classList.add('hidden');
     }
 
     let lookupExtornoTimer = null;
@@ -1402,6 +1484,109 @@
     </div>
 </div>
 
+<!-- Modal: + Registrar Siniestro en Contratación -->
+<div id="nuevoSiniestroClienteModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeNuevoSiniestroClienteModal()"></div>
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-rose-700 to-slate-900 text-white p-5 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base">Registrar Siniestro en Contratación</h3>
+                    <p class="text-xs text-rose-100">Graba el parte de siniestro directamente en el expediente del cliente</p>
+                </div>
+                <button type="button" onclick="closeNuevoSiniestroClienteModal()" class="text-white/80 hover:text-white cursor-pointer text-xl leading-none">✕</button>
+            </div>
+            <form method="POST" action="{{ route('operations.siniestros.store') }}">
+                @csrf
+                <input type="hidden" name="tipo" value="Siniestro">
+                <input type="hidden" name="client_id" value="{{ $client->id }}">
+                <input type="hidden" name="policy_id" id="modal_sin_policy_id" value="">
+                <input type="hidden" name="redirect_to_client" value="1">
+
+                <div class="p-6 space-y-3 text-xs">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Nº Póliza *</label>
+                            <input type="text" name="numero_poliza" id="modal_sin_numero_poliza" required class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Matrícula Vehículo *</label>
+                            <input type="text" name="matricula" id="modal_sin_matricula" required class="w-full uppercase font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Asegurado (Titular) *</label>
+                        <input type="text" name="client_name" id="modal_sin_client_name" required value="{{ strtoupper($client->full_name) }}" class="w-full uppercase font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Oficina KFM *</label>
+                            <select name="office" id="modal_sin_office" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-semibold">
+                                <option value="NEX">NEX (Base Naval)</option>
+                                <option value="Central">Central (Pueblo)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Aseguradora *</label>
+                            <select name="cartera" id="modal_sin_cartera" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
+                                <option value="81 (Patria 81)">81 (Patria 81)</option>
+                                <option value="87 (GEICO 87)">87 (GEICO 87)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Referencia Patria</label>
+                            <input type="text" name="referencia_patria" placeholder="SIN-PAT-84192/26" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Referencia ARAG</label>
+                            <input type="text" name="referencia_arag" placeholder="ARAG-9281/26" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Tramitador</label>
+                            <input type="text" name="tramitador" value="Diego" placeholder="Diego" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Reclamación Recibida (Fecha)</label>
+                            <input type="text" name="fecha_reclamacion_recibida" value="{{ date('d/m/Y') }}" placeholder="dd/mm/aaaa" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Fecha Email a Tramitador</label>
+                            <input type="text" name="fecha_email_diego" value="{{ date('d/m/Y') }}" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Estado Siniestro</label>
+                            <select name="estado_siniestro" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
+                                <option value="Abierto" selected>Abierto</option>
+                                <option value="En Peritación">En Peritación</option>
+                                <option value="Indemnizado">Indemnizado</option>
+                                <option value="Cerrado">Cerrado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Observaciones / Taller Concertado</label>
+                        <textarea name="observaciones" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg" placeholder="Detalles de la colisión, taller concertado, fotograma radar..."></textarea>
+                    </div>
+                </div>
+                <div class="bg-slate-50 px-6 py-4 flex justify-between border-t border-slate-200">
+                    <button type="button" onclick="closeNuevoSiniestroClienteModal()" class="text-slate-500 font-bold cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl cursor-pointer">Guardar Siniestro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal de Cancelación / Baja de Póliza -->
 <div id="cancelPolicyModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeCancelPolicyModal()"></div>
@@ -1649,8 +1834,8 @@
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Aseguradora</label>
                         <select name="codigo_aseguradora" id="edit_codigo_aseguradora" class="w-full text-xs font-semibold px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-kfm-primary">
-                            <option value="81">Patria 81</option>
-                            <option value="87">GEICO 87</option>
+                            <option value="81">81 (Patria 81)</option>
+                            <option value="87">87 (GEICO 87)</option>
                         </select>
                     </div>
                 </div>
