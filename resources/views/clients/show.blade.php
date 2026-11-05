@@ -438,7 +438,10 @@
                                                             $fAvisado = $sin->fecha_cliente_avisado ?: date('d/m/Y');
                                                             $fAvisadoFormat = $fAvisado;
                                                             if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', trim($fAvisado), $m)) {
-                                                                $fAvisadoFormat = sprintf('%02d/%02d/%04d', $m[2], $m[1], $m[3]);
+                                                                $p1 = (int)$m[1]; $p2 = (int)$m[2]; $y = (int)$m[3];
+                                                                $fAvisadoFormat = ($p2 > 12 && $p1 <= 12) ? sprintf('%02d/%02d/%04d', $p1, $p2, $y) : sprintf('%02d/%02d/%04d', $p2, $p1, $y);
+                                                            } elseif (preg_match('/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/', trim($fAvisado), $m)) {
+                                                                $fAvisadoFormat = sprintf('%02d/%02d/%04d', (int)$m[2], (int)$m[3], (int)$m[1]);
                                                             }
 
                                                             $msgWaText = "Hello " . strtoupper($client->full_name) . ", we are contacting you from KFM Insurance regarding your claim (Policy #" . ($policy->numero_poliza ?: '-') . ", License Plate " . ($policy->matricula ?: '-') . "). We notified you on " . $fAvisadoFormat . " and are waiting for your response to continue the process. If you don't provide your incident version by today, we will have to accept fault. Thank you very much.";
@@ -460,6 +463,29 @@
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2 flex-shrink-0">
+                                        @if($client->telefono)
+                                            @php
+                                                $telLimpio = preg_replace('/[^0-9]/', '', $client->telefono);
+                                                if (strlen($telLimpio) === 9) $telLimpio = '34' . $telLimpio;
+
+                                                $fAvisado = $sin->fecha_cliente_avisado ?: date('d/m/Y');
+                                                $fAvisadoFormat = $fAvisado;
+                                                if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', trim($fAvisado), $m)) {
+                                                    $p1 = (int)$m[1]; $p2 = (int)$m[2]; $y = (int)$m[3];
+                                                    $fAvisadoFormat = ($p2 > 12 && $p1 <= 12) ? sprintf('%02d/%02d/%04d', $p1, $p2, $y) : sprintf('%02d/%02d/%04d', $p2, $p1, $y);
+                                                } elseif (preg_match('/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/', trim($fAvisado), $m)) {
+                                                    $fAvisadoFormat = sprintf('%02d/%02d/%04d', (int)$m[2], (int)$m[3], (int)$m[1]);
+                                                }
+
+                                                $msgWaText = "Hello " . strtoupper($client->full_name) . ", we are contacting you from KFM Insurance regarding your claim (Policy #" . ($policy->numero_poliza ?: '-') . ", License Plate " . ($policy->matricula ?: '-') . "). We notified you on " . $fAvisadoFormat . " and are waiting for your response to continue the process. If you don't provide your incident version by today, we will have to accept fault. Thank you very much.";
+                                                $msgWa = rawurlencode($msgWaText);
+                                            @endphp
+                                            <a href="https://wa.me/{{ $telLimpio }}?text={{ $msgWa }}" target="_blank" rel="noopener noreferrer"
+                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition"
+                                               title="Enviar aviso por WhatsApp en inglés al cliente">
+                                                <span>📲 WhatsApp</span>
+                                            </a>
+                                        @endif
                                         <a href="{{ route($sin->tipo === 'Multa' ? 'operations.multas.index' : 'operations.siniestros.index', ['q' => $policy->numero_poliza]) }}" 
                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 shadow-2xs transition">
                                             <span>Ver en {{ $sin->tipo === 'Multa' ? 'Multas' : 'Siniestros' }} →</span>
