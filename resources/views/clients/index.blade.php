@@ -92,7 +92,7 @@
             <a href="{{ route('operations.sin-matricula.index') }}" 
                class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center space-x-2">
                 <span>🚗</span>
-                <span class="font-medium text-slate-200">Provisionales:</span>
+                <span class="font-medium text-slate-200">Sin Matrículas:</span>
                 <span class="font-bold text-yellow-300">{{ $operacionesStats['sin_matricula'] }}</span>
             </a>
 

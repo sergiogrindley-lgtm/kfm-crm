@@ -61,6 +61,7 @@ Route::prefix('operations')->name('operations.')->group(function () {
 
     // 5. SINIESTROS & MULTAS ARAG
     Route::get('siniestros', [OperationsController::class, 'indexSiniestros'])->name('siniestros.index');
+    Route::get('multas', [OperationsController::class, 'indexMultas'])->name('multas.index');
     Route::post('siniestros', [OperationsController::class, 'storeSiniestro'])->name('siniestros.store');
     Route::patch('siniestros/{siniestro}', [OperationsController::class, 'updateSiniestro'])->name('siniestros.update');
 

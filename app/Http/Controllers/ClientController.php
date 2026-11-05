@@ -259,7 +259,7 @@ class ClientController extends Controller
             $direccionRiesgoPoliza = ($ramo === 'Hogar') ? $direccionRiesgo : null;
             $detallesCoberturaPoliza = ($ramo === 'RC') ? $detallesCobertura : null;
 
-            Policy::create([
+            $newPolicy = Policy::create([
                 'client_id' => $client->id,
                 'sede_id' => $client->sede_id,
                 'agente' => $client->agente,
@@ -285,6 +285,26 @@ class ClientController extends Controller
                 'fecha_vencimiento' => $validated['fecha_vencimiento'] ?? null,
                 'estado' => 'Activo',
             ]);
+
+            // Sincronizar automáticamente en Pólizas Sin Matrículas si es vehículo SM
+            if ($ramo === 'Vehiculo') {
+                $matUpper = strtoupper(trim($matriculaPoliza ?? ''));
+                if ($matUpper === '' || in_array($matUpper, ['SM', 'S/M', 'S.M.', 'SIN MATRICULA', 'SIN MATRÍCULA', 'PENDIENTE'])) {
+                    \App\Models\SinMatricula::firstOrCreate(
+                        ['policy_id' => $newPolicy->id],
+                        [
+                            'client_id' => $client->id,
+                            'numero_poliza' => $newPolicy->numero_poliza,
+                            'aseguradora' => ($newPolicy->codigo_aseguradora == '87' || str_contains($newPolicy->aseguradora ?? '', 'GEICO')) ? '87 (GEICO 87)' : '81 (Patria 81)',
+                            'matricula_provisional' => !empty($matUpper) ? $matUpper : 'SM',
+                            'client_name' => strtoupper($client->full_name),
+                            'date_notification' => $newPolicy->created_at ? $newPolicy->created_at->format('d/m/Y') : date('d/m/Y'),
+                            'estado' => 'Pendiente',
+                            'observaciones' => trim(($newPolicy->marca . ' ' . $newPolicy->modelo) . ($newPolicy->vin ? " (Bastidor: {$newPolicy->vin})" : '')),
+                        ]
+                    );
+                }
+            }
         }
 
         return redirect()->route('clients.show', $client)
@@ -431,7 +451,27 @@ class ClientController extends Controller
 
         unset($validated['categoria_vehiculo'], $validated['categoria_hogar'], $validated['categoria_rc']);
 
-        Policy::create($validated);
+        $newPol = Policy::create($validated);
+
+        // Sincronizar automáticamente en Pólizas Sin Matrículas si es vehículo SM
+        if ($ramo === 'Vehiculo') {
+            $matUpper = strtoupper(trim($newPol->matricula ?? ''));
+            if ($matUpper === '' || in_array($matUpper, ['SM', 'S/M', 'S.M.', 'SIN MATRICULA', 'SIN MATRÍCULA', 'PENDIENTE'])) {
+                \App\Models\SinMatricula::firstOrCreate(
+                    ['policy_id' => $newPol->id],
+                    [
+                        'client_id' => $client->id,
+                        'numero_poliza' => $newPol->numero_poliza,
+                        'aseguradora' => ($newPol->codigo_aseguradora == '87' || str_contains($newPol->aseguradora ?? '', 'GEICO')) ? '87 (GEICO 87)' : '81 (Patria 81)',
+                        'matricula_provisional' => !empty($matUpper) ? $matUpper : 'SM',
+                        'client_name' => strtoupper($client->full_name),
+                        'date_notification' => $newPol->created_at ? $newPol->created_at->format('d/m/Y') : date('d/m/Y'),
+                        'estado' => 'Pendiente',
+                        'observaciones' => trim(($newPol->marca . ' ' . $newPol->modelo) . ($newPol->vin ? " (Bastidor: {$newPol->vin})" : '')),
+                    ]
+                );
+            }
+        }
 
         return redirect()->route('clients.show', $client)
             ->with('success', 'Nueva póliza añadida al cliente.');
@@ -511,6 +551,43 @@ class ClientController extends Controller
             'estado' => $validated['estado'] ?? 'Activo',
             'observaciones' => $validated['observaciones'] ?? null,
         ]);
+
+        // Sincronizar automáticamente con Pólizas Sin Matrículas
+        if ($ramo === 'Vehiculo') {
+            $matUpper = strtoupper(trim($policy->matricula ?? ''));
+            $isSinMat = ($matUpper === '' || in_array($matUpper, ['SM', 'S/M', 'S.M.', 'SIN MATRICULA', 'SIN MATRÍCULA', 'PENDIENTE']));
+            $sinMatRecord = \App\Models\SinMatricula::where('policy_id', $policy->id)->first();
+
+            if ($isSinMat) {
+                if (!$sinMatRecord) {
+                    \App\Models\SinMatricula::create([
+                        'client_id' => $client->id,
+                        'policy_id' => $policy->id,
+                        'numero_poliza' => $policy->numero_poliza,
+                        'aseguradora' => ($policy->codigo_aseguradora == '87' || str_contains($policy->aseguradora ?? '', 'GEICO')) ? '87 (GEICO 87)' : '81 (Patria 81)',
+                        'matricula_provisional' => !empty($matUpper) ? $matUpper : 'SM',
+                        'client_name' => strtoupper($client->full_name),
+                        'date_notification' => $policy->created_at ? $policy->created_at->format('d/m/Y') : date('d/m/Y'),
+                        'estado' => 'Pendiente',
+                        'observaciones' => trim(($policy->marca . ' ' . $policy->modelo) . ($policy->vin ? " (Bastidor: {$policy->vin})" : '')),
+                    ]);
+                } else {
+                    $sinMatRecord->update([
+                        'matricula_provisional' => !empty($matUpper) ? $matUpper : 'SM',
+                        'matricula_definitiva' => null,
+                        'estado' => 'Pendiente',
+                    ]);
+                }
+            } else {
+                // Al añadirse una matrícula definitiva real, desaparece automáticamente de pendientes
+                if ($sinMatRecord) {
+                    $sinMatRecord->update([
+                        'matricula_definitiva' => $matUpper,
+                        'estado' => 'Regularizado',
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('clients.show', $client)
             ->with('success', "Póliza {$policy->numero_poliza} actualizada correctamente.");

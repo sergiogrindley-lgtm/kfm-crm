@@ -76,7 +76,7 @@
                     <div class="relative">
                         <button type="button" 
                                 onclick="toggleOperacionesDropdown(event)" 
-                                class="px-3.5 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-200 hover:bg-white/10 hover:text-white transition-all flex items-center space-x-2 whitespace-nowrap cursor-pointer {{ request()->routeIs('operations.extornos.*') || request()->routeIs('operations.sin-matricula.*') || request()->routeIs('operations.embarque.*') || request()->routeIs('operations.siniestros.*') || request()->routeIs('operations.pagos.*') ? 'bg-white/20 text-white font-bold ring-1 ring-white/20' : '' }}">
+                                class="px-3.5 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-200 hover:bg-white/10 hover:text-white transition-all flex items-center space-x-2 whitespace-nowrap cursor-pointer {{ request()->routeIs('operations.extornos.*') || request()->routeIs('operations.sin-matricula.*') || request()->routeIs('operations.embarque.*') || request()->routeIs('operations.siniestros.*') || request()->routeIs('operations.multas.*') || request()->routeIs('operations.pagos.*') ? 'bg-white/20 text-white font-bold ring-1 ring-white/20' : '' }}">
                             <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
                             <span>Operaciones</span>
                             <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -101,8 +101,8 @@
                             <a href="{{ route('operations.sin-matricula.index') }}" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-slate-800">
                                 <span class="text-base p-1.5 rounded-lg bg-amber-100 text-amber-800">🚗</span>
                                 <div>
-                                    <strong class="block text-slate-900 font-bold text-xs">Sin Matrícula / Provisionales</strong>
-                                    <span class="text-[11px] text-slate-500">Placas verdes y coches en regularización</span>
+                                    <strong class="block text-slate-900 font-bold text-xs">Pólizas Sin Matrículas</strong>
+                                    <span class="text-[11px] text-slate-500">Vehículos guardados con SM o provisional</span>
                                 </div>
                             </a>
 
@@ -115,12 +115,21 @@
                                 </div>
                             </a>
 
-                            <!-- Siniestros & Multas -->
-                            <a href="{{ route('operations.siniestros.index') }}" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-rose-50/70 transition text-slate-800">
+                            <!-- Siniestros -->
+                            <a href="{{ route('operations.siniestros.index', ['tab' => 'siniestros']) }}" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-rose-50/70 transition text-slate-800">
                                 <span class="text-base p-1.5 rounded-lg bg-rose-100 text-rose-800">💥</span>
                                 <div>
-                                    <strong class="block text-slate-900 font-bold text-xs">Siniestros & Multas (ARAG)</strong>
-                                    <span class="text-[11px] text-slate-500">Partes con Diego y recursos jurídicos</span>
+                                    <strong class="block text-slate-900 font-bold text-xs">Siniestros (ARAG)</strong>
+                                    <span class="text-[11px] text-slate-500">Partes con Diego y peritaciones</span>
+                                </div>
+                            </a>
+
+                            <!-- Multas -->
+                            <a href="{{ route('operations.multas.index') }}" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-slate-800">
+                                <span class="text-base p-1.5 rounded-lg bg-amber-100 text-amber-800">⚖️</span>
+                                <div>
+                                    <strong class="block text-slate-900 font-bold text-xs">Multas (ARAG)</strong>
+                                    <span class="text-[11px] text-slate-500">Recursos de sanciones DGT y tráfico</span>
                                 </div>
                             </a>
 

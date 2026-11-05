@@ -640,31 +640,92 @@ class OperationsController extends Controller
 
     /**
      * =========================================================================
-     * 3. SIN MATRÍCULA / PLACAS PROVISIONALES
+     * 3. PÓLIZAS SIN MATRÍCULAS / SM (SEGUIMIENTO VEHÍCULOS)
      * =========================================================================
      */
     public function indexSinMatricula(Request $request)
     {
+        // 1. Auto-sincronizar contrataciones de vehículos sin matrícula ('SM', 'S/M', vacía o provisional)
+        $vehiclePolicies = Policy::where('ramo', 'Vehiculo')
+            ->where('estado', '!=', 'Cancelado')
+            ->with('client')
+            ->get();
+
+        foreach ($vehiclePolicies as $p) {
+            $matUpper = strtoupper(trim($p->matricula ?? ''));
+            $isSinMat = ($matUpper === '' || in_array($matUpper, ['SM', 'S/M', 'S.M.', 'SIN MATRICULA', 'SIN MATRÍCULA', 'PENDIENTE']));
+            $existing = SinMatricula::where('policy_id', $p->id)->first();
+
+            if ($isSinMat) {
+                $aseguradoraCode = ($p->codigo_aseguradora == '87' || str_contains($p->aseguradora ?? '', 'GEICO')) ? '87 (GEICO 87)' : '81 (Patria 81)';
+                $vehiculoDesc = trim(($p->marca . ' ' . $p->modelo) . ($p->vin ? " (Bastidor: {$p->vin})" : ''));
+                $obs = $vehiculoDesc . ($p->observaciones ? " — " . $p->observaciones : '');
+
+                if (!$existing) {
+                    SinMatricula::create([
+                        'client_id' => $p->client_id,
+                        'policy_id' => $p->id,
+                        'numero_poliza' => $p->numero_poliza ?: 'Pendiente',
+                        'aseguradora' => $aseguradoraCode,
+                        'matricula_provisional' => !empty($matUpper) ? $matUpper : 'SM',
+                        'client_name' => $p->client ? strtoupper($p->client->full_name) : 'CLIENTE KFM',
+                        'date_notification' => $p->fecha_pago ?: ($p->created_at ? $p->created_at->format('d/m/Y') : date('d/m/Y')),
+                        'estado' => 'Pendiente',
+                        'observaciones' => $obs,
+                    ]);
+                } else {
+                    // Si ya existía pero estaba en regularizado y la póliza volvió a SM
+                    if ($existing->estado === 'Regularizado') {
+                        $existing->update([
+                            'estado' => 'Pendiente',
+                            'matricula_provisional' => !empty($matUpper) ? $matUpper : 'SM',
+                            'matricula_definitiva' => null,
+                        ]);
+                    }
+                }
+            } else {
+                // La póliza ya tiene matrícula real en su contratación: regularizar automáticamente para que desaparezca de pendientes
+                if ($existing && $existing->estado !== 'Regularizado') {
+                    $existing->update([
+                        'estado' => 'Regularizado',
+                        'matricula_definitiva' => $matUpper,
+                    ]);
+                }
+            }
+        }
+
         $query = SinMatricula::with(['client', 'policy'])->latest();
+
+        // Filtro por estado: por defecto mostrar solo las pólizas de vehículos sin matrícula (pendientes)
+        $filtroEstado = $request->input('estado');
+        if ($filtroEstado === 'regularizados' || $filtroEstado === 'Regularizado') {
+            $query->where('estado', 'Regularizado');
+        } elseif ($filtroEstado === 'todos') {
+            // Mostrar todas (pendientes + regularizadas)
+        } elseif (!empty($filtroEstado)) {
+            $query->where('estado', $filtroEstado);
+        } else {
+            // Comportamiento solicitado: SOLO las pólizas de vehículos sin matrícula activa
+            $query->where('estado', '!=', 'Regularizado');
+        }
 
         if ($search = $request->input('q')) {
             $query->where(function ($q) use ($search) {
                 $q->where('numero_poliza', 'like', "%{$search}%")
                   ->orWhere('matricula_provisional', 'like', "%{$search}%")
-                  ->orWhere('client_name', 'like', "%{$search}%");
+                  ->orWhere('client_name', 'like', "%{$search}%")
+                  ->orWhere('matricula_definitiva', 'like', "%{$search}%")
+                  ->orWhere('observaciones', 'like', "%{$search}%");
             });
-        }
-
-        if ($estado = $request->input('estado')) {
-            $query->where('estado', $estado);
         }
 
         $items = $query->paginate(20)->withQueryString();
 
         $stats = [
-            'total' => SinMatricula::count(),
+            'total' => SinMatricula::where('estado', '!=', 'Regularizado')->count(),
             'pendientes' => SinMatricula::where('estado', 'Pendiente')->count(),
-            'en_tramite' => SinMatricula::where('estado', 'En Trámite DGT')->count(),
+            'patria' => SinMatricula::where('estado', '!=', 'Regularizado')->where('aseguradora', 'like', '%81%')->count(),
+            'geico' => SinMatricula::where('estado', '!=', 'Regularizado')->where('aseguradora', 'like', '%87%')->count(),
             'regularizados' => SinMatricula::where('estado', 'Regularizado')->count(),
         ];
 
@@ -683,10 +744,16 @@ class OperationsController extends Controller
             'observaciones' => 'nullable|string',
         ]);
 
+        $pol = Policy::where('numero_poliza', trim($validated['numero_poliza']))->first();
+        if ($pol) {
+            $validated['policy_id'] = $pol->id;
+            $validated['client_id'] = $pol->client_id;
+        }
+
         SinMatricula::create($validated);
 
         return redirect()->route('operations.sin-matricula.index')
-            ->with('success', 'Caso de placa provisional añadido para seguimiento.');
+            ->with('success', 'Póliza sin matrícula registrada para seguimiento.');
     }
 
     public function updateSinMatricula(Request $request, SinMatricula $item)
@@ -699,8 +766,22 @@ class OperationsController extends Controller
 
         $item->update($validated);
 
+        // Si se asignó matrícula definitiva, actualizar la contratación de la póliza del cliente
+        if (!empty($validated['matricula_definitiva'])) {
+            $definitiva = strtoupper(trim($validated['matricula_definitiva']));
+            if ($item->policy_id) {
+                $item->policy?->update([
+                    'matricula' => $definitiva,
+                ]);
+            }
+            $item->update([
+                'matricula_definitiva' => $definitiva,
+                'estado' => 'Regularizado',
+            ]);
+        }
+
         return redirect()->route('operations.sin-matricula.index')
-            ->with('success', "Estado actualizado para {$item->client_name}.");
+            ->with('success', "Matrícula definitiva asignada a {$item->client_name}. La póliza ha quedado regularizada y retirada de la lista de pendientes.");
     }
 
     /**
@@ -768,6 +849,7 @@ class OperationsController extends Controller
             'estado' => 'required|string|max:50',
             'fecha_reactivacion' => 'nullable|string|max:50',
             'fecha_peritacion' => 'nullable|string|max:50',
+            'importe_renovacion' => 'nullable|string|max:50',
             'importe_prima_no_consumida' => 'nullable|string|max:50',
             'importe_a_pagar' => 'nullable|string|max:50',
             'prima_aplicada_renovacion' => 'nullable|boolean',
@@ -811,6 +893,12 @@ class OperationsController extends Controller
         ];
 
         return view('operations.siniestros.index', compact('items', 'stats', 'tab'));
+    }
+
+    public function indexMultas(Request $request)
+    {
+        $request->merge(['tab' => 'multas']);
+        return $this->indexSiniestros($request);
     }
 
     public function storeSiniestro(Request $request)

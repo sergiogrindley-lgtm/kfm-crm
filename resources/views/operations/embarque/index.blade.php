@@ -102,11 +102,16 @@
                                 @endif
                             </td>
                             <td class="py-3.5 px-4">
+                                @if($item->importe_renovacion)
+                                    <div class="text-[11px] text-slate-600">
+                                        Renovación: <strong class="text-slate-900">{{ $item->importe_renovacion }}</strong>
+                                    </div>
+                                @endif
                                 <div class="text-[11px]">
                                     No consumida: <strong class="text-emerald-700">{{ $item->importe_prima_no_consumida ?: '-' }}</strong>
                                 </div>
                                 <div class="text-[11px]">
-                                    A pagar renovación: <strong class="text-slate-900">{{ $item->importe_a_pagar ?: '-' }}</strong>
+                                    A pagar: <strong class="text-slate-900">{{ $item->importe_a_pagar ?: '-' }}</strong>
                                 </div>
                                 @if($item->prima_aplicada_renovacion)
                                     <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1 rounded font-bold">Aplicada a renovación</span>
@@ -118,7 +123,7 @@
                                 </span>
                             </td>
                             <td class="py-3.5 px-4 text-right">
-                                <button type="button" onclick="openEditarEmbarqueModal({{ $item->id }}, '{{ $item->estado }}', '{{ $item->fecha_reactivacion }}', '{{ $item->fecha_peritacion }}', '{{ $item->importe_prima_no_consumida }}', '{{ $item->importe_a_pagar }}', {{ $item->prima_aplicada_renovacion ? 'true' : 'false' }}, '{{ addslashes($item->comments ?? '') }}')"
+                                <button type="button" onclick="openEditarEmbarqueModal({{ $item->id }}, '{{ $item->estado }}', '{{ $item->fecha_reactivacion }}', '{{ $item->fecha_peritacion }}', '{{ $item->importe_renovacion }}', '{{ $item->importe_prima_no_consumida }}', '{{ $item->importe_a_pagar }}', {{ $item->prima_aplicada_renovacion ? 'true' : 'false' }}, '{{ addslashes($item->comments ?? '') }}')"
                                         class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs shadow-xs transition">
                                     Gestionar VPC
                                 </button>
@@ -172,6 +177,16 @@
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Fecha Desactivación (Embarque)</label>
                             <input type="text" name="fecha_desactivacion" placeholder="dd/mm/aaaa" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Importe Renovación (€)</label>
+                            <input type="text" name="importe_renovacion" placeholder="Ej: 520,00 €" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Importe Prima No Consumida (€)</label>
+                            <input type="text" name="importe_prima_no_consumida" placeholder="Ej: 185,00 €" class="w-full font-bold text-emerald-700 px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
                     </div>
                     <div>
@@ -231,13 +246,17 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
+                            <label class="block text-slate-700 font-bold mb-1">Importe Renovación (€)</label>
+                            <input type="text" name="importe_renovacion" id="emb_renovacion" placeholder="520,00 €" class="w-full font-bold text-slate-800 px-3 py-2 border border-slate-300 rounded-xl">
+                        </div>
+                        <div>
                             <label class="block text-slate-700 font-bold mb-1">Prima No Consumida (€)</label>
                             <input type="text" name="importe_prima_no_consumida" id="emb_no_consumida" placeholder="185,00 €" class="w-full font-bold text-emerald-700 px-3 py-2 border border-slate-300 rounded-xl">
                         </div>
-                        <div>
-                            <label class="block text-slate-700 font-bold mb-1">Importe a Pagar Renovación</label>
-                            <input type="text" name="importe_a_pagar" id="emb_a_pagar" placeholder="465,00 €" class="w-full font-bold text-slate-800 px-3 py-2 border border-slate-300 rounded-xl">
-                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Importe a Pagar Renovación (€)</label>
+                        <input type="text" name="importe_a_pagar" id="emb_a_pagar" placeholder="465,00 €" class="w-full font-bold text-slate-800 px-3 py-2 border border-slate-300 rounded-xl">
                     </div>
                     <div>
                         <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
@@ -266,11 +285,12 @@
     function closeNuevoEmbarqueModal() {
         document.getElementById('nuevoEmbarqueModal').classList.add('hidden');
     }
-    function openEditarEmbarqueModal(id, estado, reactiv, perit, noConsumida, aPagar, aplicada, comments) {
+    function openEditarEmbarqueModal(id, estado, reactiv, perit, renovacion, noConsumida, aPagar, aplicada, comments) {
         document.getElementById('editarEmbarqueForm').action = "/operations/embarque/" + id;
         document.getElementById('emb_estado').value = estado;
         document.getElementById('emb_reactivacion').value = reactiv;
         document.getElementById('emb_peritacion').value = perit;
+        document.getElementById('emb_renovacion').value = renovacion;
         document.getElementById('emb_no_consumida').value = noConsumida;
         document.getElementById('emb_a_pagar').value = aPagar;
         document.getElementById('emb_aplicada').checked = aplicada;

@@ -55,4 +55,9 @@ class Policy extends Model
     {
         return $this->hasMany(Extorno::class);
     }
+
+    public function sinMatricula(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(SinMatricula::class);
+    }
 }

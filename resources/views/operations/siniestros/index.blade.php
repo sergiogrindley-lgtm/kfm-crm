@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Siniestros & Multas ARAG — KFM Insurance')
+@section('title', ($tab === 'multas' ? 'Recursos de Multas ARAG' : 'Siniestros de Tráfico') . ' — KFM Insurance')
 
 @section('content')
 <div class="space-y-6">
@@ -9,36 +9,51 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <div class="flex items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-100 text-rose-800 border border-rose-200">
-                    Gestión de Partes & Recursos
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $tab === 'multas' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-rose-100 text-rose-800 border border-rose-200' }}">
+                    {{ $tab === 'multas' ? 'Defensa Jurídica ARAG' : 'Gestión de Partes & Peritos' }}
                 </span>
-                <span class="text-xs text-slate-400">Excel SINIESTROS + MULTAS</span>
+                <span class="text-xs text-slate-400">Excel {{ $tab === 'multas' ? 'MULTAS' : 'SINIESTROS' }}</span>
             </div>
-            <h1 class="text-2xl font-black text-slate-900 font-display mt-1">Siniestros de Tráfico & Recursos de Multas (ARAG)</h1>
-            <p class="text-xs text-slate-500">Tramitación con peritos/Diego y gestión de sanciones de tráfico con la defensa jurídica de ARAG</p>
+            <h1 class="text-2xl font-black text-slate-900 font-display mt-1">
+                {{ $tab === 'multas' ? 'Recursos de Multas de Tráfico (ARAG)' : 'Siniestros de Tráfico (ARAG)' }}
+            </h1>
+            <p class="text-xs text-slate-500">
+                {{ $tab === 'multas' ? 'Gestión y tramitación de sanciones de tráfico con la defensa jurídica de ARAG' : 'Partes de accidentes, peritaciones de daños y tramitación con Diego' }}
+            </p>
         </div>
 
         <div class="flex items-center gap-2">
-            <button type="button" onclick="openNuevoSiniestroModal('Siniestro')"
-                    class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition flex items-center gap-1.5 cursor-pointer">
-                <span>+ Nuevo Siniestro</span>
-            </button>
-            <button type="button" onclick="openNuevoSiniestroModal('Multa')"
-                    class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition flex items-center gap-1.5 cursor-pointer">
-                <span>+ Nueva Multa ARAG</span>
-            </button>
+            @if($tab === 'multas')
+                <button type="button" onclick="openNuevoSiniestroModal('Multa')"
+                        class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <span>+ Nuevo Recurso de Multa</span>
+                </button>
+                <a href="{{ route('operations.siniestros.index') }}" 
+                   class="px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl text-xs font-bold transition">
+                    Ver Siniestros →
+                </a>
+            @else
+                <button type="button" onclick="openNuevoSiniestroModal('Siniestro')"
+                        class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <span>+ Nuevo Siniestro</span>
+                </button>
+                <a href="{{ route('operations.multas.index') }}" 
+                   class="px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl text-xs font-bold transition">
+                    Ver Multas →
+                </a>
+            @endif
         </div>
     </div>
 
     <!-- Navigation Tabs: Siniestros vs Multas -->
     <div class="flex border-b border-slate-200 space-x-6 text-sm font-bold">
-        <a href="{{ route('operations.siniestros.index', ['tab' => 'siniestros']) }}"
+        <a href="{{ route('operations.siniestros.index') }}"
            class="pb-3 border-b-2 flex items-center gap-2 {{ $tab !== 'multas' ? 'border-rose-600 text-rose-700' : 'border-transparent text-slate-400 hover:text-slate-600' }}">
             <span>💥 Siniestros de Tráfico (Diego / Peritos)</span>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">{{ $stats['siniestros_abiertos'] }} abiertos</span>
         </a>
 
-        <a href="{{ route('operations.siniestros.index', ['tab' => 'multas']) }}"
+        <a href="{{ route('operations.multas.index') }}"
            class="pb-3 border-b-2 flex items-center gap-2 {{ $tab === 'multas' ? 'border-amber-600 text-amber-700' : 'border-transparent text-slate-400 hover:text-slate-600' }}">
             <span>⚖️ Recursos de Multas (ARAG Defensa)</span>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">{{ $stats['multas_activas'] }} en trámite</span>

@@ -213,9 +213,15 @@
                                                 @endif
                                             </span>
                                             @if($policy->matricula)
-                                                <span class="px-2 py-0.5 font-mono text-xs font-bold bg-slate-100 text-slate-800 rounded border border-slate-300">
+                                                <span class="px-2 py-0.5 font-mono text-xs font-bold {{ in_array(strtoupper(trim($policy->matricula)), ['SM', 'S/M', 'S.M.']) ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-slate-100 text-slate-800 border-slate-300' }} rounded border">
                                                     {{ $policy->matricula }}
                                                 </span>
+                                            @endif
+                                            @if(strtolower($policy->ramo) === 'vehiculo' && (empty($policy->matricula) || in_array(strtoupper(trim($policy->matricula)), ['SM', 'S/M', 'S.M.', 'SIN MATRICULA'])))
+                                                <a href="{{ route('operations.sin-matricula.index', ['q' => $policy->numero_poliza]) }}" 
+                                                   class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded border border-amber-200 transition">
+                                                    ⚠️ Sin Matrícula (Ver ↗)
+                                                </a>
                                             @endif
                                         </div>
                                         <div class="text-xs text-slate-500 mt-0.5">
