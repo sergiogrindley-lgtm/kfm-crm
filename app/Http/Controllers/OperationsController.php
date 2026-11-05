@@ -575,12 +575,15 @@ class OperationsController extends Controller
 
         $clean = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $plateInput));
         $dgt = $this->calcularMatriculaEspanola($clean);
+        $formatted = $dgt['matricula_formateada'] ?? $clean;
 
         // Buscar en la base de datos de KFM (Policies, Gestoria, Cesiones, Sin Matricula)
         $policy = Policy::with(['client.sede'])
-            ->where(function ($q) use ($clean, $plateInput) {
+            ->where(function ($q) use ($clean, $plateInput, $formatted) {
                 $q->where('matricula', $clean)
                   ->orWhere('matricula', $plateInput)
+                  ->orWhere('matricula', $formatted)
+                  ->orWhereRaw("REPLACE(REPLACE(COALESCE(matricula, ''), ' ', ''), '-', '') = ?", [$clean])
                   ->orWhere('matricula', 'like', "%{$clean}%");
             })
             ->latest()
@@ -589,8 +592,11 @@ class OperationsController extends Controller
         $gestoria = null;
         if (!$policy) {
             $gestoria = GestoriaTramite::with('client')
-                ->where(function ($q) use ($clean, $plateInput) {
+                ->where(function ($q) use ($clean, $plateInput, $formatted) {
                     $q->where('matricula', $clean)
+                      ->orWhere('matricula', $plateInput)
+                      ->orWhere('matricula', $formatted)
+                      ->orWhereRaw("REPLACE(REPLACE(COALESCE(matricula, ''), ' ', ''), '-', '') = ?", [$clean])
                       ->orWhere('matricula', 'like', "%{$clean}%");
                 })
                 ->latest()
