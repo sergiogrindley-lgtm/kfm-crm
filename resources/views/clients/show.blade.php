@@ -298,30 +298,35 @@
                                         <span>Fecha Pago: <strong class="text-slate-700">{{ $policy->fecha_pago }}</strong></span>
                                     @endif
                                 </div>
-                                @if($policy->vin)
+                                @if($policy->vin || $policy->matricula)
                                     <div class="font-mono flex flex-wrap items-center gap-1.5">
-                                        <span>VIN: <strong>{{ $policy->vin }}</strong></span>
+                                        @if($policy->vin)
+                                            <span>VIN: <strong>{{ $policy->vin }}</strong></span>
+                                            <button type="button" 
+                                               onclick="openVinDecoderModal('{{ $policy->vin }}')"
+                                               class="inline-flex items-center gap-1 font-sans text-[10px] bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-700 hover:to-emerald-700 text-white font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
+                                               title="Decodificar especificaciones completas de este bastidor en vivo">
+                                                <span>⚡ Decodificar Bastidor</span>
+                                            </button>
+                                        @endif
                                         <button type="button" 
-                                           onclick="openVinDecoderModal('{{ $policy->vin }}')"
-                                           class="inline-flex items-center gap-1 font-sans text-[10px] bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-700 hover:to-emerald-700 text-white font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
-                                           title="Decodificar especificaciones completas de este bastidor en vivo">
-                                            <span>⚡ Decodificar Bastidor</span>
-                                        </button>
-                                        <a href="https://auto-info.gratis/es/" target="_blank" rel="noopener noreferrer"
+                                           onclick="openMatriculaModal('{{ $policy->matricula }}')"
                                            class="inline-flex items-center gap-1 font-sans text-[10px] bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
-                                           title="Comprobar datos y ficha técnica por matrícula en Auto-Info">
-                                            <span>🔍 Auto-Info ↗</span>
-                                        </a>
-                                        <a href="https://www.juntadeandalucia.es/economiayhacienda/apl/surweb/consultas/vehiculos/consultaVehiculos.jsp?portal=ATRIAN&claseVehiculo=coche" target="_blank" rel="noopener noreferrer"
+                                           title="Comprobar matrícula, fecha DGT y ficha de vehículo en el CRM">
+                                            <span>🔍 Auto-Info</span>
+                                        </button>
+                                        <button type="button" 
+                                           onclick="openJuntaModal('coche')"
                                            class="inline-flex items-center gap-1 font-sans text-[10px] bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
-                                           title="Consultar precios medios y tasación de vehículos usados Junta de Andalucía">
-                                            <span>🚗 Valoración Coches ↗</span>
-                                        </a>
-                                        <a href="https://www.juntadeandalucia.es/economiayhacienda/apl/surweb/consultas/vehiculos/consultaVehiculos.jsp?portal=ATRIAN&claseVehiculo=motocicleta" target="_blank" rel="noopener noreferrer"
+                                           title="Valoración oficial de turismos usados Junta de Andalucía (ATRIAN)">
+                                            <span>🚗 Valoración Coches</span>
+                                        </button>
+                                        <button type="button" 
+                                           onclick="openJuntaModal('motocicleta')"
                                            class="inline-flex items-center gap-1 font-sans text-[10px] bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold px-2 py-0.5 rounded shadow-xs transition cursor-pointer"
-                                           title="Consultar precios medios y tasación de motocicletas Junta de Andalucía">
-                                            <span>🏍️ Valoración Motos ↗</span>
-                                        </a>
+                                           title="Valoración oficial de motocicletas Junta de Andalucía (ATRIAN)">
+                                            <span>🏍️ Valoración Motos</span>
+                                        </button>
                                     </div>
                                 @endif
                             </div>
