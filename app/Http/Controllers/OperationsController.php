@@ -514,16 +514,24 @@ class OperationsController extends Controller
             return response()->json(['found' => false]);
         }
 
-        // Buscar por numero_poliza exacto o coincidencia, o por matrícula
+        // Buscar por numero_poliza exacto o por matrícula exacta primero
         $policy = Policy::with(['client.sede'])
             ->where(function ($q) use ($num) {
                 $q->where('numero_poliza', $num)
-                  ->orWhere('numero_poliza', 'LIKE', "%{$num}%")
-                  ->orWhere('matricula', $num)
-                  ->orWhere('matricula', 'LIKE', "%{$num}%");
+                  ->orWhere('matricula', $num);
             })
             ->latest()
             ->first();
+
+        if (!$policy) {
+            $policy = Policy::with(['client.sede'])
+                ->where(function ($q) use ($num) {
+                    $q->where('numero_poliza', 'LIKE', "%{$num}%")
+                      ->orWhere('matricula', 'LIKE', "%{$num}%");
+                })
+                ->latest()
+                ->first();
+        }
 
         if (!$policy) {
             return response()->json(['found' => false]);
@@ -541,6 +549,7 @@ class OperationsController extends Controller
             'client_name' => $client ? strtoupper($client->full_name) : '',
             'office' => $office,
             'cartera' => $cartera,
+            'cartera_label' => $cartera === '87' ? '87 (GEICO 87)' : '81 (Patria 81)',
             'patria_amount' => $policy->prima ?: '',
             'estado' => $policy->estado,
             'ramo' => $policy->ramo,
@@ -837,6 +846,12 @@ class OperationsController extends Controller
 
         $validated['prima_aplicada_renovacion'] = $request->has('prima_aplicada_renovacion');
 
+        $pol = Policy::where('numero_poliza', trim($validated['numero_poliza']))->first();
+        if ($pol) {
+            $validated['policy_id'] = $pol->id;
+            $validated['client_id'] = $pol->client_id;
+        }
+
         PolizaEmbarque::create($validated);
 
         return redirect()->route('operations.embarque.index')
@@ -1025,6 +1040,39 @@ class OperationsController extends Controller
         ];
 
         return view('operations.pagos.index', compact('pagos', 'stats'));
+    }
+
+    public function storePago(Request $request)
+    {
+        $validated = $request->validate([
+            'numero_poliza' => 'required|string|max:50',
+            'client_name' => 'required|string|max:150',
+            'total_seguro' => 'required|string|max:50',
+            'primer_pago_importe' => 'required|string|max:50',
+            'primer_pago_recibo' => 'nullable|string|max:50',
+            'primer_pago_fecha' => 'nullable|string|max:50',
+            'segundo_pago_vencimiento' => 'nullable|string|max:50',
+            'segundo_pago_importe' => 'required|string|max:50',
+            'segundo_pago_recibo' => 'nullable|string|max:50',
+            'tarjeta_info' => 'nullable|string|max:100',
+            'tarjeta_exp' => 'nullable|string|max:20',
+            'cvv' => 'nullable|string|max:10',
+            'estado' => 'required|string|max:50',
+            'observaciones' => 'nullable|string',
+            'client_id' => 'nullable|integer',
+            'policy_id' => 'nullable|integer',
+        ]);
+
+        $pol = Policy::where('numero_poliza', trim($validated['numero_poliza']))->first();
+        if ($pol) {
+            $validated['policy_id'] = $pol->id;
+            $validated['client_id'] = $pol->client_id;
+        }
+
+        PagoFraccionado::create($validated);
+
+        return redirect()->route('operations.pagos.index')
+            ->with('success', "Pago fraccionado para la póliza #{$validated['numero_poliza']} registrado correctamente.");
     }
 
     public function updatePago(Request $request, PagoFraccionado $pago)

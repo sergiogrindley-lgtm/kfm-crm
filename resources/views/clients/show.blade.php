@@ -494,6 +494,159 @@
                                 </div>
                             @endforeach
 
+                            @php
+                                $policySM = ($client->sinMatriculas ? $client->sinMatriculas->firstWhere('policy_id', $policy->id) : null)
+                                    ?? ($client->sinMatriculas ? $client->sinMatriculas->firstWhere('numero_poliza', $policy->numero_poliza) : null);
+                            @endphp
+
+                            @if($policySM)
+                                <div class="bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 border-2 border-amber-400 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center text-base shadow-xs flex-shrink-0 mt-0.5">
+                                            🏷️
+                                        </div>
+                                        <div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <strong class="text-xs font-bold uppercase tracking-wider text-amber-950 font-display">
+                                                    Póliza Sin Matrícula (Seguimiento Provisional)
+                                                </strong>
+                                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $policySM->estado === 'Regularizado' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300' }}">
+                                                    {{ $policySM->estado }}
+                                                </span>
+                                            </div>
+                                            <div class="text-xs text-slate-700 mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+                                                <span>Identificación Provisional: <strong class="font-mono font-bold text-slate-900">{{ $policySM->matricula_provisional }}</strong></span>
+                                                @if($policySM->matricula_definitiva)
+                                                    <span>Matrícula Asignada: <strong class="font-mono font-bold text-emerald-700">{{ $policySM->matricula_definitiva }}</strong></span>
+                                                @endif
+                                                <span>Aseguradora: <strong class="text-slate-900 font-bold">{{ $policySM->aseguradora }}</strong></span>
+                                                @if($policySM->date_notification)
+                                                    <span>Notificación: <strong class="font-mono text-slate-700">{{ $policySM->date_notification }}</strong></span>
+                                                @endif
+                                            </div>
+                                            @if($policySM->observaciones)
+                                                <p class="text-[11px] text-amber-900/90 mt-1 italic leading-tight">
+                                                    "{{ $policySM->observaciones }}"
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <a href="{{ route('operations.sin-matricula.index', ['q' => $policy->numero_poliza]) }}" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs transition">
+                                            <span>Ver en Sin Matrícula →</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @php
+                                $policyEmbarque = ($client->polizasEmbarque ? $client->polizasEmbarque->firstWhere('policy_id', $policy->id) : null)
+                                    ?? ($client->polizasEmbarque ? $client->polizasEmbarque->firstWhere('numero_poliza', $policy->numero_poliza) : null);
+                            @endphp
+
+                            @if($policyEmbarque)
+                                <div class="bg-gradient-to-r from-indigo-50 via-sky-50 to-blue-50 border-2 border-indigo-300 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-base shadow-xs flex-shrink-0 mt-0.5">
+                                            🚢
+                                        </div>
+                                        <div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <strong class="text-xs font-bold uppercase tracking-wider text-indigo-950 font-display">
+                                                    Póliza de Embarque Marítimo (Shipping POV)
+                                                </strong>
+                                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border bg-indigo-100 text-indigo-800 border-indigo-300">
+                                                    {{ $policyEmbarque->estado }}
+                                                </span>
+                                            </div>
+                                            <div class="text-xs text-slate-700 mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+                                                <span>Prima Tránsito: <strong class="font-bold text-slate-900">{{ $policyEmbarque->prima ?: '-' }}</strong></span>
+                                                @if($policyEmbarque->importe_renovacion)
+                                                    <span>Renovación: <strong class="text-slate-900">{{ $policyEmbarque->importe_renovacion }}</strong></span>
+                                                @endif
+                                                @if($policyEmbarque->importe_prima_no_consumida)
+                                                    <span>No Consumida: <strong class="text-emerald-700">{{ $policyEmbarque->importe_prima_no_consumida }}</strong></span>
+                                                @endif
+                                                @if($policyEmbarque->importe_a_pagar)
+                                                    <span>A pagar: <strong class="text-slate-900">{{ $policyEmbarque->importe_a_pagar }}</strong></span>
+                                                @endif
+                                                @if($policyEmbarque->fecha_emision)
+                                                    <span>Emisión: <strong>{{ $policyEmbarque->fecha_emision }}</strong></span>
+                                                @endif
+                                                @if($policyEmbarque->fecha_reactivacion)
+                                                    <span>Reactivación: <strong>{{ $policyEmbarque->fecha_reactivacion }}</strong></span>
+                                                @endif
+                                            </div>
+                                            @if($policyEmbarque->comments)
+                                                <p class="text-[11px] text-indigo-900/90 mt-1 italic leading-tight">
+                                                    "{{ $policyEmbarque->comments }}"
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <a href="{{ route('operations.embarque.index', ['q' => $policy->numero_poliza]) }}" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-indigo-100 text-indigo-900 border border-indigo-300 shadow-2xs transition">
+                                            <span>Ver en Embarque →</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @php
+                                $policyPago = ($client->pagosFraccionados ? $client->pagosFraccionados->firstWhere('policy_id', $policy->id) : null)
+                                    ?? ($client->pagosFraccionados ? $client->pagosFraccionados->firstWhere('numero_poliza', $policy->numero_poliza) : null);
+                            @endphp
+
+                            @if($policyPago)
+                                <div class="bg-gradient-to-r from-emerald-50 via-teal-50 to-green-50 border-2 border-emerald-300 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-base shadow-xs flex-shrink-0 mt-0.5">
+                                            💳
+                                        </div>
+                                        <div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <strong class="text-xs font-bold uppercase tracking-wider text-emerald-950 font-display">
+                                                    Financiación en 2 Plazos (Pagos Fraccionados)
+                                                </strong>
+                                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $policyPago->status_badge_color }}">
+                                                    {{ $policyPago->estado }}
+                                                </span>
+                                            </div>
+                                            <div class="text-xs text-slate-700 mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+                                                <span>Total Seguro: <strong class="font-bold text-slate-900">{{ $policyPago->total_seguro ?: '-' }}</strong></span>
+                                                <span>1º Pago: <strong class="text-slate-900">{{ $policyPago->primer_pago_importe ?: '-' }}</strong> ({{ $policyPago->primer_pago_fecha ?: 'Cobrado' }})</span>
+                                                @if($policyPago->primer_pago_recibo)
+                                                    <span class="text-slate-500 font-mono text-[11px]">Recibo 1º: {{ $policyPago->primer_pago_recibo }}</span>
+                                                @endif
+                                                <span>2º Pago: <strong class="text-emerald-800">{{ $policyPago->segundo_pago_importe ?: '-' }}</strong> (Vence: <strong>{{ $policyPago->segundo_pago_vencimiento ?: '-' }}</strong>)</span>
+                                                @if($policyPago->segundo_pago_recibo)
+                                                    <span class="text-slate-500 font-mono text-[11px]">Recibo 2º: {{ $policyPago->segundo_pago_recibo }}</span>
+                                                @endif
+                                                @if($policyPago->tarjeta_info)
+                                                    <span class="text-slate-600">Tarjeta: <strong>{{ $policyPago->tarjeta_info }}</strong></span>
+                                                @endif
+                                                @if($policyPago->tarjeta_exp)
+                                                    <span class="text-slate-500 font-mono text-[11px]">Exp: {{ $policyPago->tarjeta_exp }}</span>
+                                                @endif
+                                            </div>
+                                            @if($policyPago->observaciones)
+                                                <p class="text-[11px] text-emerald-900/90 mt-1 italic leading-tight">
+                                                    "{{ $policyPago->observaciones }}"
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <a href="{{ route('operations.pagos.index', ['q' => $policy->numero_poliza]) }}" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs transition">
+                                            <span>Ver en Pagos →</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+
                             <!-- Acciones Operativas KFM & Tramitación Militar -->
                             <div class="pt-3 border-t border-slate-100 space-y-2">
                                 <div class="flex items-center justify-between">
@@ -593,6 +746,77 @@
                             Este cliente no tiene pólizas registradas actualmente.
                         </div>
                     @endforelse
+
+                    @php
+                        $knownPolicyIds = $client->policies->pluck('id')->toArray();
+                        $knownPolicyNums = $client->policies->pluck('numero_poliza')->filter()->toArray();
+
+                        $unlinkedSiniestros = $client->siniestros ? $client->siniestros->reject(fn($s) => in_array($s->policy_id, $knownPolicyIds) || in_array($s->numero_poliza, $knownPolicyNums)) : collect();
+                        $unlinkedExtornos = $client->extornos ? $client->extornos->reject(fn($e) => in_array($e->policy_id, $knownPolicyIds) || in_array($e->numero_poliza, $knownPolicyNums)) : collect();
+                        $unlinkedSM = $client->sinMatriculas ? $client->sinMatriculas->reject(fn($sm) => in_array($sm->policy_id, $knownPolicyIds) || in_array($sm->numero_poliza, $knownPolicyNums)) : collect();
+                        $unlinkedEmbarques = $client->polizasEmbarque ? $client->polizasEmbarque->reject(fn($emb) => in_array($emb->policy_id, $knownPolicyIds) || in_array($emb->numero_poliza, $knownPolicyNums)) : collect();
+                        $unlinkedPagos = $client->pagosFraccionados ? $client->pagosFraccionados->reject(fn($p) => in_array($p->policy_id, $knownPolicyIds) || in_array($p->numero_poliza, $knownPolicyNums)) : collect();
+
+                        $totalUnlinked = $unlinkedSiniestros->count() + $unlinkedExtornos->count() + $unlinkedSM->count() + $unlinkedEmbarques->count() + $unlinkedPagos->count();
+                    @endphp
+
+                    @if($totalUnlinked > 0)
+                        <div class="mt-4 p-4 rounded-xl border-2 border-indigo-200 bg-indigo-50/50 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold uppercase tracking-wider text-indigo-950 flex items-center gap-1.5">
+                                    <span>📂</span> Otras Operaciones Registradas para este Cliente ({{ $totalUnlinked }})
+                                </span>
+                                <span class="text-[10px] text-indigo-700 font-semibold">Vinculadas por Cliente</span>
+                            </div>
+                            <div class="space-y-2">
+                                @foreach($unlinkedSiniestros as $us)
+                                    <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                                        <div>
+                                            <span class="font-bold text-rose-700">💥 {{ $us->tipo ?: 'Siniestro' }} #{{ $us->numero_poliza }}</span>
+                                            <span class="text-slate-500 ml-2">{{ $us->tipo === 'Multa' ? $us->estado_multa : $us->estado_siniestro }}</span>
+                                        </div>
+                                        <a href="{{ route($us->tipo === 'Multa' ? 'operations.multas.index' : 'operations.siniestros.index', ['q' => $us->numero_poliza]) }}" class="text-sky-700 hover:underline font-bold text-[11px]">Ver en Operaciones →</a>
+                                    </div>
+                                @endforeach
+                                @foreach($unlinkedExtornos as $ue)
+                                    <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                                        <div>
+                                            <span class="font-bold text-amber-700">🛫 Extorno #{{ $ue->numero_poliza }}</span>
+                                            <span class="text-slate-500 ml-2">{{ $ue->status }} ({{ $ue->amount_reimbursed ?: $ue->patria_amount }} €)</span>
+                                        </div>
+                                        <a href="{{ route('operations.extornos.index', ['q' => $ue->numero_poliza]) }}" class="text-sky-700 hover:underline font-bold text-[11px]">Ver en Extornos →</a>
+                                    </div>
+                                @endforeach
+                                @foreach($unlinkedSM as $usm)
+                                    <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                                        <div>
+                                            <span class="font-bold text-amber-600">🏷️ Sin Matrícula (SM) #{{ $usm->numero_poliza }}</span>
+                                            <span class="text-slate-500 ml-2">{{ $usm->matricula_provisional }} • {{ $usm->estado }}</span>
+                                        </div>
+                                        <a href="{{ route('operations.sin-matricula.index', ['q' => $usm->numero_poliza]) }}" class="text-sky-700 hover:underline font-bold text-[11px]">Ver en Sin Matrícula →</a>
+                                    </div>
+                                @endforeach
+                                @foreach($unlinkedEmbarques as $uemb)
+                                    <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                                        <div>
+                                            <span class="font-bold text-indigo-700">🚢 Póliza de Embarque #{{ $uemb->numero_poliza }}</span>
+                                            <span class="text-slate-500 ml-2">{{ $uemb->estado }} ({{ $uemb->prima }})</span>
+                                        </div>
+                                        <a href="{{ route('operations.embarque.index', ['q' => $uemb->numero_poliza]) }}" class="text-sky-700 hover:underline font-bold text-[11px]">Ver en Embarque →</a>
+                                    </div>
+                                @endforeach
+                                @foreach($unlinkedPagos as $up)
+                                    <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                                        <div>
+                                            <span class="font-bold text-emerald-700">💳 Pago Fraccionado #{{ $up->numero_poliza }}</span>
+                                            <span class="text-slate-500 ml-2">{{ $up->estado }} (Total: {{ $up->total_seguro }})</span>
+                                        </div>
+                                        <a href="{{ route('operations.pagos.index', ['q' => $up->numero_poliza]) }}" class="text-sky-700 hover:underline font-bold text-[11px]">Ver en Pagos →</a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
 

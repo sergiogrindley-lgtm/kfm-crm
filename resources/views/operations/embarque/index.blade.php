@@ -158,16 +158,17 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Nº Póliza Embarque *</label>
-                            <input type="text" name="numero_poliza" required placeholder="EMB-2026-..." class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                            <input type="text" name="numero_poliza" id="emb_numero_poliza" required oninput="lookupPolicyForEmbarque(this.value)" onchange="lookupPolicyForEmbarque(this.value)" placeholder="EMB-2026-... o nº póliza" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
                         <div>
                             <label class="block text-slate-700 font-bold mb-1">Prima Total Tránsito (€) *</label>
-                            <input type="text" name="prima" required placeholder="450,00 €" class="w-full font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                            <input type="text" name="prima" id="emb_prima" required placeholder="450,00 €" class="w-full font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                         </div>
                     </div>
+                    <div id="emb_lookup_pill" class="hidden text-xs bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-lg px-3 py-1.5 font-medium"></div>
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Asegurado (Militar) *</label>
-                        <input type="text" name="client_name" required placeholder="CHIEF DANIEL MORGAN" class="w-full uppercase font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                        <input type="text" name="client_name" id="emb_client_name" required placeholder="CHIEF DANIEL MORGAN" class="w-full uppercase font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -279,6 +280,33 @@
 </div>
 
 <script>
+    let lookupEmbTimer = null;
+    function lookupPolicyForEmbarque(val) {
+        clearTimeout(lookupEmbTimer);
+        const pill = document.getElementById('emb_lookup_pill');
+        if (!val || val.trim().length < 2) {
+            if (pill) pill.classList.add('hidden');
+            return;
+        }
+        lookupEmbTimer = setTimeout(() => {
+            fetch(`/api/lookup-policy?numero_poliza=${encodeURIComponent(val.trim())}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.found) {
+                        if (data.client_name) document.getElementById('emb_client_name').value = data.client_name;
+                        if (data.patria_amount) document.getElementById('emb_prima').value = data.patria_amount;
+                        if (pill) {
+                            pill.innerHTML = `✓ Cliente: <strong>${data.client_name}</strong> · ${data.ramo} ${data.vehiculo ? `(${data.vehiculo})` : ''} · Cartera: ${data.cartera}`;
+                            pill.classList.remove('hidden');
+                        }
+                    } else {
+                        if (pill) pill.classList.add('hidden');
+                    }
+                })
+                .catch(err => console.error(err));
+        }, 200);
+    }
+
     function openNuevoEmbarqueModal() {
         document.getElementById('nuevoEmbarqueModal').classList.remove('hidden');
     }

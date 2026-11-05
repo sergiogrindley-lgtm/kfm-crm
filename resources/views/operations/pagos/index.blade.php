@@ -17,6 +17,13 @@
             <h1 class="text-2xl font-black text-slate-900 font-display mt-1">Pagos Fraccionados & Control de 2º Plazo</h1>
             <p class="text-xs text-slate-500">Gestión de cobros semestrales con tarjeta, vencimiento de segundos plazos y liquidación de recibos</p>
         </div>
+
+        <div>
+            <button type="button" onclick="openNuevoPagoModal()" 
+                    class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                <span>+ Registrar Pago Fraccionado</span>
+            </button>
+        </div>
     </div>
 
     <!-- KPI Cards -->
@@ -125,6 +132,115 @@
 
 </div>
 
+<!-- Modal: + Añadir Pago Fraccionado -->
+<div id="nuevoPagoModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeNuevoPagoModal()"></div>
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden">
+            <div class="bg-emerald-700 text-white p-5 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base">Registrar Nuevo Pago Fraccionado</h3>
+                    <p class="text-[11px] text-emerald-100 mt-0.5">Control de 1º y 2º plazo semestral</p>
+                </div>
+                <button type="button" onclick="closeNuevoPagoModal()" class="text-white/80 hover:text-white text-lg cursor-pointer">✕</button>
+            </div>
+            <form method="POST" action="{{ route('operations.pagos.store') }}">
+                @csrf
+                <div class="p-6 space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Nº Póliza (POLICY) *</label>
+                        <input type="text" name="numero_poliza" id="pago_numero_poliza" required oninput="lookupPolicyForPago(this.value)" onchange="lookupPolicyForPago(this.value)" placeholder="Ej: 1849201" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                    </div>
+                    <div id="pago_lookup_pill" class="hidden text-xs bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-lg px-3 py-1.5 font-medium"></div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Asegurado (NAME) *</label>
+                            <input type="text" name="client_name" id="pago_client_name" required placeholder="Ej: MICHAEL S. CLARKE" class="w-full uppercase font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Total Seguro (TOTAL INSURANCE) *</label>
+                            <input type="text" name="total_seguro" id="pago_total_seguro" required oninput="autoCalculatePagos(this.value)" placeholder="680,00 €" class="w-full font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                    </div>
+
+                    <!-- 1st Payment block -->
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">1er Plazo (1ST PAYMENT)</span>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-slate-600 font-semibold mb-0.5">Fecha Cobro</label>
+                                <input type="text" name="primer_pago_fecha" id="pago_primer_fecha" value="{{ date('d/m/Y') }}" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-slate-600 font-semibold mb-0.5">Importe (AMOUNT) *</label>
+                                <input type="text" name="primer_pago_importe" id="pago_primer_importe" required placeholder="340,00 €" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg font-bold text-slate-900">
+                            </div>
+                            <div>
+                                <label class="block text-slate-600 font-semibold mb-0.5">Nº Recibo (RECEIPT#)</label>
+                                <input type="text" name="primer_pago_recibo" id="pago_primer_recibo" placeholder="REC-PAY-101" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg font-mono">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2nd Payment block -->
+                    <div class="bg-amber-50/60 p-3 rounded-xl border border-amber-200 space-y-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">2º Plazo (2ND PAYMENT)</span>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-amber-900 font-semibold mb-0.5">Vencimiento (DUE DATE)</label>
+                                <input type="text" name="segundo_pago_vencimiento" id="pago_segundo_vencimiento" value="{{ date('d/m/Y', strtotime('+6 months')) }}" class="w-full px-2.5 py-1.5 border border-amber-300 rounded-lg font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-amber-900 font-semibold mb-0.5">Importe (€ AMOUNT DUE) *</label>
+                                <input type="text" name="segundo_pago_importe" id="pago_segundo_importe" required placeholder="340,00 €" class="w-full px-2.5 py-1.5 border border-amber-300 rounded-lg font-bold text-amber-950">
+                            </div>
+                            <div>
+                                <label class="block text-amber-900 font-semibold mb-0.5">Nº Recibo (RECEIPT#)</label>
+                                <input type="text" name="segundo_pago_recibo" id="pago_segundo_recibo" placeholder="REC-PAY-102 (Pendiente)" class="w-full px-2.5 py-1.5 border border-amber-300 rounded-lg font-mono">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Info block -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Tarjeta (CARD INFO)</label>
+                            <input type="text" name="tarjeta_info" id="pago_tarjeta_info" placeholder="MASTERCARD 8104" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">Caducidad (EXP.DATE)</label>
+                            <input type="text" name="tarjeta_exp" id="pago_tarjeta_exp" placeholder="MM/AA" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-bold mb-1">CVV</label>
+                            <input type="text" name="cvv" id="pago_cvv" placeholder="123" maxlength="4" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg font-mono">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Estado</label>
+                        <select name="estado" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
+                            <option value="Pendiente 2º Pago" selected>Pendiente 2º Pago</option>
+                            <option value="Cobrado">Cobrado Íntegro ✓</option>
+                            <option value="Vencido">Vencido / Rechazo</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">Observaciones (OBSERVATIONS)</label>
+                        <textarea name="observaciones" id="pago_observaciones" rows="2" placeholder="Notas sobre el fraccionamiento..." class="w-full px-3 py-2 border border-slate-300 rounded-lg"></textarea>
+                    </div>
+                </div>
+                <div class="bg-slate-50 px-6 py-4 flex justify-between border-t border-slate-200">
+                    <button type="button" onclick="closeNuevoPagoModal()" class="text-slate-500 font-bold cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl cursor-pointer">Guardar Pago</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal: Liquidar 2º Pago -->
 <div id="editarPagoModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeEditarPagoModal()"></div>
@@ -165,6 +281,60 @@
 </div>
 
 <script>
+    function openNuevoPagoModal() {
+        document.getElementById('nuevoPagoModal').classList.remove('hidden');
+    }
+    function closeNuevoPagoModal() {
+        document.getElementById('nuevoPagoModal').classList.add('hidden');
+    }
+
+    let lookupPagoTimer = null;
+    function lookupPolicyForPago(val) {
+        clearTimeout(lookupPagoTimer);
+        const pill = document.getElementById('pago_lookup_pill');
+        if (!val || val.trim().length < 2) {
+            if (pill) pill.classList.add('hidden');
+            return;
+        }
+        lookupPagoTimer = setTimeout(() => {
+            fetch(`/api/lookup-policy?numero_poliza=${encodeURIComponent(val.trim())}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.found) {
+                        if (data.client_name) document.getElementById('pago_client_name').value = data.client_name;
+                        if (data.patria_amount) {
+                            document.getElementById('pago_total_seguro').value = data.patria_amount;
+                            autoCalculatePagos(data.patria_amount);
+                        }
+                        if (pill) {
+                            pill.innerHTML = `✓ Cliente: <strong>${data.client_name}</strong> · ${data.ramo} ${data.vehiculo ? `(${data.vehiculo})` : ''} · Cartera: ${data.cartera}`;
+                            pill.classList.remove('hidden');
+                        }
+                    } else {
+                        if (pill) pill.classList.add('hidden');
+                    }
+                })
+                .catch(err => console.error(err));
+        }, 200);
+    }
+
+    function autoCalculatePagos(totalStr) {
+        if (!totalStr) return;
+        const clean = totalStr.replace(/[^0-9.,]/g, '').replace(',', '.');
+        const num = parseFloat(clean);
+        if (!isNaN(num) && num > 0) {
+            const mitad = (num / 2).toFixed(2).replace('.', ',') + ' €';
+            const p1 = document.getElementById('pago_primer_importe');
+            const p2 = document.getElementById('pago_segundo_importe');
+            if (p1 && (!p1.value || p1.dataset.autocalc !== 'false')) {
+                p1.value = mitad;
+            }
+            if (p2 && (!p2.value || p2.dataset.autocalc !== 'false')) {
+                p2.value = mitad;
+            }
+        }
+    }
+
     function openEditarPagoModal(id, estado, recibo, obs) {
         document.getElementById('editarPagoForm').action = "/operations/pagos/" + id;
         document.getElementById('pago_estado').value = estado;

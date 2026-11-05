@@ -313,7 +313,7 @@ class ClientController extends Controller
 
     public function show(Client $client)
     {
-        $client->load(['sede', 'policies.extorno', 'policies.siniestros', 'extornos', 'siniestros']);
+        $client->load(['sede', 'policies.extorno', 'policies.siniestros', 'extornos', 'siniestros', 'sinMatriculas', 'polizasEmbarque', 'pagosFraccionados']);
         $sedes = Sede::all();
         $agentes = $this->agentesDisponibles;
         return view('clients.show', compact('client', 'sedes', 'agentes'));

@@ -24,6 +24,7 @@ Route::match(['get', 'post'], 'api/translate', [ClientController::class, 'transl
 Route::match(['get', 'post'], 'api/calculate-pcs-refund', [ClientController::class, 'calculatePcsRefund'])->name('api.calculate-pcs-refund');
 Route::get('api/check-duplicate-client', [ClientController::class, 'checkDuplicateClient'])->name('api.check-duplicate-client');
 Route::get('api/lookup-policy', [OperationsController::class, 'lookupPolicy'])->name('api.lookup-policy');
+Route::get('operations/extornos/lookup-policy', [OperationsController::class, 'lookupPolicy']);
 
 // =========================================================================
 // MÓDULOS OPERATIVOS KFM (DATABASE25 EXCEL MIGRATION)
@@ -67,6 +68,7 @@ Route::prefix('operations')->name('operations.')->group(function () {
 
     // 6. PAGOS FRACCIONADOS (FINANCIACIÓN)
     Route::get('pagos', [OperationsController::class, 'indexPagos'])->name('pagos.index');
+    Route::post('pagos', [OperationsController::class, 'storePago'])->name('pagos.store');
     Route::patch('pagos/{pago}', [OperationsController::class, 'updatePago'])->name('pagos.update');
 });
 

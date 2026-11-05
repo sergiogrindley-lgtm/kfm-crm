@@ -492,7 +492,7 @@
             return;
         }
         lookupSinTimer = setTimeout(() => {
-            fetch(`/operations/extornos/lookup-policy?numero_poliza=${encodeURIComponent(val.trim())}`)
+            fetch(`/api/lookup-policy?numero_poliza=${encodeURIComponent(val.trim())}`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.found) {

@@ -204,22 +204,23 @@
                 <div class="p-6 space-y-3 text-xs">
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Nº Póliza *</label>
-                        <input type="text" name="numero_poliza" required placeholder="Ej: 1841029" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                        <input type="text" name="numero_poliza" id="sm_numero_poliza" required oninput="lookupPolicyForSM(this.value)" onchange="lookupPolicyForSM(this.value)" placeholder="Ej: 1841029" class="w-full font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                     </div>
+                    <div id="sm_lookup_pill" class="hidden text-xs bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-lg px-3 py-1.5 font-medium"></div>
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Cartera / Aseguradora *</label>
-                        <select name="aseguradora" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
+                        <select name="aseguradora" id="sm_aseguradora" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg font-bold">
                             <option value="81 (Patria 81)">81 (Patria 81)</option>
                             <option value="87 (GEICO 87)">87 (GEICO 87)</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Identificación Provisional o Bastidor (VIN) *</label>
-                        <input type="text" name="matricula_provisional" value="SM" required placeholder="SM o VIN US" class="w-full uppercase font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                        <input type="text" name="matricula_provisional" id="sm_matricula_provisional" value="SM" required placeholder="SM o VIN US" class="w-full uppercase font-mono font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                     </div>
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Nombre Completo Asegurado (Militar) *</label>
-                        <input type="text" name="client_name" required placeholder="Ej: MILLER, DAVID ALEXANDER" class="w-full uppercase font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
+                        <input type="text" name="client_name" id="sm_client_name" required placeholder="Ej: MILLER, DAVID ALEXANDER" class="w-full uppercase font-bold px-3 py-1.5 border border-slate-300 rounded-lg">
                     </div>
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Fecha de Notificación / Alta</label>
@@ -234,7 +235,7 @@
                     </div>
                     <div>
                         <label class="block text-slate-700 font-bold mb-1">Vehículo / Observaciones</label>
-                        <textarea name="observaciones" rows="2" placeholder="Marca, modelo, bastidor o notas..." class="w-full px-3 py-2 border border-slate-300 rounded-lg"></textarea>
+                        <textarea name="observaciones" id="sm_observaciones" rows="2" placeholder="Marca, modelo, bastidor o notas..." class="w-full px-3 py-2 border border-slate-300 rounded-lg"></textarea>
                     </div>
                 </div>
                 <div class="bg-slate-50 px-6 py-4 flex justify-between border-t border-slate-200">
@@ -298,6 +299,43 @@
 </div>
 
 <script>
+    let lookupSmTimer = null;
+    function lookupPolicyForSM(val) {
+        clearTimeout(lookupSmTimer);
+        const pill = document.getElementById('sm_lookup_pill');
+        if (!val || val.trim().length < 2) {
+            if (pill) pill.classList.add('hidden');
+            return;
+        }
+        lookupSmTimer = setTimeout(() => {
+            fetch(`/api/lookup-policy?numero_poliza=${encodeURIComponent(val.trim())}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.found) {
+                        if (data.client_name) document.getElementById('sm_client_name').value = data.client_name;
+                        if (data.matricula && (data.matricula.includes('SM') || data.matricula.includes('S/M'))) {
+                            document.getElementById('sm_matricula_provisional').value = data.matricula;
+                        }
+                        if (data.cartera) {
+                            const cVal = (data.cartera === '87' || data.cartera.includes('87') || data.cartera.includes('GEICO')) ? '87 (GEICO 87)' : '81 (Patria 81)';
+                            document.getElementById('sm_aseguradora').value = cVal;
+                        }
+                        if (data.vehiculo) {
+                            const obs = document.getElementById('sm_observaciones');
+                            if (obs && !obs.value) obs.value = data.vehiculo;
+                        }
+                        if (pill) {
+                            pill.innerHTML = `✓ Cliente: <strong>${data.client_name}</strong> · ${data.ramo} ${data.vehiculo ? `(${data.vehiculo})` : ''} · Cartera: ${data.cartera}`;
+                            pill.classList.remove('hidden');
+                        }
+                    } else {
+                        if (pill) pill.classList.add('hidden');
+                    }
+                })
+                .catch(err => console.error(err));
+        }, 200);
+    }
+
     function openNuevoSinMatriculaModal() {
         document.getElementById('nuevoSinMatriculaModal').classList.remove('hidden');
     }
