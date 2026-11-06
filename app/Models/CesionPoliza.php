@@ -12,6 +12,8 @@ class CesionPoliza extends Model
     protected $fillable = [
         'client_id',
         'policy_id',
+        'cesionario_client_id',
+        'cesionario_policy_id',
         'sede_id',
         'agente',
         'numero_poliza',
@@ -49,6 +51,16 @@ class CesionPoliza extends Model
     public function policy(): BelongsTo
     {
         return $this->belongsTo(Policy::class);
+    }
+
+    public function cesionarioClient(): BelongsTo
+    {
+        return $this->belongsTo(Client::class, 'cesionario_client_id');
+    }
+
+    public function cesionarioPolicy(): BelongsTo
+    {
+        return $this->belongsTo(Policy::class, 'cesionario_policy_id');
     }
 
     public function sede(): BelongsTo

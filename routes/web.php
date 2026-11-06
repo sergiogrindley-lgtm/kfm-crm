@@ -77,6 +77,7 @@ Route::prefix('operations')->name('operations.')->group(function () {
     Route::post('cesiones', [OperationsController::class, 'storeCesion'])->name('cesiones.store');
     Route::patch('cesiones/{cesion}', [OperationsController::class, 'updateCesion'])->name('cesiones.update');
     Route::get('cesiones/{cesion}/documento', [OperationsController::class, 'documentoCesionPoliza'])->name('cesiones.documento');
+    Route::post('cesiones/{cesion}/crear-cliente', [OperationsController::class, 'crearClienteDesdeCesion'])->name('cesiones.crear-cliente');
 });
 
 // Endpoint de diagnóstico rápido de IP pública y cabeceras

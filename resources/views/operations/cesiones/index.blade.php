@@ -144,6 +144,24 @@
                                     @if($c->cesionario_telefono)<span>Tel: {{ $c->cesionario_telefono }}</span>@endif
                                     @if($c->cesionario_email)<span class="ml-1">({{ $c->cesionario_email }})</span>@endif
                                 </div>
+                                <div class="mt-1.5">
+                                    @if($c->cesionario_client_id)
+                                        <a href="{{ route('clients.show', $c->cesionario_client_id) }}" 
+                                           class="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2 py-0.5 rounded-md transition"
+                                           title="Ver ficha del nuevo tomador">
+                                            👤 Ver Ficha Cliente &rarr;
+                                        </a>
+                                    @else
+                                        <form method="POST" action="{{ route('operations.cesiones.crear-cliente', $c) }}" class="inline-block" onsubmit="return confirm('¿Crear o vincular la ficha del cliente {{ addslashes($c->cesionario_nombre) }} y asignarle la póliza transferida?');">
+                                            @csrf
+                                            <button type="submit" 
+                                                    class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-md transition cursor-pointer"
+                                                    title="Crear ficha del cliente o vincular póliza si ya existe">
+                                                + Crear / Vincular Cliente
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
                             </td>
 
                             <!-- Vehículo -->
@@ -426,6 +444,17 @@
                 <textarea name="observaciones" rows="2" 
                           placeholder="Notas internas sobre la cesión o el suplemento..."
                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs"></textarea>
+            </div>
+
+            <div class="bg-sky-50/70 border border-sky-200 rounded-xl p-3">
+                <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" name="crear_cliente_cesionario" id="nc_crear_cliente" value="1" checked
+                           class="mt-0.5 rounded border-sky-300 text-sky-600 focus:ring-sky-500">
+                    <div class="text-xs">
+                        <span class="font-bold text-sky-950 block">Crear o vincular automáticamente la ficha del nuevo tomador</span>
+                        <span class="text-[11px] text-sky-800 block">Crea la ficha del nuevo cliente (o la vincula si ya existe) y le asigna la póliza transferida como activa.</span>
+                    </div>
+                </label>
             </div>
 
             <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">

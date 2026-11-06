@@ -1442,8 +1442,122 @@ class OperationsController extends Controller
             $pol->update(['estado' => 'Transferido']);
         }
 
+        // Crear o vincular automáticamente el cliente para el nuevo tomador si se solicita (por defecto true)
+        if ($request->boolean('crear_cliente_cesionario', true) && $cesion->estado !== 'Cancelada') {
+            $this->crearOAsignarClienteCesionario($cesion);
+        }
+
         return redirect()->route('operations.cesiones.index')
             ->with('success', "Cesión de póliza #{$cesion->numero_poliza} registrada correctamente para {$cesion->cesionario_nombre}.");
+    }
+
+    public function crearClienteDesdeCesion(CesionPoliza $cesion)
+    {
+        $client = $this->crearOAsignarClienteCesionario($cesion);
+
+        return redirect()->route('clients.show', $client)
+            ->with('success', "Ficha de {$client->full_name} vinculada con éxito a la póliza #{$cesion->numero_poliza} transferida.");
+    }
+
+    public function crearOAsignarClienteCesionario(CesionPoliza $cesion): Client
+    {
+        // 1. Buscar si ya existe el cliente en KFM
+        $existingClient = null;
+        if (!empty($cesion->cesionario_ssn)) {
+            $cleanSsn = trim($cesion->cesionario_ssn);
+            $existingClient = Client::where('ssn', $cleanSsn)
+                ->orWhere('doc_identidad', $cleanSsn)
+                ->first();
+        }
+
+        if (!$existingClient && !empty($cesion->cesionario_telefono)) {
+            $cleanTel = trim($cesion->cesionario_telefono);
+            $existingClient = Client::where('telefono_movil', $cleanTel)
+                ->orWhere('telefono_fijo', $cleanTel)
+                ->first();
+        }
+
+        if (!$existingClient && !empty($cesion->cesionario_email)) {
+            $cleanEmail = trim($cesion->cesionario_email);
+            $existingClient = Client::where('email_trabajo', $cleanEmail)
+                ->orWhere('email_personal', $cleanEmail)
+                ->first();
+        }
+
+        if (!$existingClient && !empty($cesion->cesionario_nombre)) {
+            $fullName = trim($cesion->cesionario_nombre);
+            $parts = preg_split('/\s+/', $fullName);
+            if (count($parts) >= 2) {
+                $nombre = $parts[0];
+                $apellido = implode(' ', array_slice($parts, 1));
+                $existingClient = Client::where('nombre', 'like', "%{$nombre}%")
+                    ->where('apellido', 'like', "%{$apellido}%")
+                    ->first();
+            }
+        }
+
+        // 2. Si no existe, crear el cliente nuevo con los datos de la cesión
+        if (!$existingClient) {
+            $fullName = trim($cesion->cesionario_nombre);
+            $parts = preg_split('/\s+/', $fullName, 2);
+            $nombre = strtoupper($parts[0] ?? $fullName);
+            $apellido = strtoupper($parts[1] ?? 'CESIONARIO');
+
+            $existingClient = Client::create([
+                'sede_id' => $cesion->sede_id ?: 1,
+                'agente' => $cesion->agente ?: 'Kerry',
+                'nombre' => $nombre,
+                'apellido' => $apellido,
+                'doc_identidad' => null,
+                'ssn' => $cesion->cesionario_ssn,
+                'dob' => $cesion->cesionario_dob,
+                'telefono_movil' => $cesion->cesionario_telefono,
+                'email_trabajo' => $cesion->cesionario_email,
+                'direccion_base' => $cesion->cesionario_direccion,
+                'observaciones' => "Cliente nuevo dado de alta desde Cesión de Póliza #{$cesion->numero_poliza} (Cedente anterior: {$cesion->cedente_nombre}).",
+            ]);
+        }
+
+        // 3. Añadir la póliza al cliente si no la tiene ya
+        $originalPol = $cesion->policy ?: Policy::where('numero_poliza', $cesion->numero_poliza)->first();
+        
+        $targetPolicy = Policy::where('client_id', $existingClient->id)
+            ->where('numero_poliza', $cesion->numero_poliza)
+            ->first();
+
+        if (!$targetPolicy) {
+            $targetPolicy = Policy::create([
+                'client_id' => $existingClient->id,
+                'sede_id' => $cesion->sede_id ?: ($originalPol?->sede_id ?: 1),
+                'agente' => $cesion->agente ?: ($originalPol?->agente ?: 'Kerry'),
+                'numero_poliza' => $cesion->numero_poliza,
+                'codigo_aseguradora' => $originalPol?->codigo_aseguradora ?: ($cesion->cartera ?: '81'),
+                'aseguradora' => $originalPol?->aseguradora ?: ($cesion->cartera === '87' ? 'GEICO 87' : 'Patria 81'),
+                'ramo' => $originalPol?->ramo ?: 'Vehiculo',
+                'categoria' => $originalPol?->categoria ?: 'Turismo',
+                'marca' => $cesion->marca ?: $originalPol?->marca,
+                'modelo' => $cesion->modelo ?: $originalPol?->modelo,
+                'matricula' => $cesion->matricula ?: $originalPol?->matricula,
+                'vin' => $cesion->vin ?: $originalPol?->vin,
+                'prima' => $originalPol?->prima ?: '0',
+                'tipo_facturacion' => $originalPol?->tipo_facturacion ?: 'Anual',
+                'balance' => $originalPol?->balance ?: 'Paid Full',
+                'liquidacion' => 'Liquidado',
+                'fecha_pago' => $cesion->fecha_cesion ?: date('d/m/Y'),
+                'fecha_vencimiento' => $originalPol?->fecha_vencimiento ?: date('d/m/Y', strtotime('+1 year')),
+                'estado' => 'Activo',
+                'recibo_numero' => $cesion->suplemento_recibo ?: $originalPol?->recibo_numero,
+                'observaciones' => "Póliza transferida por Cesión de Póliza desde {$cesion->cedente_nombre} (DNI: {$cesion->cedente_dni})." . ($cesion->tiene_suplemento ? " Suplemento: {$cesion->suplemento_cantidad}€ (Recibo: {$cesion->suplemento_recibo})." : ''),
+            ]);
+        }
+
+        // 4. Vincular la cesión con el cliente y póliza cesionaria
+        $cesion->update([
+            'cesionario_client_id' => $existingClient->id,
+            'cesionario_policy_id' => $targetPolicy->id,
+        ]);
+
+        return $existingClient;
     }
 
     public function updateCesion(Request $request, CesionPoliza $cesion)
