@@ -1525,29 +1525,46 @@ class OperationsController extends Controller
             ->where('numero_poliza', $cesion->numero_poliza)
             ->first();
 
+        // Conchi: La prima del nuevo cliente debe ser la cantidad del suplemento, no la del titular cedente
+        $primaCesionario = '0';
+        if (!empty($cesion->suplemento_cantidad)) {
+            $clean = trim(str_replace(['€', 'EUR', 'eur', ' '], '', $cesion->suplemento_cantidad));
+            $primaCesionario = $clean !== '' ? $clean : '0';
+        }
+
+        $policyData = [
+            'client_id' => $existingClient->id,
+            'sede_id' => $cesion->sede_id ?: ($originalPol?->sede_id ?: 1),
+            'agente' => $cesion->agente ?: ($originalPol?->agente ?: 'Kerry'),
+            'numero_poliza' => $cesion->numero_poliza,
+            'codigo_aseguradora' => $originalPol?->codigo_aseguradora ?: ($cesion->cartera ?: '81'),
+            'aseguradora' => $originalPol?->aseguradora ?: ($cesion->cartera === '87' ? 'GEICO 87' : 'Patria 81'),
+            'ramo' => $originalPol?->ramo ?: 'Vehiculo',
+            'categoria' => $originalPol?->categoria ?: 'Turismo',
+            'marca' => $cesion->marca ?: $originalPol?->marca,
+            'modelo' => $cesion->modelo ?: $originalPol?->modelo,
+            'matricula' => $cesion->matricula ?: $originalPol?->matricula,
+            'vin' => $cesion->vin ?: $originalPol?->vin,
+            'prima' => $primaCesionario,
+            'tipo_facturacion' => $originalPol?->tipo_facturacion ?: 'Anual',
+            'balance' => $originalPol?->balance ?: 'Paid Full',
+            'liquidacion' => 'Pendiente',
+            'fecha_pago' => $cesion->fecha_cesion ?: date('d/m/Y'),
+            'fecha_liquidacion' => null,
+            'fecha_vencimiento' => $originalPol?->fecha_vencimiento ?: date('d/m/Y', strtotime('+1 year')),
+            'estado' => 'Activo',
+            'recibo_numero' => $cesion->suplemento_recibo ?: ($originalPol?->recibo_numero ?: 'Pendiente'),
+            'observaciones' => "Póliza transferida por Cesión de Póliza desde {$cesion->cedente_nombre} (DNI: {$cesion->cedente_dni})." . ($cesion->tiene_suplemento ? " Suplemento: {$cesion->suplemento_cantidad}€ (Recibo: {$cesion->suplemento_recibo})." : ''),
+        ];
+
         if (!$targetPolicy) {
-            $targetPolicy = Policy::create([
-                'client_id' => $existingClient->id,
-                'sede_id' => $cesion->sede_id ?: ($originalPol?->sede_id ?: 1),
-                'agente' => $cesion->agente ?: ($originalPol?->agente ?: 'Kerry'),
-                'numero_poliza' => $cesion->numero_poliza,
-                'codigo_aseguradora' => $originalPol?->codigo_aseguradora ?: ($cesion->cartera ?: '81'),
-                'aseguradora' => $originalPol?->aseguradora ?: ($cesion->cartera === '87' ? 'GEICO 87' : 'Patria 81'),
-                'ramo' => $originalPol?->ramo ?: 'Vehiculo',
-                'categoria' => $originalPol?->categoria ?: 'Turismo',
-                'marca' => $cesion->marca ?: $originalPol?->marca,
-                'modelo' => $cesion->modelo ?: $originalPol?->modelo,
-                'matricula' => $cesion->matricula ?: $originalPol?->matricula,
-                'vin' => $cesion->vin ?: $originalPol?->vin,
-                'prima' => $originalPol?->prima ?: '0',
-                'tipo_facturacion' => $originalPol?->tipo_facturacion ?: 'Anual',
-                'balance' => $originalPol?->balance ?: 'Paid Full',
-                'liquidacion' => 'Liquidado',
-                'fecha_pago' => $cesion->fecha_cesion ?: date('d/m/Y'),
-                'fecha_vencimiento' => $originalPol?->fecha_vencimiento ?: date('d/m/Y', strtotime('+1 year')),
-                'estado' => 'Activo',
-                'recibo_numero' => $cesion->suplemento_recibo ?: $originalPol?->recibo_numero,
-                'observaciones' => "Póliza transferida por Cesión de Póliza desde {$cesion->cedente_nombre} (DNI: {$cesion->cedente_dni})." . ($cesion->tiene_suplemento ? " Suplemento: {$cesion->suplemento_cantidad}€ (Recibo: {$cesion->suplemento_recibo})." : ''),
+            $targetPolicy = Policy::create($policyData);
+        } else {
+            $targetPolicy->update([
+                'prima' => $primaCesionario,
+                'recibo_numero' => $cesion->suplemento_recibo ?: $targetPolicy->recibo_numero,
+                'liquidacion' => 'Pendiente',
+                'observaciones' => $policyData['observaciones'],
             ]);
         }
 
@@ -1584,6 +1601,19 @@ class OperationsController extends Controller
                 $cesion->policy->update(['estado' => 'Activo']);
             } else {
                 $cesion->policy->update(['estado' => 'Transferido']);
+            }
+        }
+
+        if ($cesion->cesionarioPolicy) {
+            if ($cesion->estado === 'Cancelada') {
+                $cesion->cesionarioPolicy->update(['estado' => 'Cancelado']);
+            } else {
+                $clean = trim(str_replace(['€', 'EUR', 'eur', ' '], '', $cesion->suplemento_cantidad ?? ''));
+                $cesion->cesionarioPolicy->update([
+                    'estado' => 'Activo',
+                    'prima' => $clean !== '' ? $clean : '0',
+                    'recibo_numero' => $cesion->suplemento_recibo ?: $cesion->cesionarioPolicy->recibo_numero,
+                ]);
             }
         }
 
