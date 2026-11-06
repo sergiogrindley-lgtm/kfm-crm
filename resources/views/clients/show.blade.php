@@ -181,7 +181,12 @@
 
                 <div class="p-6 space-y-4">
                     @forelse($client->policies as $policy)
-                        <div class="p-5 rounded-xl border {{ strtolower($policy->estado) === 'activo' ? 'border-slate-200 bg-white hover:border-kfm-primary/50' : 'border-rose-300 bg-rose-50/20 hover:border-rose-400' }} transition-all shadow-sm space-y-3">
+                        @php
+                            $policyCesion = ($client->cesiones ? $client->cesiones->firstWhere('policy_id', $policy->id) : null)
+                                ?? ($client->cesiones ? $client->cesiones->firstWhere('numero_poliza', $policy->numero_poliza) : null);
+                            $isTransferido = ($policyCesion && $policyCesion->estado !== 'Cancelada') || strtolower($policy->estado) === 'transferido';
+                        @endphp
+                        <div class="p-5 rounded-xl border {{ strtolower($policy->estado) === 'activo' || $isTransferido ? 'border-slate-200 bg-white hover:border-kfm-primary/50' : 'border-rose-300 bg-rose-50/20 hover:border-rose-400' }} transition-all shadow-sm space-y-3">
                             <!-- Cabecera de la póliza -->
                             <div class="flex items-start justify-between">
                                 <div class="flex items-center space-x-3">
@@ -205,8 +210,31 @@
                                                     @if($policy->detalles_cobertura)
                                                         <span class="text-xs font-normal text-slate-600">({{ $policy->detalles_cobertura }})</span>
                                                     @endif
+                                                @elseif(strtolower($policy->ramo) === 'empresa')
+                                                    <span>🏢 PÓLIZA DE EMPRESA</span>
+                                                    @if($policy->categoria)
+                                                        <span class="text-xs font-semibold text-slate-700">({{ $policy->categoria }})</span>
+                                                    @endif
+                                                    @if($policy->direccion_riesgo)
+                                                        <span class="text-xs font-normal text-slate-600 block sm:inline"> — {{ $policy->direccion_riesgo }}</span>
+                                                    @elseif($policy->detalles_cobertura)
+                                                        <span class="text-xs font-normal text-slate-600">({{ $policy->detalles_cobertura }})</span>
+                                                    @endif
+                                                @elseif(strtolower($policy->ramo) === 'otros')
+                                                    <span>🛡️ OTROS SEGUROS</span>
+                                                    @if($policy->categoria)
+                                                        <span class="text-xs font-semibold text-slate-700">({{ $policy->categoria }})</span>
+                                                    @endif
+                                                    @if($policy->detalles_cobertura)
+                                                        <span class="text-xs font-normal text-slate-600">({{ $policy->detalles_cobertura }})</span>
+                                                    @endif
+                                                @elseif(strtolower($policy->ramo) === 'vehiculo' || strtolower($policy->ramo) === 'auto')
+                                                    <span>{{ trim($policy->marca . ' ' . $policy->modelo) ?: 'VEHÍCULO' }}</span>
+                                                    @if($policy->detalles_cobertura)
+                                                        <span class="text-xs font-normal text-slate-600">({{ $policy->detalles_cobertura }})</span>
+                                                    @endif
                                                 @else
-                                                    <span>{{ $policy->marca }} {{ $policy->modelo }}</span>
+                                                    <span>{{ trim($policy->marca . ' ' . $policy->modelo) ?: strtoupper($policy->ramo) }}</span>
                                                     @if($policy->detalles_cobertura)
                                                         <span class="text-xs font-normal text-slate-600">({{ $policy->detalles_cobertura }})</span>
                                                     @endif
@@ -235,10 +263,20 @@
                                 </div>
 
                                 <div class="flex flex-col items-end space-y-1">
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ strtolower($policy->estado) === 'activo' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200' }}">
-                                        {{ strtolower($policy->estado) === 'activo' ? '● ' . $policy->estado : '🛑 ' . $policy->estado }}
-                                    </span>
-                                    @if(strtolower($policy->estado) === 'activo' || (strtolower($policy->balance) !== 'cancelled' && strtolower($policy->balance) !== 'cancelado'))
+                                    @if($isTransferido)
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-sky-100 text-sky-800 border border-sky-300 shadow-2xs">
+                                            ● TRANSFERIDO
+                                        </span>
+                                    @elseif(strtolower($policy->estado) === 'activo')
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                            ● ACTIVO
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-100 text-rose-800 border border-rose-200">
+                                            🛑 {{ $policy->estado }}
+                                        </span>
+                                    @endif
+                                    @if(strtolower($policy->estado) === 'activo' || $isTransferido || (strtolower($policy->balance) !== 'cancelled' && strtolower($policy->balance) !== 'cancelado'))
                                         <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase {{ $policy->balance === 'Paid Full' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800' }}">
                                             Balance: {{ $policy->balance }}
                                         </span>

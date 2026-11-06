@@ -1378,9 +1378,9 @@ class OperationsController extends Controller
 
         $stats = [
             'total' => CesionPoliza::count(),
-            'activas' => CesionPoliza::where('estado', 'Activa')->count(),
-            'pendientes' => CesionPoliza::where('estado', 'Pendiente de firma')->count(),
+            'pendientes' => CesionPoliza::whereIn('estado', ['Pendiente', 'Pendiente de firma', 'Activa'])->count(),
             'finalizadas' => CesionPoliza::where('estado', 'Finalizada')->count(),
+            'canceladas' => CesionPoliza::whereIn('estado', ['Cancelada', 'Anulada'])->count(),
         ];
 
         $sedes = Sede::all();
@@ -1438,6 +1438,10 @@ class OperationsController extends Controller
 
         $cesion = CesionPoliza::create($validated);
 
+        if ($pol && $cesion->estado !== 'Cancelada') {
+            $pol->update(['estado' => 'Transferido']);
+        }
+
         return redirect()->route('operations.cesiones.index')
             ->with('success', "Cesión de póliza #{$cesion->numero_poliza} registrada correctamente para {$cesion->cesionario_nombre}.");
     }
@@ -1460,6 +1464,14 @@ class OperationsController extends Controller
         $validated['tiene_suplemento'] = $request->boolean('tiene_suplemento') || !empty($validated['suplemento_recibo']) || !empty($validated['suplemento_cantidad']);
 
         $cesion->update($validated);
+
+        if ($cesion->policy) {
+            if ($cesion->estado === 'Cancelada') {
+                $cesion->policy->update(['estado' => 'Activo']);
+            } else {
+                $cesion->policy->update(['estado' => 'Transferido']);
+            }
+        }
 
         return redirect()->route('operations.cesiones.index')
             ->with('success', "Cesión de póliza #{$cesion->numero_poliza} actualizada.");

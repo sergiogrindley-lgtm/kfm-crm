@@ -34,22 +34,22 @@
             <span class="text-[10px] text-slate-500 block">Expedientes registrados</span>
         </div>
 
-        <div class="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200 shadow-xs">
-            <span class="text-[10px] uppercase font-bold text-emerald-700 block">Cesiones Activas</span>
-            <span class="text-2xl font-black text-emerald-900 mt-1 block">{{ $stats['activas'] }}</span>
-            <span class="text-[10px] text-emerald-700 block">En vigor</span>
-        </div>
-
         <div class="p-4 rounded-2xl bg-amber-50/60 border border-amber-200 shadow-xs">
-            <span class="text-[10px] uppercase font-bold text-amber-700 block">Pendientes de Firma</span>
+            <span class="text-[10px] uppercase font-bold text-amber-700 block">Pendientes</span>
             <span class="text-2xl font-black text-amber-900 mt-1 block">{{ $stats['pendientes'] }}</span>
-            <span class="text-[10px] text-amber-700 block">A falta de firma o doc</span>
+            <span class="text-[10px] text-amber-700 block">En trámite / firma</span>
         </div>
 
-        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs">
-            <span class="text-[10px] uppercase font-bold text-slate-500 block">Finalizadas</span>
-            <span class="text-2xl font-black text-slate-800 mt-1 block">{{ $stats['finalizadas'] }}</span>
-            <span class="text-[10px] text-slate-500 block">Baja o transferidas ✓</span>
+        <div class="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200 shadow-xs">
+            <span class="text-[10px] uppercase font-bold text-emerald-700 block">Finalizadas</span>
+            <span class="text-2xl font-black text-emerald-900 mt-1 block">{{ $stats['finalizadas'] }}</span>
+            <span class="text-[10px] text-emerald-700 block">Cesión completada ✓</span>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-rose-50/60 border border-rose-200 shadow-xs">
+            <span class="text-[10px] uppercase font-bold text-rose-700 block">Canceladas</span>
+            <span class="text-2xl font-black text-rose-900 mt-1 block">{{ $stats['canceladas'] }}</span>
+            <span class="text-[10px] text-rose-700 block">Anuladas o revocadas</span>
         </div>
     </div>
 
@@ -65,10 +65,9 @@
 
             <select name="estado" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700">
                 <option value="">Todos los Estados</option>
-                <option value="Activa" {{ request('estado') === 'Activa' ? 'selected' : '' }}>Activa</option>
-                <option value="Pendiente de firma" {{ request('estado') === 'Pendiente de firma' ? 'selected' : '' }}>Pendiente de firma</option>
+                <option value="Pendiente" {{ request('estado') === 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
                 <option value="Finalizada" {{ request('estado') === 'Finalizada' ? 'selected' : '' }}>Finalizada</option>
-                <option value="Anulada" {{ request('estado') === 'Anulada' ? 'selected' : '' }}>Anulada</option>
+                <option value="Cancelada" {{ request('estado') === 'Cancelada' ? 'selected' : '' }}>Cancelada</option>
             </select>
 
             <select name="sede_id" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700">
@@ -415,10 +414,9 @@
                     <label class="block font-semibold text-slate-700 mb-1">Estado de la Cesión *</label>
                     <select name="estado" id="nc_estado" required
                             class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-800">
-                        <option value="Activa">Activa (En vigor)</option>
-                        <option value="Pendiente de firma">Pendiente de firma</option>
-                        <option value="Finalizada">Finalizada (Baja / Cancelada)</option>
-                        <option value="Anulada">Anulada</option>
+                        <option value="Pendiente" selected>Pendiente</option>
+                        <option value="Finalizada">Finalizada</option>
+                        <option value="Cancelada">Cancelada</option>
                     </select>
                 </div>
             </div>
@@ -458,10 +456,9 @@
                 <label class="block font-semibold text-slate-700 mb-1">Estado de la Cesión *</label>
                 <select name="estado" id="ec_estado" required
                         class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-800">
-                    <option value="Activa">Activa (En vigor)</option>
-                    <option value="Pendiente de firma">Pendiente de firma</option>
-                    <option value="Finalizada">Finalizada (Baja / Cancelada)</option>
-                    <option value="Anulada">Anulada</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Finalizada">Finalizada</option>
+                    <option value="Cancelada">Cancelada</option>
                 </select>
             </div>
 
@@ -544,7 +541,10 @@
 
     function openEditarCesionModal(cesion) {
         document.getElementById('editarCesionForm').action = "/operations/cesiones/" + cesion.id;
-        document.getElementById('ec_estado').value = cesion.estado || 'Activa';
+        let est = cesion.estado || 'Pendiente';
+        if (est === 'Activa' || est === 'Pendiente de firma') est = 'Pendiente';
+        if (est === 'Anulada') est = 'Cancelada';
+        document.getElementById('ec_estado').value = est;
         document.getElementById('ec_cesionario_ssn').value = cesion.cesionario_ssn || '';
         document.getElementById('ec_cesionario_dob').value = cesion.cesionario_dob || '';
         document.getElementById('ec_cesionario_direccion').value = cesion.cesionario_direccion || '';

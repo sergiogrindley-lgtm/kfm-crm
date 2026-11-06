@@ -59,9 +59,12 @@ class CesionPoliza extends Model
     public function getStatusBadgeColorAttribute(): string
     {
         return match ($this->estado) {
-            'Activa' => 'bg-emerald-100 text-emerald-800 border-emerald-300',
+            'Pendiente' => 'bg-amber-100 text-amber-800 border-amber-300',
+            'Finalizada' => 'bg-emerald-100 text-emerald-800 border-emerald-300',
+            'Cancelada' => 'bg-rose-100 text-rose-800 border-rose-300',
+            // Compatibilidad con registros previos:
+            'Activa' => 'bg-amber-100 text-amber-800 border-amber-300',
             'Pendiente de firma' => 'bg-amber-100 text-amber-800 border-amber-300',
-            'Finalizada' => 'bg-slate-100 text-slate-700 border-slate-300',
             'Anulada' => 'bg-rose-100 text-rose-800 border-rose-300',
             default => 'bg-slate-100 text-slate-700 border-slate-300',
         };

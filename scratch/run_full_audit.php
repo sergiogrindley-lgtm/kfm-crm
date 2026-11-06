@@ -343,7 +343,7 @@ $testCesion = \App\Models\CesionPoliza::create([
     'tiene_suplemento' => true,
     'suplemento_recibo' => 'REC-SUP-01',
     'suplemento_cantidad' => '50,00',
-    'estado' => 'Activa',
+    'estado' => 'Pendiente',
 ]);
 auditAssert($testCesion->exists, "Alta de Cesión de Póliza con Suplemento y Datos Militares OK");
 

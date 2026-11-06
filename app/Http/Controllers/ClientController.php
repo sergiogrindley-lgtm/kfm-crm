@@ -76,7 +76,7 @@ class ClientController extends Controller
             'siniestros' => Siniestro::where('tipo', 'Siniestro')->where('estado_siniestro', '!=', 'Cerrado')->count(),
             'embarque' => PolizaEmbarque::where('estado', 'En Tránsito')->count(),
             'pagos' => PagoFraccionado::where('estado', 'Pendiente 2º Pago')->count(),
-            'cesiones' => CesionPoliza::where('estado', 'Activa')->count(),
+            'cesiones' => CesionPoliza::whereIn('estado', ['Pendiente', 'Activa'])->count(),
         ];
 
         return view('clients.index', compact(
